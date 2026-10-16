@@ -1,1627 +1,2084 @@
-# Graph Report - src  (2026-10-10)
+# Graph Report - src  (2026-10-16)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 10229 nodes · 26823 edges · 346 communities (305 shown, 41 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 2742 edges (avg confidence: 0.85)
-- Token cost: 147,296 input · 4,199 output
+- 11971 nodes · 25343 edges · 426 communities (398 shown, 26 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 2195 edges (avg confidence: 0.83)
+- Token cost: 223,628 input · 5,241 output
 
 ## Graph Freshness
-- Built from commit: `5f9b15b3`
+- Built from commit: `28a88e58`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- Misc Core Contracts
-- Graphics Core Types
-- Technology Advances
-- AI and Barbarians
-- Player State
-- City Management
-- Game Singletons
+- Graphics and Screens
+- Tech Advances
 - Civilization Definitions
-- Mouse Event Args
-- City Production Menu
-- Game Loading
-- Persistence and Governments
-- Disaster Dialog Events
-- DTO Mapping Resolvers
-- Settings Enums
-- Tile Properties
-- Pathfinding Adapters
-- Unit Combat Capture
-- Map Factory Mapping
-- Advance Properties
-- Screen Base Drawing
-- Start Position Placement
-- Citizen Types
-- Dialog Menus
-- Direction Enum
-- Asound Parser
-- Game Data Defaults
-- Adlib Tune Player
-- Continent Landmass
-- Options Menus
-- Screen Management
-- City Manager Screen
-- City State Mapping
-- Startup Wizard Actions
-- Bitmap Extensions
-- Change Player Dialog
-- Buildings and Wonders
-- Mouse Cursor Updates
-- Font Viewer
-- Game Tasks
-- Palace Parts
-- CVL Sound Conversion
-- Player Interface
-- Wizard Entries
-- Tile Terrain
-- Help Overlay
-- Game Map Editor
-- SVE Save Compatibility
-- City Status Mapper
-- Font Sets
-- Report Screens
-- Wizard Mouse Markers
-- Buddy Civilizations
-- Unit Sprites
-- Grid Menu
-- Adlib Sound Bank
-- Keyboard Keys
-- Adlib Bytecode Decoder
-- Image File Formats
-- Spaceship Components
-- Spaceship View
-- Spaceship Slot Blueprint
-- Asound Tune Info
-- Game Play Screen
-- Palace Data
-- Player Factory
-- Player DTO
-- Advance Wonder Effects
-- Diplomat City Actions
-- Game Text Loading
-- Turn Processing
-- Map Editor Interface
-- Game Options
-- Unit Factory and DTOs
-- Top Leader Screen
-- Tribal Hut Events
-- City View Buildings
-- Unit Orders Concepts
-- Save Game
-- Wizard Action Interfaces
-- MCP HTTP Transport
-- Wonders
-- Sprite Cache
-- Power Graph
-- Restorable City
-- New Game Menu Paging
-- Global Warming Services
-- Diplomat Incite
-- Audio Mixer Voices
-- A* Pathfinding
+- Persistence and Services
+- Unit Movement Events
+- Unit Pathfinding
+- Tiles and Global Warming
+- Game Core State
+- Player Data
 - Building Definitions
-- Goto Delegate
-- Quit Dialog Layout
-- Map Save Compatibility
-- Language and DOS Font
-- Civilization Advances
-- Game Option Enums
-- Replay Data DTOs
-- Advisor and Map Export
-- Sprite Extensions
-- Text Input Handling
-- Game Menu Actions
-- CVL Tune Catalog
-- Wonders Screen
-- Save Game Metadata
-- City Info Navigation
-- Customize World Menu
-- MCP Service Core
-- Game State Handling
-- Mini Map Rendering
-- Terrain Tile Properties
-- Terrain Factory
-- Load Map Screen
-- World Map Editor View
-- Civilopedia Reflection Docs
-- AI and Barbarians
-- Common Binary Data
-- Terrain and Difficulty Constants
-- Advance Requirements
-- Palace Preview Parts
-- City Basic Data
-- Logging and Diplomat Bribes
-- MCP Region Capture Tools
-- Caravan Choice Dialog
-- Unit Selector Screen
-- Page Navigation
-- Sea Transport Units
-- Font Sets
-- MCP Game Save Tool
-- Air Unit Flight
-- MCP Screenshot Artifacts
-- Advisor Portraits
-- Unit Movement
-- Game Menu Descriptions
-- Original Text Validation
-- Production YAML Mapping
-- Setup Wizard Actions
-- Map Export and Save
-- Colour and Bitmap Conversion
-- Image Decoder Service
-- Space Race Rules
-- City Economy Service
-- End Game and Score
-- Runtime Interface
-- MCP Map Window Tool
-- Intro and Map Generation
-- Hall of Fame Screen
-- Adlib Instruments
-- Sound Pack Conversion
-- OPL2 Chip Emulation
-- Audio Engine Devices
-- Tile Rendering Settings
-- Random Number Service
-- Terrain Editor Delegate
-- Settings Interface
-- Original Random Emulation
-- Sound Pack Index
-- OPL Envelope Operators
-- Sound Playback Strategies
-- Plugin Management
-- YAML Doc Emitters
-- Hall of Fame Persistence
-- City View Rendering
-- Quick Save Slots
-- Setup Wizard Documentation
-- Palace Upgrade Triggers
-- Government Resolution
-- Translation and Fonts
-- MCP Entities and State Tools
-- Editor Modes
-- Atomic File Operations
-- Sound Handles and System
-- Settler Terrain Improvements
-- Earth Age Generation
-- FPS Overlay
-- Text Alignment Settings
-- Game Query Interfaces
-- MCP Path Validation Tool
-- City Debug Snapshot
-- City Selection Dialogs
-- Save Path Provider
-- Civilization Ranking Screen
-- Wonders and Advances
-- Civilization Definitions
-- New Game Rules
-- Game Snapshot Persistence
-- Extension Methods
-- MCP Game Load Tool
-- Player Game Interface
-- Null Player Game
+- Screen Input Handling
+- City Management
+- City Manager Screen
+- Gameplay Screen
+- Game State Loading
+- Game Data Interface
+- Mouse Events
+- Game Tasks
+- Direction Enum
+- Screen Management
+- City Interface
+- City Info and Events
+- Game Settings
+- Wonders and Units
+- Diplomat Bribe Dialog
+- MCP Requests
+- Unit Factory Mapping
+- Menu Rendering
+- Debug Menu Actions
+- Grid Menu
+- Screen Drawing Base
+- Map and Tile Mapping
+- Player DTO
+- Wizard Action Handler
+- Setup Screen
+- Spaceship View
+- DTO Mapper Dependencies
 - MCP City Tool
+- Wizard Pages
+- Caravan Choice Dialog
+- Dialog Boxes
+- Keyboard Input
+- Sound Packs and Speaker
+- City Turn Processing
+- Unit Menu Options
+- Asound Parser
+- Map Editor Delegates
+- Calendar Service
+- Cursor and Sprites
+- City Production Chooser
+- Map Generation
+- Player Interface
+- AI and Leaders
+- Resources and Fonts
+- Tune Rendering and Banks
+- Common Utilities
+- Overlay Screens
+- CVL Conversion Reports
+- Player Game Actions
+- City Screen Dialogs
+- Spaceship Arrival
+- MCP Runtime Tools
+- Palace Sprite Provider
+- Player Factory
+- Game Snapshot Data
+- Wizard Rendering
+- Spaceship Components
+- Runtime and MCP Service
+- MCP Players Tool
+- Adlib Arrangements
+- Key Definitions
+- Settings Menus
+- Conquest Screen
+- Palace Parts
+- Spaceship Services
+- Wizard Actions
+- Sea Transport
+- Civilopedia Reflection
+- A* Pathfinding
+- Terrain and Map Factory
+- Report Screens
+- Concepts and Unit Orders
+- Hall of Fame
+- MCP and Persistence
+- City Buildings Display
+- Top Leader Order
+- Wonder Drawing
+- City View Map
+- Tile Base
+- OPL2 Chip Emulation
+- Diplomat City Actions
+- Audio Mixer Voices
+- Isound Score Export
+- MCP Screenshot Artifacts
+- Civilization Score Inputs
+- Advisor Portrait Sprites
+- Platform Runtime Info
+- LZW Compression
+- Player Game Stub
+- Air Units
+- Sound Pack Index
+- Buddy Civilization Assignment
+- Replay Data Mapping
+- CVL Tune Catalog
+- Global Warming Services
+- Mini Map Drawing
+- Picture Files
+- Map Rendering Animation
+- Page Navigation
+- World Map Editor View
+- New Game Tribe Menu
+- Game Options Screen
+- Adlib Bytecode Decoder
+- Custom World Menu
+- City Basic Data
+- New Game Screen
+- Goto Command Handling
+- Font Set Rendering
+- Map Locations
+- Game State Data
+- City Name Dialog
+- Terrain Editor Delegate
+- Adlib Tune Player
+- Civilization Classes
+- Advance Requirements
+- City Info Frames
+- Original Text Validation
+- End Game Screens
+- Spaceship Layout Orders
+- OPL Operator Envelope
+- Sound Playback Strategies
+- Hall of Fame Screen
+- Terrain and Units UI
+- Intro and Map Generation
+- Score and Spaceship Services
+- A* Pathfinding
+- Government and Resolvers
+- Font Viewer and Scaling
+- City Citizen Service
+- GamePlay Map Editor Menus
+- Adlib Instrument Definitions
+- Civilopedia Screen
+- Plugin Management
+- Confirm Quit Dialog
+- Palace Upgrade Trigger
+- Preview Palace Parts
+- Wonders and Availability
+- Load Map Screen
+- Startup Wizard Documentation
+- Atomic File Operations
+- Power Graph Selection
+- Spaceship Slot Blueprint
+- Game Texts Loading
+- Barbarian Activity Settings
+- Sound Pack Playback Queue
+- Original Random Emulation
+- Wizard Entry Actions
+- Core Game Singletons
+- Turn Processing
+- Building Interface
+- Save Game Screen
+- MCP Get Units Tool
+- MCP Validate Path Tool
+- City Destroyed Data
+- Save Data Getters
+- IO and Text Infrastructure
+- Text Alignment Settings
+- Face Bitmap Rendering
+- Civilization DTO Mapper
+- Map Save Service
+- Citizen Happiness Calculation
+- Spawn Unit Screen
+- Editor Modes
+- Civ Ranking Screen
+- Tune Wave Rendering
+- Hall of Fame Model
+- Wonder Definitions
+- Translation Services
+- Save Metadata DTO
+- MCP Map Window Tool
+- Text Input Screen
+- City Citizen Layout
+- Map Interfaces
+- Save File Inspection
+- Wave Sound Files
+- City View Drawing
 - Palette Viewer Screen
 - Terrain Selector Screen
-- Terrain Menu Actions
-- Civilization Ranking Service
-- Global Warming Pollution
-- Civilopedia Screen
-- Menu Bar
-- YAML Type Converters
-- New Game Tribe Menu
-- Sound Pack Test Menu
-- Leader Personalities
-- Turn Handling
-- Decoded Image Pixels
-- Sound Pack Playback
-- Player Game Stub
-- Hall of Fame Services
-- Map Zoom Controls
-- Menu Items
-- Space Ship Sprites
-- Sound Handles
-- A* Pathfinding
-- Player Slots Screen
-- City Resource Icons
-- Resource Services
+- Quick Save Hotkeys
+- Sound Handle
+- YAML Doc Comments
+- Citizen Types
+- Historian Palace Service
+- Game Icons
+- Spaceship Civilization Selector
+- Sound Engine Types
+- Colour Type
+- Image Decoder Service
 - MCP Settings Tool
-- Unmanaged Memory Buffers
-- Replay Data Mapping
-- Space Ship Launch Rules
-- Tune Rendering
-- River Creation
-- Terrain Editor Rendering
-- File System Setup
-- MCP Tool Results
-- Space Ship Factories
-- Screen Query Service
-- Adlib Event Kinds
-- Adlib Sound Layout
-- PNG Writer and CRC
+- Game Query Interfaces
+- City Debug Snapshot
+- Sound Pack Picker
+- Space Victory Animation
+- DOS Font Renderer
+- New Game Rules
+- OPL Chip Interface
+- Binary Save Snapshot
+- Save Game Paths
+- Menu Bar
+- Civilization Score Layout
+- MCP Game State Tools
 - Runtime Settings
-- City Name Dialog
-- New Game Screen
-- Space Ship Civilization Selector
-- OPL Channel
+- Unit Selector Screen
+- Terrain Editor Input
+- Terrain Editor Menu Actions
+- SVE Compatibility Snapshot Builder
+- Player Diplomacy and Exploration
+- Screen Behavior Attributes
+- Terrain Editor Rendering
+- Climate and River Creation
+- FPS Overlay
+- Player Slots Screen
+- PNG Decoder
+- Quick Load Slots
+- New Game Competition Menu
+- Font Factory
+- SVE Compatibility Snapshot
+- Sound System Playback
+- Language Selection
+- Leader Traits
+- Screen Event Args
+- Extension Methods
+- Palette Mapper
+- File System Setup
+- Map Dialog Paths
+- Demographics Report
+- Attitude Survey Screen
+- Legacy Map Save Compatibility
+- Game Score State
 - Sound Alias Registry
-- Building and Wonder Effects
-- Hall of Fame Models
-- Government Types
-- Bit Reader and LZW
-- Palace Layout DTO
-- Space Ship Components
-- Conquest Screen
-- Map YAML Serialization
+- World Generation Options
+- Game End Conquest Check
+- Palette Handling
+- CRC32 and PNG Writer
+- Isound Music Player
+- Map Editor Start Positions
+- Unmanaged Memory Reader
+- Game Settings Interface
 - MCP Cities Tool
-- Newspaper Screen
+- Value Sanitizer
+- Save Metadata
+- Land Unit Movement
+- End Game Service
+- Spaceship Launch Rules
+- Translation File Repository
+- Adlib Sound Layout
+- Government Types
+- Palace Data Interface
+- City Economy Breakdown
+- Civilization Definitions
+- Text File Loader
+- Civilization Score Screen
+- Civilization Rating Services
+- Spaceship Sprite Services
+- Tile Display Settings
+- Map Editor Interface
+- Player Game Interface
+- MCP Player Tool
+- YAML Byte Array Converter
+- YAML Writer
+- Map Zoom
+- Power Graph Screen
+- YAML Save Service
+- Game End Check
+- Game End Sequence
+- Adlib Event Kinds
+- Sound Handle Interface
 - Sound Pack Render Queue
+- Peace Turn Service
+- Game Options and Sound Pack
+- GIF Image Codec
+- SVE Save Compatibility Service
+- Leader Definitions
+- Value Sanitizer
+- Export Map Image
+- HTTP MCP Transport
+- Game Menu
+- Stub Services
+- Menu Paging
+- Civilization Respawn
+- Random and Event Handlers
+- City Building Effects
+- Barbarian Spawn
+- Cached Sprite Resources
+- Global Warming Service
+- YAML Reader Configuration
+- Terrain Base Properties
+- Newspaper Screen
+- Browser Service
+- Space Victory Text
+- Mixer Commands and Buses
+- OPL Channel Synthesis
+- Load Game Screen
+- Decoded Image Pixels
+- Visibility Tool Handler
+- Arctic Terrain
 - Forest Terrain
+- Grassland Terrain
 - Hills Terrain
 - Jungle Terrain
+- Mountains Terrain
 - Swamp Terrain
 - Natural Sort Service
-- YAML Reader Configuration
-- Map Dialog Path Provider
-- MCP Player Tool
-- MCP Visibility Tool
-- Attitude Survey Screen
-- Game Calendar Service
-- Nuclear Attacks
-- Sound System Provider
-- Barbarian Spawn Activity
-- Save Game Files
-- OPL Chip Emulation
-- Screen Fade Speed
-- YAML Writer Configuration
-- Map Image Export
-- LZW Compression
-- Land Elevation Generation
-- City Production Screen
-- Mixer Bus Commands
-- OPL Lookup Tables
-- Wave Sound Playback
-- Desert Terrain
-- Tundra Terrain
-- Civilization Definitions
-- Demographics Screen
-- Game Service
-- MCP Land Values Tool
-- King Meeting Screen
-- Barbarian Menu Delegate
-- Browser Service
-- Civilization Ranking Trigger
-- Isound Layout
-- OPL Chip Interface
-- Discovery Screen
-- City Status Flags
-- Unit Roles
-- Map Generation Stages
-- Plugin Overwrite Dialog
-- Mixer Command Kinds
-- Barbarian Spawn Rules
-- Map Bitmap Scalers
-- Mission Status Calculation
-- Debug Change Government
-- Set Game Year Dialog
-- Unit Goto Service
-- Confront Delegate
+- Save Data Storage
 - BMP Image Writer
-- Aspect Ratio Modes
-- Advisor Face States
-- Hut Exploration Results
-- Continent Map Queries
-- Adlib Noise Channel
-- Platform Detection
-- City Built Event Data
-- Map Location Serialization
-- Tech Choice Screen
-- Missing Files Screen
-- Character Creation Stages
-- Save Metadata Service
-- File Translation Service
-- Wave Sample Loader
-- Temperature Settings
-- Unit Class Types
-- MCP Noop Service
-- City Captured Event Data
-- City Destroyed Event Data
-- Spaceship Palette Animation
-- Victory Screen
-- Map Persistence Service
-- Vertical Alignment
-- City Name Catalog
-- Byte Array Formats
+- Map Location YAML Converter
+- Quit Auto-Save Factory
+- Cause Disaster Dialog
+- Diplomat Incite Dialog
+- Advance Discovery Tasks
+- Ranking Trigger Service
+- Map Image Export
+- Unit Goto Pathfinding
+- Spaceship Civ Selector
+- Production Items
+- Audio DSP Mixer
+- Sound Test Menu
+- Game Settings
+- Stdio MCP Transport
+- Land Elevation Generator
+- MCP Map Land Values
+- Palace Data Mapping
+- Plugin Overwrite Dialog
+- Dialog Window Handling
+- Quit Auto-Save Service
+- PC Speaker Renderer
+- Sound Playback Strategy
+- Desert Terrain
+- Plains Terrain
+- River Terrain
+- Tundra Terrain
+- Space Race Advances
+- Barbarian Spawning
+- Civilization Name Builder
+- Trade Report
+- Game Service
+- Bool Map YAML Converter
+- City Data Mapping
+- Save and Map Files
+- Save Map Delegate
+- Modern DOS Font
+- Game Task Queue
+- City Status Flags
+- City Load Game
+- Hut Results
+- Unit Roles
+- City Status Screen
+- City Status Interface
+- Translation Service
+- Map Generation Stages
+- Spaceship Grid YAML Converter
+- Screen Close Handling
+- Mixer Command Kinds
+- Image to Bitmap
+- Window Size Menus
+- Save Metadata and Titles
+- Translation Identity Service
+- Advisor Messages
+- Binary Save Writer
+- Difficulty Levels
+- Player Extensions
+- City Citizen Service
 - Map Resource Provider
-- Audio Mixing and Limiting
-- Arab Leader
-- Aztec Leader
-- Carthaginian Leader
-- Chinese Leader
-- English Leader
-- Ethiopian Leader
-- German Leader
-- Greek Leader
-- Mali Leader
-- Ottoman Leader
-- Persian Leader
-- Roman Leader
-- Russian Leader
-- Spanish Leader
-- Font Inspection Factory
+- Map Bitmap Scalers
+- Wave Sample Loader
+- Sound System Playback
+- Audio Device Interface
+- Continent Traversal
+- Aspect Ratio Modes
+- FPS Counter Corner
+- American Leader Lincoln
+- Game Query Interfaces
+- Aztec Leader Montezuma
+- City Name Catalog
+- Egyptian Leader Ramesses
+- OPL2 Chip Components
+- OPL Lookup Tables
+- Japanese Leader Tokugawa
+- Versioned Save Parsing
+- Documentation Attribute
+- City Built Data
+- Korean Leader Sejong
+- Mali Leader Mansa Musa
+- Palace Builder Stages
+- Maya Leader Pacal
+- Wonder Effects
+- Directory Service
+- Map Persistence Service
+- Turn Interface
+- Cursor Types
+- International Font Simulation
+- City Captured Data
+- Map Panning
+- Mongol Leader Genghis
+- Pending Unhappiness Equalising
+- Portuguese Leader Henrique
+- Roman Leader Caesar
+- Destroy Animation
+- Graphics Modes
+- Sprite Extensions
+- City Data Persistence
+- Unit Data Persistence
+- Global Warming Setting
+- Map Generation Settings
+- Spanish Leader Isabella
+- Civ Type Id Data
+- End Of Game State
+- Replay Summary Data
+- Global Warming Flag Enum
+- LZW Codec Types
+- Map Bitmap Scaler Types
+- Start Position Algorithms
+- Civilization Respawn Rules
+- Two Civs Data
 
 ## God Nodes (most connected - your core abstractions)
-1. `CivOne.Enums` - 500 edges
-2. `City` - 288 edges
-3. `Player` - 273 edges
-4. `ITile` - 204 edges
-5. `Game` - 202 edges
-6. `CivOne.Graphics` - 195 edges
-7. `CivOne.Advances` - 193 edges
-8. `IUnit` - 181 edges
-9. `ScreenEventArgs` - 176 edges
-10. `BaseScreen` - 164 edges
+1. `CivOne.Enums` - 510 edges
+2. `Game` - 212 edges
+3. `ITile` - 206 edges
+4. `CivOne.Graphics` - 197 edges
+5. `CivOne.Advances` - 193 edges
+6. `IUnit` - 179 edges
+7. `ScreenEventArgs` - 177 edges
+8. `Player` - 160 edges
+9. `City` - 147 edges
+10. `KeyboardEventArgs` - 143 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `6.1) External Context Sync: `HasContextChanged`` --references--> `WizardState`  [INFERRED]
-  src/Screens/StartupWizard/README.md → src/Screens/StartupWizard/WizardState.cs
-- `Wizard state` --references--> `WizardState`  [INFERRED]
-  src/Screens/StartupWizard/README.md → src/Screens/StartupWizard/WizardState.cs
-- `Page model` --references--> `WizardPage`  [INFERRED]
-  src/Screens/StartupWizard/README.md → src/Screens/StartupWizard/WizardPage.cs
-- `Step 4: Keep translation rules` --references--> `WizardPageBuilder`  [INFERRED]
-  src/Screens/StartupWizard/README.md → src/Screens/StartupWizard/WizardPageBuilder.cs
-- `5) Existing Features` --references--> `IBrowserService`  [INFERRED]
-  src/Screens/StartupWizard/README.md → src/Services/Browser/IBrowserService.cs
+- `WizardRenderingContext` --references--> `Number`  [EXTRACTED]
+  src/Screens/StartupWizard/WizardRenderingContext.cs → src/Screens/StartupWizard/WizardEntry.cs
+- `Reflect` --references--> `Assembly`  [EXTRACTED]
+  src/Reflect.cs → src/Plugin.cs
+- `Player` --defines--> `Anarchy`  [EXTRACTED]
+  src/Persistence/Game/Player.Persistence.cs → src/Player.cs
+- `AdvancedFlight` --inherits--> `BaseAdvance`  [EXTRACTED]
+  src/Advances/AdvancedFlight.cs → src/Advances/BaseAdvance.cs
+- `Alphabet` --inherits--> `BaseAdvance`  [EXTRACTED]
+  src/Advances/Alphabet.cs → src/Advances/BaseAdvance.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (346 total, 41 thin omitted)
+## Communities (426 total, 26 thin omitted)
 
-### Community 0 - "Misc Core Contracts"
-Cohesion: 0.03
-Nodes (20): CivOne.Sound.Playback.Adlib, CivOne.Graphics.ImageFormats, CivOne.Screens.StartupWizard.DosFont, CivOne.Services.HallOfFame, CivOne.Mcp, CivOne.Mcp.Contracts, CivOne.Mcp.Automation, CivOne.Services.Browser (+12 more)
-
-### Community 1 - "Graphics Core Types"
-Cohesion: 0.03
-Nodes (17): CivOne.Graphics.Sprites, CivOne.Screens.Options, CivOne.Events, CivOne.Services.Fonts, CivOne.Screens.Dialogs, CivOne.IO, CivOne.UserInterface, CivOne.Graphics (+9 more)
-
-### Community 2 - "Technology Advances"
+### Community 0 - "Graphics and Screens"
 Cohesion: 0.02
-Nodes (8): CivOne.src, CivOne.Services.SpaceShip, CivOne.Buildings, CivOne.Advances, CivOne.Enums, CivOne.Wonders, CivOne.Screens.Services, SpaceShipOverlaySpriteIds
+Nodes (22): CivOne.Graphics.ImageFormats, CivOne.Graphics.Sprites, CivOne.Events, CivOne.Services.Fonts, CivOne.Screens.Dialogs, CivOne.Services.EndGame, CivOne.IO, CivOne.UserInterface (+14 more)
 
-### Community 3 - "AI and Barbarians"
+### Community 1 - "Tech Advances"
 Cohesion: 0.02
-Nodes (15): CivOne.Services.StartPositions, CivOne, CivOne.Services.Random, CivOne.Services.EndGame, CivOne.Services.GlobalWarming, CivOne.Tasks, CivOne.Services.GlobalWarming.Impl, CivOne.Units.TribalHuts (+7 more)
+Nodes (75): AdvancedFlight, Alphabet, Astronomy, AtomicTheory, Automobile, Banking, BaseAdvance, Icon (+67 more)
 
-### Community 4 - "Player State"
-Cohesion: 0.02
-Nodes (92): Player, Advances, Anarchy, Cities, CityNamesSkipped, CivilizationScore, CurrentResearch, Diplomacy (+84 more)
-
-### Community 5 - "City Management"
-Cohesion: 0.02
-Nodes (73): BitFlagExtensions, City, AutoBuild, AvailableProduction, Buildings, BuildingSold, BuyPrice, CelebrationCancelled (+65 more)
-
-### Community 6 - "Game Singletons"
-Cohesion: 0.03
-Nodes (43): BaseInstance, Game, GFX256, GlobalMenus, Human, Logger, Map, RandomService (+35 more)
-
-### Community 7 - "Civilization Definitions"
-Cohesion: 0.03
-Nodes (8): CivOne.Sound, CivOne.Services, CivOne.IO.Text, CivOne.Civilizations, CivOne.Leaders, CivOne.Screens.NewGamePanels, CivOne.Services.Civilizations, SoundNames
-
-### Community 8 - "Mouse Event Args"
-Cohesion: 0.04
-Nodes (14): MouseButton, Left, None, Right, ScreenEventArgs, Buttons, Handled, Location (+6 more)
-
-### Community 9 - "City Production Menu"
-Cohesion: 0.03
-Nodes (42): CityChooseProduction, CurrentMenu, ProductionFilterMode, All, Buildings, Units, Wonders, Menu (+34 more)
-
-### Community 10 - "Game Loading"
-Cohesion: 0.03
-Nodes (62): CityLoadGame, ActiveUnit, Animations, AutoSave, BarbarianActivity, BarbarianSpawn, BuiltWonders, Cities (+54 more)
-
-### Community 11 - "Persistence and Governments"
-Cohesion: 0.04
-Nodes (10): CivOne.Persistence.Model, CivOne.Persistence.Model.Attributes, CivOne.Persistence.Game, CivOne.Persistence.Yaml, CivOne.Persistence.Stubs, CivOne.Governments, CivOne.Persistence.Mapper, CivOne.Persistence.Resolver (+2 more)
-
-### Community 12 - "Disaster Dialog Events"
-Cohesion: 0.06
-Nodes (11): CauseDisaster, OffsetX, OffsetY, Value, TestCityGridMenu, DebugOptions, MenuEntry, StubCaravanChoiceService (+3 more)
-
-### Community 13 - "DTO Mapping Resolvers"
+### Community 2 - "Civilization Definitions"
 Cohesion: 0.05
-Nodes (32): RuntimeAdvanceResolver, YamlMapperDependencies, CivilizationDtoMapper, IDtoMapper, GlobalWarmingDtoMapper, PalaceDtoMapper, IAdvanceResolver, PlayerDtoMapper (+24 more)
+Nodes (8): CivOne.Sound, CivOne.Services, CivOne.Civilizations, CivOne.Enums, CivOne.Leaders, CivOne.Screens.NewGamePanels, CivOne.Services.Civilizations, SoundNames
 
-### Community 14 - "Settings Enums"
-Cohesion: 0.02
-Nodes (75): GlobalWarmingFeatureFlag, None, SeaLevelRise, LzwCodecType, Corrected, Original, MapBitmapScalerType, NearestNeighbor (+67 more)
-
-### Community 15 - "Tile Properties"
-Cohesion: 0.04
-Nodes (44): ITile, Borders, City, ContinentId, Defense, Food, Fortress, FortressCost (+36 more)
-
-### Community 16 - "Pathfinding Adapters"
-Cohesion: 0.04
-Nodes (57): AStarPathfinderAdapter, DisabledPathfinder, AiGotoExecutionResult, Continue, NotHandled, TurnComplete, IPathfinder, IPathfinderFactory (+49 more)
-
-### Community 17 - "Unit Combat Capture"
+### Community 3 - "Persistence and Services"
 Cohesion: 0.03
-Nodes (47): BaseUnit, Attack, Busy, BuyPrice, Defense, Fortify, FortifyActive, Fuel (+39 more)
+Nodes (18): CivOne.Services.StartPositions, CivOne.Persistence.Model, CivOne, CivOne.Services.GlobalWarming, CivOne.Persistence.Model.Attributes, CivOne.Persistence.Game, CivOne.Persistence.Yaml, CivOne.Services.GlobalWarming.Impl (+10 more)
 
-### Community 18 - "Map Factory Mapping"
+### Community 4 - "Unit Movement Events"
+Cohesion: 0.02
+Nodes (71): EventHandler, WeakAttack, FontHigh, EventArgs, MoveUnit, ActiveUnit, RelX, RelY (+63 more)
+
+### Community 5 - "Unit Pathfinding"
+Cohesion: 0.03
+Nodes (73): UnitClass, Air, Land, Water, ITurn, AStarPathfinderAdapter, DisabledPathfinder, Point (+65 more)
+
+### Community 6 - "Tiles and Global Warming"
+Cohesion: 0.03
+Nodes (61): CachedTilePalette, IGlobalWarmingScourgeService, GlobalWarmingScourgeService, IGlobalWarmingService, TileChangeRequestCallback, GlobalWarmingScourgeWithFloodService, IGlobalWarmingService, RemoveUnit (+53 more)
+
+### Community 7 - "Game Core State"
+Cohesion: 0.02
+Nodes (94): CalendarState, Game, AnySpaceShipInFlight, CalendarService, CalendarState, ActiveUnit, Animations, AutoSave (+86 more)
+
+### Community 8 - "Player Data"
+Cohesion: 0.02
+Nodes (99): Player, Advances, Anarchy, Cities, CityNamesSkipped, CurrentResearch, Diplomacy, Embassies (+91 more)
+
+### Community 9 - "Building Definitions"
+Cohesion: 0.03
+Nodes (46): Aqueduct, Bank, Barracks, BaseBuilding, BuyPrice, GrassIcon, Icon, Id (+38 more)
+
+### Community 10 - "Screen Input Handling"
 Cohesion: 0.04
-Nodes (38): IMapTiles, Height, Width, NotSupportedMapFactory, NotSupportedTileFactory, DefaultTileDtoMapper, IMapFactory, ITileDtoMapper (+30 more)
+Nodes (31): DebugChangeGovernment, EventArgs, Player, ChangeHumanPlayer, EventArgs, Player, CivSelectMenuDelegate, Title (+23 more)
 
-### Community 19 - "Advance Properties"
+### Community 11 - "City Management"
+Cohesion: 0.02
+Nodes (85): City, BitFlagExtensions, City, AutoBuild, AvailableProduction, Buildings, BuildingSold, BuyPrice (+77 more)
+
+### Community 12 - "City Manager Screen"
 Cohesion: 0.05
-Nodes (68): Alphabet, AtomicTheory, Automobile, Banking, BaseAdvance, Icon, Id, Name (+60 more)
+Nodes (24): BaseScreen, CityManager, ExtraLeft, ExtraRight, ExtraWidth, City, EventArgs, List (+16 more)
 
-### Community 20 - "Screen Base Drawing"
+### Community 13 - "Gameplay Screen"
+Cohesion: 0.06
+Nodes (24): GamePlayTerrainEditorDelegate, GamePlay, Busy, Cursor, DebugMenuEnabled, HoveredTileX, HoveredTileY, IsMapViewEnabled (+16 more)
+
+### Community 14 - "Game State Loading"
+Cohesion: 0.05
+Nodes (51): cities, cityNames, SuppressMessage, mapTiles, GameStateDtoMapper, MapTilesArrayAdapter, Height, Width (+43 more)
+
+### Community 15 - "Game Data Interface"
+Cohesion: 0.03
+Nodes (55): IGameData, ActiveCivilizations, AdvanceFirstDiscovery, Cities, CitizenNames, CityNames, CivilizationIdentity, CivilizationNames (+47 more)
+
+### Community 16 - "Mouse Events"
 Cohesion: 0.04
-Nodes (42): ResizeEventArgs, Height, Size, Width, BaseScreen, Bitmap, BorderTileSize, DefaultTextSettings (+34 more)
+Nodes (19): CityWonders, MouseButton, Left, None, Right, ScreenEventArgs, Buttons, Handled (+11 more)
 
-### Community 21 - "Start Position Placement"
-Cohesion: 0.06
-Nodes (30): IMapQueries, FixedStartPositions, MapLocation, X, Y, AreaBasedStartPositionService, MapArea, AutoStartPositionDelegate (+22 more)
+### Community 17 - "Game Tasks"
+Cohesion: 0.05
+Nodes (18): BridgeBuilding, Construction, GameTask, Fast, EventArgs, Func, List, Point (+10 more)
 
-### Community 22 - "Citizen Types"
-Cohesion: 0.06
-Nodes (35): Citizen, ContentFemale, ContentMale, Entertainer, HappyFemale, HappyMale, RedShirtFemale, RedShirtMale (+27 more)
-
-### Community 23 - "Dialog Menus"
+### Community 18 - "Direction Enum"
 Cohesion: 0.04
-Nodes (26): BaseDialog, DialogBox, OffsetX, OffsetY, TextHeight, TextLines, TextWidth, ConfirmBuy (+18 more)
+Nodes (32): Direction, Alternating, East, None, North, NorthEast, NorthWest, South (+24 more)
 
-### Community 24 - "Direction Enum"
-Cohesion: 0.06
-Nodes (25): Direction, Alternating, East, None, North, NorthEast, NorthWest, South (+17 more)
-
-### Community 25 - "Asound Parser"
+### Community 19 - "Screen Management"
 Cohesion: 0.07
-Nodes (19): AsoundParser, Image, Layout, AsoundVoiceRef, CvlDispatchTableDelegate, CvlImage, Bytes, CodeLength (+11 more)
+Nodes (11): Credits, Cursor, IsMainMenuShown, Action, Area, Dictionary, EventArgs, List (+3 more)
 
-### Community 26 - "Game Data Defaults"
+### Community 20 - "City Interface"
 Cohesion: 0.04
-Nodes (39): ActiveCivilizations, AdvanceFirstDiscovery, Cities, CitizenNames, CityNames, CivilizationIdentity, CivilizationNames, CurrentResearch (+31 more)
+Nodes (41): ICity, ICityTradingCitiesWritable, TradingCities, RestorableCity, AutoBuild, Buildings, BuildingSold, CelebrationCancelled (+33 more)
 
-### Community 27 - "Adlib Tune Player"
-Cohesion: 0.06
-Nodes (34): AdlibRandomDelegate, Seed, AdlibTunePlayer, AnyVoiceRestarted, IsPlaying, PassCompleted, AdlibVoiceState, Channel (+26 more)
+### Community 21 - "City Info and Events"
+Cohesion: 0.04
+Nodes (36): CityInfoChoice, Happy, Info, Map, AdvancedTribeHandler, Player, AncientScrollsHandler, ILogger (+28 more)
 
-### Community 28 - "Continent Landmass"
-Cohesion: 0.06
-Nodes (24): ContinentTraversalDelegate, LandMass, Large, Normal, Small, Error, ErrorMessage, FixedStartPositions (+16 more)
+### Community 22 - "Game Settings"
+Cohesion: 0.03
+Nodes (76): LzwCodecType, Settings, Animations, ArrowHelper, AspectRatio, AutoSave, AutoSaveOnQuit, AutoSettlers (+68 more)
 
-### Community 30 - "Screen Management"
-Cohesion: 0.06
-Nodes (12): Credits, Cursor, LoadGame, Cancel, CurrentMenu, Cursor, OffsetX, OffsetY (+4 more)
+### Community 23 - "Wonders and Units"
+Cohesion: 0.04
+Nodes (35): CivOne.Wonders, ApolloProgram, BaseWonder, BuyPrice, Icon, Id, Name, ObsoleteTech (+27 more)
 
-### Community 31 - "City Manager Screen"
-Cohesion: 0.06
-Nodes (15): CityManager, ExtraLeft, ExtraRight, ExtraWidth, CityBuildings, BuildingsCount, FirstBuildingIndex, GetImprovements (+7 more)
-
-### Community 32 - "City State Mapping"
-Cohesion: 0.05
-Nodes (34): ICity, ICityTradingCitiesWritable, TradingCities, GameStateDtoMapper, MapTilesArrayAdapter, Height, Width, DifficultyLevel (+26 more)
-
-### Community 33 - "Startup Wizard Actions"
+### Community 24 - "Diplomat Bribe Dialog"
 Cohesion: 0.08
-Nodes (25): 6) Input and Flow, WizardActionHandler, WizardState, AutoSettlersEnabled, CanalCityEnabled, ComputerPlayerPathFindingEnabled, DataFolder, DebugMenuEnabled (+17 more)
+Nodes (18): StubDiplomatBribeService, Gold, TribeName, UnitName, DiplomatBribe, DiplomatBribeDialogFactory, DiplomatBribeService, Gold (+10 more)
 
-### Community 34 - "Bitmap Extensions"
-Cohesion: 0.06
-Nodes (21): BitmapExtensions, Resources, IBitmap, Bitmap, Palette, RenderTile, Image, Position (+13 more)
-
-### Community 35 - "Change Player Dialog"
-Cohesion: 0.05
-Nodes (15): ChangeHumanPlayer, CivSelectMenuDelegate, Title, DebugBuildPalace, MeetWithKing, SetPlayerGold, ActiveInput, OffsetX (+7 more)
-
-### Community 36 - "Buildings and Wonders"
-Cohesion: 0.09
-Nodes (44): CeremonialBurial, Construction, Masonry, MassProduction, Pottery, Aqueduct, Bank, Barracks (+36 more)
-
-### Community 37 - "Mouse Cursor Updates"
-Cohesion: 0.05
-Nodes (30): MouseCursor, Goto, None, Pointer, UpdateEventArgs, Empty, HasUpdate, PaletteExpansionDelegate (+22 more)
-
-### Community 38 - "Font Viewer"
-Cohesion: 0.05
-Nodes (33): FontGlyphZoomDelegate, Divisor, Factor, Multiplier, FontViewerScreen, BackgroundColour, Browser, CellHeight (+25 more)
-
-### Community 39 - "Game Tasks"
+### Community 25 - "MCP Requests"
 Cohesion: 0.07
-Nodes (7): GameTask, Fast, GetAdvance, ImprovementBuilt, Orders, ProcessScience, TechSelect
+Nodes (24): McpRequest, JsonElement, McpError, McpResponse, McpActiveService, Action, SuppressMessage, GameGetMapSizeToolHandler (+16 more)
 
-### Community 40 - "Palace Parts"
-Cohesion: 0.09
-Nodes (27): PalacePart, Center, LeftTower, LeftTowerWall, None, RightTower, RightTowerWall, RightTowerWallShadow (+19 more)
-
-### Community 41 - "CVL Sound Conversion"
-Cohesion: 0.06
-Nodes (36): AsoundCvlConverter, Device, DisplayName, PackId, CvlConversionReport, AnyConverted, Messages, Results (+28 more)
-
-### Community 42 - "Player Interface"
+### Community 26 - "Unit Factory Mapping"
 Cohesion: 0.05
-Nodes (42): IPlayer, Advances, Anarchy, AnarchyDespotism, Cities, CitiesInterface, CityNamesSkipped, Civilization (+34 more)
+Nodes (30): RuntimeUnitFactory, Guid, Guid, IUnitFactory, Guid, PlayerId, UnitDto, AllUnitsClassNames (+22 more)
 
-### Community 43 - "Wizard Entries"
-Cohesion: 0.10
-Nodes (20): WizardEntry, Action, Enabled, Hotkey, KeepAlwaysLastPosition, Number, Text, Value (+12 more)
-
-### Community 44 - "Tile Terrain"
+### Community 27 - "Menu Rendering"
 Cohesion: 0.04
-Nodes (50): BaseTile, BaseTrade, Borders, City, ContinentId, Defense, Food, Fortress (+42 more)
+Nodes (42): Menu, ActiveColour, ActiveItem, CenterTo320Coordinates, CoordinateOffsetX, CoordinateOffsetY, DefaultDescription, DisabledColour (+34 more)
 
-### Community 45 - "Help Overlay"
-Cohesion: 0.05
-Nodes (15): HelpLabel, Overlay, HelpLabels, InterfaceHelp, PopupMessage, OffsetX, OffsetY, SpaceVictory (+7 more)
+### Community 28 - "Debug Menu Actions"
+Cohesion: 0.09
+Nodes (10): MenuEntry, DebugOptions, MenuEntry, Action, EventArgs, List, Revolution, EventArgs (+2 more)
 
-### Community 46 - "Game Map Editor"
-Cohesion: 0.05
-Nodes (27): TaskEventArgs, Aborted, GameMap, ActiveUnit, CanRestoreEditorBaseLayer, CurrentZoomBasisPoints, EditorState, HoveredTileX (+19 more)
-
-### Community 47 - "SVE Save Compatibility"
-Cohesion: 0.05
-Nodes (26): ISveSaveCompatibilityService, SveSaveCompatibilityResult, CanSaveAsSve, Compatible, Reason, SveSaveCompatibilityService, SveSaveCompatibilitySnapshot, CityCount (+18 more)
-
-### Community 48 - "City Status Mapper"
-Cohesion: 0.05
-Nodes (41): ICityStatus, AutoBuild, BuildingSold, CelebrationCancelled, CelebrationOrRapture, HydroAvailable, IsCoastal, IsRiot (+33 more)
-
-### Community 49 - "Font Sets"
+### Community 29 - "Grid Menu"
 Cohesion: 0.06
-Nodes (19): DefaultFont, FirstChar, FontHeight, LastChar, FontSetFactory, IFont, FirstChar, FontHeight (+11 more)
+Nodes (11): GridMenuDelegate, SelectedIndex, SelectionMode, CheckUncheck, Select, Func, TestCityGridMenu, EventArgs (+3 more)
 
-### Community 50 - "Report Screens"
+### Community 30 - "Screen Drawing Base"
+Cohesion: 0.03
+Nodes (44): Speed, Fast, Normal, Slow, BaseScreen, Bitmap, BorderTileSize, DefaultTextSettings (+36 more)
+
+### Community 31 - "Map and Tile Mapping"
+Cohesion: 0.04
+Nodes (49): ICityTile, MapLocationData, DefaultTileDtoMapper, IMapFactory, ITileDtoMapper, ITileFactory, MapDtoMapper, IMapTiles (+41 more)
+
+### Community 32 - "Player DTO"
+Cohesion: 0.04
+Nodes (55): AdvanceId, GovernmentId, PlayerDto, Advances, AllAdvances, AllAdvancesInfo, AllGovernments, Anarchy (+47 more)
+
+### Community 33 - "Wizard Action Handler"
+Cohesion: 0.12
+Nodes (4): WizardActionHandler, Func, IReadOnlyList, Task
+
+### Community 34 - "Setup Screen"
+Cohesion: 0.11
+Nodes (5): Setup, EventArgs, MenuItemEventAction, TimeSpan, WizardScreen
+
+### Community 35 - "Spaceship View"
 Cohesion: 0.06
-Nodes (9): BaseReport, BackgroundColour, OffsetX, OffsetY, CityStatus, MilitaryLosses, MilitaryStatus, ScienceReport (+1 more)
+Nodes (21): layer, SpaceShipView, HasLaunched, LaunchButtonLeft, LaunchButtonRenderHeight, LaunchButtonTop, OffsetX, OffsetY (+13 more)
 
-### Community 51 - "Wizard Mouse Markers"
-Cohesion: 0.10
-Nodes (14): WizardMouseMarkerDelegate, WizardRenderingContext, Box, Cols, ContentEndRow, EntryHitAreas, EntryScrollOffset, GlyphAreas (+6 more)
+### Community 36 - "DTO Mapper Dependencies"
+Cohesion: 0.06
+Nodes (34): IGlobalWarmingStoreService, LastMapPosition, MapPositions, YamlMapperDependencies, IDtoMapper, IAdvanceResolver, PlayerDtoMapper, Guid (+26 more)
 
-### Community 52 - "Buddy Civilizations"
+### Community 37 - "MCP City Tool"
+Cohesion: 0.05
+Nodes (42): GameGetCityToolHandler, Definition, Method, City, Dictionary, Guid, HashSet, IEnumerable (+34 more)
+
+### Community 38 - "Wizard Pages"
+Cohesion: 0.05
+Nodes (54): WizardEntry, Action, Enabled, Hotkey, KeepAlwaysLastPosition, Number, Text, Value (+46 more)
+
+### Community 39 - "Caravan Choice Dialog"
+Cohesion: 0.12
+Nodes (12): Flight, CaravanChoice, CaravanChoiceDialogFactory, CaravanChoiceService, ICaravanChoiceService, City, EventArgs, IMenu (+4 more)
+
+### Community 40 - "Dialog Boxes"
+Cohesion: 0.03
+Nodes (41): BaseDialog, DialogBox, OffsetX, OffsetY, TextHeight, TextLines, TextWidth, EventArgs (+33 more)
+
+### Community 41 - "Keyboard Input"
+Cohesion: 0.04
+Nodes (34): KeyModifier, Alt, Control, None, Shift, KeyboardEventArgs, Alt, CapsLock (+26 more)
+
+### Community 42 - "Sound Packs and Speaker"
+Cohesion: 0.05
+Nodes (35): CivOne.Sound.Cvl, SoundPackCatalog, SpeakerEffect, SpeakerEffectKind, None, Slide, Vibrato, TuneArrangement (+27 more)
+
+### Community 43 - "City Turn Processing"
+Cohesion: 0.06
+Nodes (28): Masonry, Medicine, Pottery, Aqueduct, Barracks, Cathedral, CityWalls, Courthouse (+20 more)
+
+### Community 44 - "Unit Menu Options"
+Cohesion: 0.04
+Nodes (25): IEnumerable, MenuModification, List, Description, DescriptionItem, MenuItem, _args, Description (+17 more)
+
+### Community 45 - "Asound Parser"
+Cohesion: 0.12
+Nodes (13): AsoundParser, Image, Layout, CvlImage, Dictionary, IEnumerable, List, AsoundScoreExporter (+5 more)
+
+### Community 46 - "Map Editor Delegates"
+Cohesion: 0.05
+Nodes (33): TaskEventArgs, Aborted, GameMapPositionDelegate, GameMapZoomDelegate, GamePanMapDelegate, GameTerrainEditorDelegate, GameTerrainEditorRenderDelegate, GameTerrainEditorSessionDelegate (+25 more)
+
+### Community 47 - "Calendar Service"
+Cohesion: 0.05
+Nodes (26): CivOne.Services.Calendar, IScreen, CalendarState, AcceleratedTurns, IEnumerable, IReadOnlyCollection, ICalendarState, AcceleratedTurns (+18 more)
+
+### Community 48 - "Cursor and Sprites"
+Cohesion: 0.05
+Nodes (25): Cursor, Current, CursorType, Resources, Settings, CursorType, FortifySprite, Resources (+17 more)
+
+### Community 49 - "City Production Chooser"
+Cohesion: 0.15
+Nodes (12): CityChooseProduction, CurrentMenu, ProductionFilterMode, All, Buildings, Units, Wonders, City (+4 more)
+
+### Community 50 - "Map Generation"
+Cohesion: 0.06
+Nodes (23): Map, Continent, Error, ErrorMessage, FixedStartPositions, GenerationInProgress, GenerationStageCode, GenerationStageCurrent (+15 more)
+
+### Community 51 - "Player Interface"
+Cohesion: 0.04
+Nodes (44): IPlayer, Advances, Anarchy, AnarchyDespotism, Cities, CitiesInterface, CityNamesSkipped, Civilization (+36 more)
+
+### Community 52 - "AI and Leaders"
 Cohesion: 0.07
-Nodes (26): BuddyPair, CivilizationAssignment, Count, CivilizationNameDelegate, CivilizationNames, DestroyedCivilization, DestroyedCivilizationEntry, DestroyedCivilizationResolverDelegate (+18 more)
+Nodes (15): AI, Palace, Leader, Dictionary, RailRoad, Random, AiGotoExecutorFactory, Func (+7 more)
 
-### Community 53 - "Unit Sprites"
+### Community 53 - "Resources and Fonts"
+Cohesion: 0.07
+Nodes (21): Font, IResourceFileBitmapProvider, IResourceFontHeightProvider, IResourceTextSizeProvider, Size, Resources, CacheGeneration, Fonts (+13 more)
+
+### Community 54 - "Tune Rendering and Banks"
+Cohesion: 0.05
+Nodes (41): ITuneRenderer, loopEndSample, samples, AdlibScoreJson, JsonSerializerOptions, AdlibSoundBank, CarrierOffsets, ChannelCount (+33 more)
+
+### Community 55 - "Common Utilities"
+Cohesion: 0.06
+Nodes (31): AttributeType, Common, Advances, AllCityNames, AllowSaveGame, Buildings, CaptureFilename, Civilizations (+23 more)
+
+### Community 56 - "Overlay Screens"
+Cohesion: 0.05
+Nodes (19): HelpLabel, King, OffsetX, OffsetY, OpaqueBlackColour, Player, HelpLabel, Overlay (+11 more)
+
+### Community 57 - "CVL Conversion Reports"
+Cohesion: 0.04
+Nodes (49): CvlConversionReport, AnyConverted, Messages, Results, IEnumerable, List, CvlConversionResult, Converted (+41 more)
+
+### Community 58 - "Player Game Actions"
+Cohesion: 0.11
+Nodes (13): Player, Show, AutoSave, ChooseGovernment, Content, Empty, Goto, InterfaceHelp (+5 more)
+
+### Community 59 - "City Screen Dialogs"
+Cohesion: 0.07
+Nodes (17): City, AddBuilding, IsBuildingSelectionActive, EventArgs, Player, CityGridMenuDelegate, City, Func (+9 more)
+
+### Community 60 - "Spaceship Arrival"
+Cohesion: 0.09
+Nodes (19): Func, IGameData, ISpaceShipArrivalService, IPlayerSpaceRace, SpaceShipEtaYear, SpaceShipGrid, SpaceShipLaunchYear, SpaceShipPopulation (+11 more)
+
+### Community 61 - "MCP Runtime Tools"
+Cohesion: 0.06
+Nodes (31): RuntimeHandlerGameTickProvider, CurrentTick, McpNoopService, McpServiceFactory, IRuntime, CaptureScreenshotToolHandler, Definition, JsonOptions (+23 more)
+
+### Community 62 - "Palace Sprite Provider"
+Cohesion: 0.13
+Nodes (9): IPalaceSpriteProvider, PalaceSpriteProviderFactory, ResourcesPalaceSpriteProvider, PalaceView, OffsetX, OffsetY, OpaqueBlackColour, PalaceData (+1 more)
+
+### Community 63 - "Player Factory"
+Cohesion: 0.05
+Nodes (43): IPlayerFactory, RuntimePlayerFactory, IPlayerRestorable, Advances, Anarchy, Cities, CityNamesSkipped, CurrentResearch (+35 more)
+
+### Community 64 - "Game Snapshot Data"
+Cohesion: 0.05
+Nodes (41): X, Y, IGameSnapshotSource, AcceleratedTurns, AdvanceOrigin, Animations, AnthologyTurn, AutoSave (+33 more)
+
+### Community 65 - "Wizard Rendering"
+Cohesion: 0.10
+Nodes (20): WizardRenderingContext, Box, Cols, ContentEndRow, EntryHitAreas, EntryScrollOffset, GlyphAreas, LinkAreas (+12 more)
+
+### Community 66 - "Spaceship Components"
 Cohesion: 0.08
-Nodes (6): ISprite, Bitmap, Unit, GFX256, Resources, Settings
+Nodes (22): SpaceShipComponentType, CommandModule, Component, Empty, FuelComponent, HabitationModule, LifeSupportModule, Module (+14 more)
 
-### Community 54 - "Grid Menu"
-Cohesion: 0.10
-Nodes (5): GridMenuDelegate, SelectedIndex, SelectionMode, CheckUncheck, Select
+### Community 67 - "Runtime and MCP Service"
+Cohesion: 0.05
+Nodes (26): PaletteExpansionDelegate, IMcpService, RuntimeHandler, CanvasHeight, CanvasWidth, CurrentFpsCorner, CurrentGameTick, Instance (+18 more)
 
-### Community 55 - "Adlib Sound Bank"
-Cohesion: 0.07
-Nodes (29): AdlibScoreJson, AdlibSoundBank, CarrierOffsets, ChannelCount, DeepTremolo, DeepVibrato, DefaultPan, FrequencyNumbers (+21 more)
+### Community 68 - "MCP Players Tool"
+Cohesion: 0.18
+Nodes (8): McpContentItem, McpToolCallResult, GameGetPlayersToolHandler, Definition, Method, Dictionary, HashSet, JsonElement
 
-### Community 56 - "Keyboard Keys"
+### Community 69 - "Adlib Arrangements"
+Cohesion: 0.06
+Nodes (27): CivOne.Sound.Playback.Adlib, CivOne.Sound.Cvl.Adlib, AdlibArrangement, EventCount, Voices, List, AdlibVoice, Channel (+19 more)
+
+### Community 70 - "Key Definitions"
 Cohesion: 0.04
 Nodes (44): Key, Backspace, Character, Delete, Down, End, Enter, Escape (+36 more)
 
-### Community 57 - "Adlib Bytecode Decoder"
-Cohesion: 0.07
-Nodes (29): AdlibArrangement, EventCount, Voices, AdlibBytecodeDecoderDelegate, EventField, AdlibEvent, Choices, Delta (+21 more)
-
-### Community 58 - "Image File Formats"
+### Community 72 - "Conquest Screen"
 Cohesion: 0.06
-Nodes (17): GifFile, LzwCodec, IImageFormat, PicFile, GetPalette16, GetPalette256, GetPicture16, GetPicture256 (+9 more)
+Nodes (10): Enemy, Conquest, HumanName, OffsetX, OffsetY, OpaqueBlackColour, Point, Nuke (+2 more)
 
-### Community 59 - "Spaceship Components"
+### Community 73 - "Palace Parts"
 Cohesion: 0.08
-Nodes (21): SpaceShipComponentType, CommandModule, Component, Empty, FuelComponent, HabitationModule, LifeSupportModule, Module (+13 more)
+Nodes (38): PalacePart, Center, LeftTower, LeftTowerWall, None, RightTower, RightTowerWall, RightTowerWallShadow (+30 more)
 
-### Community 60 - "Spaceship View"
-Cohesion: 0.07
-Nodes (16): SpaceShipView, HasLaunched, LaunchButtonLeft, LaunchButtonRenderHeight, LaunchButtonTop, OffsetX, OffsetY, PlayerColor (+8 more)
+### Community 74 - "Spaceship Services"
+Cohesion: 0.08
+Nodes (18): SpaceShipViewServicesFactory, ISpaceShipPlacementRules, ISpaceShipScreenDataFactory, ISpaceShipService, ISpaceShipServiceFactory, ISpaceShipSlotBlueprintFactory, SpaceShipOverlaySpriteIds, SpaceShipMissionStatus (+10 more)
 
-### Community 61 - "Spaceship Slot Blueprint"
-Cohesion: 0.05
-Nodes (38): ISpaceShipSlotBlueprint, ComponentOrder, Footprint, FuelOrder, FuelOrderMap, HabitationOrder, HabitationOrderMap, LifeSupportOrder (+30 more)
-
-### Community 62 - "Asound Tune Info"
-Cohesion: 0.05
-Nodes (34): AsoundTuneInfo, Arrangements, Diagnostic, HandlerOffset, Kind, TuneId, IsoundTuneInfo, Arrangements (+26 more)
-
-### Community 63 - "Game Play Screen"
-Cohesion: 0.06
-Nodes (22): ResourceGenerationDelegate, GamePlay, Busy, Cursor, DebugMenuEnabled, HoveredTileX, HoveredTileY, IsMapViewEnabled (+14 more)
-
-### Community 64 - "Palace Data"
-Cohesion: 0.11
-Nodes (12): PalaceData, CanUpgrade, PalaceLeft, PalaceRight, UpgradeCount, IPalaceSpriteProvider, PalaceSpriteProviderFactory, ResourcesPalaceSpriteProvider (+4 more)
-
-### Community 65 - "Player Factory"
-Cohesion: 0.05
-Nodes (40): IPlayerFactory, RuntimePlayerFactory, NotSupportedPlayerFactory, IPlayerRestorable, Advances, Anarchy, Cities, CityNamesSkipped (+32 more)
-
-### Community 66 - "Player DTO"
-Cohesion: 0.05
-Nodes (40): PlayerDto, Advances, AllAdvances, AllAdvancesInfo, AllGovernments, Anarchy, Cities, CityNamesSkipped (+32 more)
-
-### Community 67 - "Advance Wonder Effects"
-Cohesion: 0.07
-Nodes (35): Astronomy, Computers, Electronics, GeneticEngineering, Invention, Literacy, Medicine, NuclearFission (+27 more)
-
-### Community 68 - "Diplomat City Actions"
-Cohesion: 0.07
-Nodes (17): DiplomatCity, DiplomatCityDialogFactory, DiplomatCityService, CityName, HasEmbassy, HasPalace, Human, IsBarbarian (+9 more)
-
-### Community 69 - "Game Text Loading"
+### Community 75 - "Wizard Actions"
 Cohesion: 0.09
-Nodes (6): IGameTexts, IGameTextsCommand, ITextFileLoader, TextFile, TextFileFactory, TextFileLoader
+Nodes (12): IWizardActionHandler, IWizardPageBuilder, WizardActionResult, WizardDialogKind, Error, Message, Warning, WizardScreen (+4 more)
 
-### Community 70 - "Turn Processing"
-Cohesion: 0.08
-Nodes (6): BarbarianSpawnKind, Land, None, Sea, LanguageScreen, CivilizationRankingScreenFactory
+### Community 76 - "Sea Transport"
+Cohesion: 0.06
+Nodes (24): AbstractTransport, Cargo, BaseUnitSea, AllowCanalCity, MenuItems, Range, IEnumerable, Battleship (+16 more)
 
-### Community 71 - "Map Editor Interface"
+### Community 77 - "Civilopedia Reflection"
+Cohesion: 0.15
+Nodes (10): ICivilopedia, Icon, Name, PageCount, TranslatedName, Reflect, GetAssemblies, PluginModifications (+2 more)
+
+### Community 78 - "A* Pathfinding"
 Cohesion: 0.10
-Nodes (6): IMapEditor, TerrainEditorDelegate, BrushSizeCount, Civilizations, Game, MapEditor
+Nodes (22): AStar, Game, Map, Node, F, G, H, IsClosed (+14 more)
 
-### Community 72 - "Game Options"
-Cohesion: 0.05
-Nodes (37): BinarySaveGameStateWriter, GameSetting, Animations, AutoSave, CivilopediaText, EndOfTurn, EnemyMoves, InstantAdvice (+29 more)
+### Community 79 - "Terrain and Map Factory"
+Cohesion: 0.06
+Nodes (22): ITerrainFactory, Terrain, RuntimeMapFactory, IMapTiles, RuntimeTerrainFactory, Terrain, RuntimeTileDtoMapper, Map (+14 more)
 
-### Community 73 - "Unit Factory and DTOs"
-Cohesion: 0.05
-Nodes (31): RuntimeUnitFactory, NotSupportedUnitFactory, IUnitFactory, DiplomacyDecodedDto, DiplomacyEntryDto, Decoded, RawFlags, TargetPlayerGuid (+23 more)
+### Community 80 - "Report Screens"
+Cohesion: 0.10
+Nodes (8): Player, BaseReport, BackgroundColour, OffsetX, OffsetY, MilitaryLosses, MilitaryStatus, ScienceReport
 
-### Community 74 - "Top Leader Screen"
+### Community 81 - "Concepts and Unit Orders"
+Cohesion: 0.07
+Nodes (23): BaseConcept, Icon, Name, PageCount, TranslatedName, Disband, Fortify, Fortress (+15 more)
+
+### Community 82 - "Hall of Fame"
 Cohesion: 0.09
-Nodes (11): LeaderOrderDelegate, LeaderOrderEntry, LeaderOrderResult, TopLeaderScreen, OffsetX, OffsetY, TopLeaderScreenEnvironment, CivilizationScoreService (+3 more)
+Nodes (20): CivOne.Services.HallOfFame, HallOfFameScreenFactory, HallOfFameCommandService, Action, IReadOnlyList, HallOfFameEntry, DateTimeOffset, HallOfFamePersistService (+12 more)
 
-### Community 75 - "Tribal Hut Events"
-Cohesion: 0.08
-Nodes (9): AdvancedTribeHandler, AncientScrollsHandler, FriendlyTribeHandler, MetalDepositsHandler, HumanTribalHutsVisitorImpl, ITribalHutEventHandler, ITribalHutsVisitor, TribalHutsVisitorImpl (+1 more)
+### Community 83 - "MCP and Persistence"
+Cohesion: 0.11
+Nodes (9): CivOne.Mcp, CivOne.Mcp.Contracts, CivOne.Mcp.Automation, CivOne.Mcp.Tools, CivOne.Persistence, CivOne.Mcp.Transport, IMcpProtocolSerializer, JsonRpcProtocolSerializer (+1 more)
 
-### Community 76 - "City View Buildings"
+### Community 84 - "City Buildings Display"
+Cohesion: 0.07
+Nodes (22): CityBuildings, BuildingsCount, FirstBuildingIndex, GetImprovements, City, EventArgs, ICityManager, IEnumerable (+14 more)
+
+### Community 85 - "Top Leader Order"
+Cohesion: 0.12
+Nodes (10): Invention, LeaderOrderDelegate, LeaderOrderEntry, LeaderOrderResult, IReadOnlyList, TopLeaderScreen, CivilizationRatingService, OffsetX (+2 more)
+
+### Community 86 - "Wonder Drawing"
+Cohesion: 0.05
+Nodes (37): DarwinsVoyage, Factory, GreatLibrary, GreatWall, HooverDam, MfgPlant, ApolloProgram, Aqueduct (+29 more)
+
+### Community 87 - "City View Map"
 Cohesion: 0.05
 Nodes (39): CityViewMap, ApolloProgram, Bank, Barracks, Cathedral, Colosseum, CopernicusObservatory, Courthouse (+31 more)
 
-### Community 77 - "Unit Orders Concepts"
-Cohesion: 0.07
-Nodes (22): BaseConcept, Icon, Name, PageCount, TranslatedName, Disband, Fortify, Fortress (+14 more)
-
-### Community 78 - "Save Game"
-Cohesion: 0.08
-Nodes (18): City, SaveData, Unit, UnitType, SaveGame, AtomicFileReplacementService, Cursor, OffsetX (+10 more)
-
-### Community 79 - "Wizard Action Interfaces"
-Cohesion: 0.10
-Nodes (11): IWizardActionHandler, IWizardPageBuilder, 12) Dependency Injection and Testability, 5) Existing Features, WizardActionResult, WizardDialogKind, Error, Message (+3 more)
-
-### Community 80 - "MCP HTTP Transport"
-Cohesion: 0.09
-Nodes (7): McpRequest, HttpMcpTransport, StdinClosed, IMcpProtocolSerializer, JsonRpcProtocolSerializer, StdioMcpTransport, StdinClosed
-
-### Community 81 - "Wonders"
-Cohesion: 0.06
-Nodes (34): Wonder, ApolloProgram, Colossus, CopernicusObservatory, CureForCancer, DarwinsVoyage, GreatLibrary, GreatWall (+26 more)
-
-### Community 82 - "Sprite Cache"
-Cohesion: 0.07
-Nodes (17): CachedSprite, Bitmap, CachedSpriteCollection, Sprite, Bitmap, Cursor, Current, CursorType (+9 more)
-
-### Community 83 - "Power Graph"
-Cohesion: 0.08
-Nodes (12): PowerGraph, Selection, SelectionTitle, IPowerGraphSelectionService, DefaultVisiblePlayers, MaxVisiblePlayers, SelectedCount, PowerGraphSelectionService (+4 more)
-
-### Community 84 - "Restorable City"
+### Community 88 - "Tile Base"
 Cohesion: 0.05
-Nodes (35): RestorableCity, AutoBuild, Buildings, BuildingSold, CelebrationCancelled, CelebrationOrRapture, CityOwnerPlayerIndex, ContinentId (+27 more)
+Nodes (38): BaseTile, BaseTrade, Borders, ContinentId, Defense, Food, Fortress, FortressCost (+30 more)
 
-### Community 85 - "New Game Menu Paging"
-Cohesion: 0.10
-Nodes (11): INewGameMenuHost, MenuPagingDelegate, IsFirstPage, Offset, PageSize, PageStart, NewGameCompetitionMenuDelegate, Host (+3 more)
-
-### Community 86 - "Global Warming Services"
-Cohesion: 0.10
-Nodes (10): GlobalWarmingServiceFactory, IGlobalWarmingScourgeService, IGlobalWarmingService, GlobalWarmingCount, PollutedSquaresCount, WarmingIndicator, IGlobalWarmingStoreService, GlobalWarmingScourgeService (+2 more)
-
-### Community 87 - "Diplomat Incite"
-Cohesion: 0.08
-Nodes (16): DiplomatIncite, DiplomatInciteDialogFactory, DiplomatInciteService, Human, IDiplomatInciteService, Show, AutoSave, ChooseGovernment (+8 more)
-
-### Community 88 - "Audio Mixer Voices"
-Cohesion: 0.10
-Nodes (18): MixerVoice, Bus, FadeAction, Finished, Gain, GainStep, Handle, Loop (+10 more)
-
-### Community 89 - "A* Pathfinding"
-Cohesion: 0.12
-Nodes (14): AStar, Game, Map, Node, F, G, H, IsClosed (+6 more)
-
-### Community 90 - "Building Definitions"
-Cohesion: 0.06
-Nodes (33): IBuilding, Id, Maintenance, ObsoleteTechs, RequiredTech, SellPrice, SmallIcon, Type (+25 more)
-
-### Community 91 - "Goto Delegate"
+### Community 89 - "OPL2 Chip Emulation"
 Cohesion: 0.11
-Nodes (7): Goto, CurrentGamePlay, X, Y, GotoDelegate, IUnitGotoService, UnitGotoServiceFactory
+Nodes (6): Opl2Chip, ChannelCount, IsActive, SampleRate, Action, Span
 
-### Community 92 - "Quit Dialog Layout"
+### Community 90 - "Diplomat City Actions"
+Cohesion: 0.07
+Nodes (20): DiplomatCity, DiplomatCityDialogFactory, DiplomatCityService, CityName, HasEmbassy, HasPalace, Human, IsBarbarian (+12 more)
+
+### Community 91 - "Audio Mixer Voices"
 Cohesion: 0.09
-Nodes (11): IResourceTextSizeProvider, ConfirmQuitLayout, ConfirmQuitLayoutDelegate, FontHeightProvider, TextSizeProvider, GameOptions, GameOptionsMenuEntry, GameOptionsMenuLayout (+3 more)
+Nodes (22): MixerVoice, Bus, FadeAction, Finished, Gain, GainStep, Handle, Loop (+14 more)
 
-### Community 93 - "Map Save Compatibility"
-Cohesion: 0.09
-Nodes (20): IMapSaveService, ILegacyMapSaveCompatibilityService, LegacyMapSaveCompatibilityResult, CanSaveAsLegacyMap, Compatible, Reason, LegacyMapSaveCompatibilityService, LegacyMapSaveCompatibilitySnapshot (+12 more)
+### Community 92 - "Isound Score Export"
+Cohesion: 0.08
+Nodes (21): CivOne.Sound.Cvl.Ibm, IsoundScoreExporter, CvlImage, List, TuneScore, IsoundScoreOptions, SkipUnsupported, TuneIds (+13 more)
 
-### Community 94 - "Language and DOS Font"
+### Community 93 - "MCP Screenshot Artifacts"
 Cohesion: 0.12
-Nodes (5): ModernDosFontRenderer, ITranslationFileRepository, TranslationLanguageInfo, TranslationServiceFactory, ActiveLanguagePostfix
+Nodes (12): DateTime, FileSystemMcpArtifactWriter, IMcpArtifactWriter, IMcpScreenshotRoutine, McpScreenshotResult, RuntimeLayerScreenshotRoutine, IRuntime, CaptureRegionToolHandler (+4 more)
 
-### Community 95 - "Civilization Advances"
-Cohesion: 0.08
-Nodes (32): Brazilian, Byzantine, Egyptian, French, Japanese, Maya, Polish, Portuguese (+24 more)
-
-### Community 96 - "Game Option Enums"
-Cohesion: 0.06
-Nodes (25): CursorType, Builtin, Default, Native, DestroyAnimation, Noise, Sprites, GameOption (+17 more)
-
-### Community 97 - "Replay Data DTOs"
-Cohesion: 0.06
-Nodes (26): CivRankingsData, Rankings, CivWithTypeIdData, CivId, TypeId, ReplayDataDto, AdvanceDiscovered, CityBuilt (+18 more)
-
-### Community 98 - "Advisor and Map Export"
+### Community 94 - "Civilization Score Inputs"
 Cohesion: 0.10
-Nodes (9): Advisor, Defense, Domestic, Foreign, Science, MapImageExportDelegateFactory, IMessageService, Message (+1 more)
+Nodes (19): City, CityScoreInput, IScoredCivilization, Cities, FutureTechCount, SpaceShipArrivedThisTurn, SpaceShipPopulation, SpaceShipSuccessRate (+11 more)
 
-### Community 99 - "Sprite Extensions"
-Cohesion: 0.08
-Nodes (20): Picture, Bitmap, Height, OriginalColours, Palette, Size, Width, SpriteExtensions (+12 more)
-
-### Community 100 - "Text Input Handling"
-Cohesion: 0.08
-Nodes (14): Input, CenterTo320Coordinates, CoordinateOffsetX, CoordinateOffsetY, Text, X, Y, Search (+6 more)
-
-### Community 101 - "Game Menu Actions"
-Cohesion: 0.08
-Nodes (7): Description, Description, DescriptionItem, DescriptionItem, MenuDescriptionItem, MenuItem, MenuItemExtensions
-
-### Community 102 - "CVL Tune Catalog"
-Cohesion: 0.08
-Nodes (23): CvlTuneCatalog, ByName, ByTuneId, PlayableTuneIds, Tunes, WarmUpOrder, CvlTuneDefinition, IsoundScoreExporter (+15 more)
-
-### Community 103 - "Wonders Screen"
-Cohesion: 0.08
-Nodes (11): TopCities, WorldWonders, OffsetX, OffsetY, CityCitizenLayoutService, CitizenOffset, IsBigCity, CitizenDrawInfo (+3 more)
-
-### Community 104 - "Save Game Metadata"
-Cohesion: 0.08
-Nodes (22): CosSaveFileInspection, FormatVersion, GameState, Meta, SaveGuid, SaveGameMetaDataDtoFactory, SaveGameMetaDataDto, DisplayName (+14 more)
-
-### Community 105 - "City Info Navigation"
-Cohesion: 0.10
-Nodes (10): CityInfoChoice, Happy, Info, Map, CityInfo, HappyFrame, InfoFrame, IsUnitsInfoActive (+2 more)
-
-### Community 106 - "Customize World Menu"
-Cohesion: 0.10
-Nodes (6): MenuItemEventArgs, Value, CustomizeWorld, OffsetX, OffsetY, MessageBox
-
-### Community 107 - "MCP Service Core"
-Cohesion: 0.11
-Nodes (11): McpError, McpResponse, McpActiveService, GameGetMapSizeToolHandler, Definition, Method, GameListSavesToolHandler, Definition (+3 more)
-
-### Community 108 - "Game State Handling"
-Cohesion: 0.06
-Nodes (29): GameStateHandler, IGameSnapshotSource, AdvanceOrigin, Animations, AnthologyTurn, AutoSave, BarbarianActivity, Cities (+21 more)
-
-### Community 109 - "Mini Map Rendering"
-Cohesion: 0.11
-Nodes (7): IMapTilesRect, MiniMapWrapper, MiniMap, MiniMapViewOffsetXCurrent, MiniMapViewOffsetYCurrent, SideBar, GamePlay
-
-### Community 110 - "Terrain Tile Properties"
-Cohesion: 0.07
-Nodes (24): Arctic, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+16 more)
-
-### Community 111 - "Terrain Factory"
-Cohesion: 0.07
-Nodes (26): ITerrainFactory, RuntimeTerrainFactory, Grassland, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus (+18 more)
-
-### Community 112 - "Load Map Screen"
-Cohesion: 0.11
-Nodes (6): LoadMapScreen, CurrentMenu, Cursor, DialogX, PathProvider, MapEntry
-
-### Community 113 - "World Map Editor View"
-Cohesion: 0.11
-Nodes (11): WorldMap, CanToggleStartPositionAreas, FitsHorizontally, MaxOffsetY, OriginX, OriginY, TilePixelSize, ViewColumns (+3 more)
-
-### Community 114 - "Civilopedia Reflection Docs"
-Cohesion: 0.15
-Nodes (8): ICivilopedia, Icon, Name, PageCount, TranslatedName, Reflect, GetAssemblies, PluginModifications
-
-### Community 115 - "AI and Barbarians"
-Cohesion: 0.12
-Nodes (7): AI, Leader, Player, AiGotoExecutorFactory, IAiGotoExecutor, IAiGotoExecutorFactory, NoOpAiGotoExecutor
-
-### Community 116 - "Common Binary Data"
-Cohesion: 0.08
-Nodes (19): Common, Advances, AllCityNames, AllowSaveGame, Buildings, CaptureFilename, Civilizations, DefaultPalette (+11 more)
-
-### Community 117 - "Terrain and Difficulty Constants"
-Cohesion: 0.07
-Nodes (28): Free, Arctic, City, Desert, Difficulties, Food, Forest, Fortify (+20 more)
-
-### Community 118 - "Advance Requirements"
-Cohesion: 0.11
-Nodes (8): IAdvance, Id, OriginalColours, RequiredTechs, SetPlayerAdvances, Value, AdvanceManagementService, IAdvanceManagementService
-
-### Community 119 - "Palace Preview Parts"
-Cohesion: 0.11
-Nodes (15): PreviewPalacePart, Center, Left, Right, WallLeft, WallRight, PreviewPalaceResourcesWrapper, IPalaceData (+7 more)
-
-### Community 120 - "City Basic Data"
-Cohesion: 0.07
-Nodes (28): ICityBasic, Buildings, CityOwnerPlayerIndex, ContinentId, CurrentProduction, EntertainerLuxuries, Entertainers, Food (+20 more)
-
-### Community 121 - "Logging and Diplomat Bribes"
+### Community 95 - "Advisor Portrait Sprites"
 Cohesion: 0.09
-Nodes (16): ILogger, RuntimeLogger, StubDiplomatBribeService, Gold, TribeName, UnitName, DiplomatBribe, DiplomatBribeDialogFactory (+8 more)
+Nodes (30): Era, Face, Government, AdvisorPortraitSpriteProviderFactory, AdvisorEra, Ancient, Modern, AdvisorFace (+22 more)
 
-### Community 122 - "MCP Region Capture Tools"
+### Community 96 - "Platform Runtime Info"
+Cohesion: 0.07
+Nodes (18): Platform, Linux, macOS, Unknown, Windows, IRuntime, CanvasHeight, CanvasWidth (+10 more)
+
+### Community 97 - "LZW Compression"
+Cohesion: 0.09
+Nodes (12): ByteList, LZW, Dictionary, List, BitReader, BitWriter, ILzwCodec, LZWCorrected (+4 more)
+
+### Community 98 - "Player Game Stub"
+Cohesion: 0.08
+Nodes (17): PlayerGameStub, BuiltWonders, Competition, CurrentPlayer, Difficulty, DisableBuddyCivilizationRespawn, GameTurn, HumanPlayer (+9 more)
+
+### Community 99 - "Air Units"
+Cohesion: 0.08
+Nodes (11): BaseUnitAir, FuelLeft, MenuItems, TotalFuel, IEnumerable, Bomber, Fighter, IAudioPlayService (+3 more)
+
+### Community 100 - "Sound Pack Index"
+Cohesion: 0.07
+Nodes (27): SoundPackIndex, Device, DisplayName, Driver, FastTickHz, PackId, PitClockHz, SchemaVersion (+19 more)
+
+### Community 101 - "Buddy Civilization Assignment"
+Cohesion: 0.12
+Nodes (23): BuddyCivilization, CivilizationAssignment, Count, DestroyedCivilization, DestroyedCivilizationEntry, DestroyedCivilizationResolverDelegate, CivilizationDestroyed, CivilizationRespawned (+15 more)
+
+### Community 102 - "Replay Data Mapping"
+Cohesion: 0.06
+Nodes (38): CityBuiltData, CityCapturedData, CityDestroyedData, CivilizationDestroyedData, CivilizationRespawnedData, CivRankingsData, CivWithTypeIdData, NotImplementedException (+30 more)
+
+### Community 103 - "CVL Tune Catalog"
+Cohesion: 0.04
+Nodes (39): CvlSoundConverterBase, CvlTuneCatalog, ByName, ByTuneId, PlayableTuneIds, Tunes, WarmUpOrder, Dictionary (+31 more)
+
+### Community 104 - "Global Warming Services"
+Cohesion: 0.10
+Nodes (14): GameState, GlobalWarmingServiceFactory, IEnumerable, IGameData, RemoveUnit, TileChangeRequestCallback, WarmingIndicator, IGlobalWarmingScourgeService (+6 more)
+
+### Community 105 - "Mini Map Drawing"
+Cohesion: 0.11
+Nodes (10): MiniMapWrapper, MiniMap, MiniMapViewOffsetXCurrent, MiniMapViewOffsetYCurrent, IMapTilesRect, ISettings, Palette, SideBar (+2 more)
+
+### Community 106 - "Picture Files"
+Cohesion: 0.07
+Nodes (14): PicFile, GetPalette16, GetPalette256, GetPicture16, GetPicture256, HasPalette16, HasPalette256, HasPicture16 (+6 more)
+
+### Community 107 - "Map Rendering Animation"
+Cohesion: 0.07
+Nodes (25): IAnimation, RenderTile, DestroyUnit, GameMap, RenderTiles, IAnimation, IsFinished, RebuildOverlayEachFrame (+17 more)
+
+### Community 108 - "Page Navigation"
+Cohesion: 0.10
+Nodes (13): PageNavigationDelegate, PageNavigationDelegate, CurrentPage, FirstItemIndex, PageCount, PageSize, IntelligenceReport, DebugMenuEnabled (+5 more)
+
+### Community 109 - "World Map Editor View"
+Cohesion: 0.10
+Nodes (13): WorldMap, CanToggleStartPositionAreas, FitsHorizontally, MaxOffsetY, OriginX, OriginY, TilePixelSize, ViewColumns (+5 more)
+
+### Community 110 - "New Game Tribe Menu"
 Cohesion: 0.14
-Nodes (7): CaptureRegionToolHandler, Definition, Method, GameGetUnitsToolHandler, Definition, Method, LocationRadius
+Nodes (13): Civilization, Index, NewGameTribeMenuDelegate, AvailableTribes, Host, Paging, RandomService, Rules (+5 more)
 
-### Community 123 - "Caravan Choice Dialog"
-Cohesion: 0.13
-Nodes (6): CaravanChoice, CaravanChoiceDialogFactory, CaravanChoiceService, ICaravanChoiceService, Caravan, OwnerPlayer
-
-### Community 124 - "Unit Selector Screen"
-Cohesion: 0.11
-Nodes (11): UnitSelectorItem, Hotkey, Label, UnitType, UnitSelectorScreen, GridHeight, GridRows, GridWidth (+3 more)
-
-### Community 125 - "Page Navigation"
+### Community 111 - "Game Options Screen"
 Cohesion: 0.12
-Nodes (8): PageNavigationDelegate, CurrentPage, FirstItemIndex, PageCount, PageSize, IntelligenceReport, DebugMenuEnabled, ReportedPlayers
+Nodes (10): CivOne.Screens.Options, GameOptions, EventArgs, GameOptionsMenuEntry, MenuItemEventAction, GameOptionsMenuLayout, GameOptionsMenuLayoutDelegate, FontHeightProvider (+2 more)
 
-### Community 126 - "Sea Transport Units"
-Cohesion: 0.08
-Nodes (16): Industrialization, AbstractTransport, Cargo, BaseUnitSea, AllowCanalCity, MenuItems, Range, Carrier (+8 more)
-
-### Community 127 - "Font Sets"
-Cohesion: 0.16
-Nodes (5): Fontset, FirstChar, FontHeight, LastChar, InternationalSimulatedFontSet
-
-### Community 129 - "MCP Game Save Tool"
-Cohesion: 0.11
-Nodes (18): McpServiceFactory, GameSaveToolHandler, Definition, Method, IMcpToolHandler, Definition, Method, IMcpToolRegistry (+10 more)
-
-### Community 130 - "Air Unit Flight"
-Cohesion: 0.12
-Nodes (8): AdvancedFlight, Flight, BaseUnitAir, FuelLeft, MenuItems, TotalFuel, Bomber, Fighter
-
-### Community 131 - "MCP Screenshot Artifacts"
-Cohesion: 0.12
-Nodes (10): FileSystemMcpArtifactWriter, IMcpArtifactWriter, IMcpScreenshotRoutine, McpScreenshotResult, RuntimeLayerScreenshotRoutine, CaptureScreenshotToolHandler, Definition, JsonOptions (+2 more)
-
-### Community 132 - "Advisor Portraits"
-Cohesion: 0.13
-Nodes (23): AdvisorPortraitSpriteProviderFactory, AdvisorEra, Ancient, Modern, AdvisorFace, Grim, Happy, Neutral (+15 more)
-
-### Community 133 - "Unit Movement"
+### Community 112 - "Adlib Bytecode Decoder"
 Cohesion: 0.09
-Nodes (8): MoveUnit, ActiveUnit, RelX, RelY, TargetTile, X, Y, IAudioPlayService
+Nodes (24): EventField, AdlibBytecodeDecoderDelegate, EventField, CvlImage, Dictionary, List, AdlibEvent, Choices (+16 more)
 
-### Community 134 - "Game Menu Descriptions"
+### Community 113 - "Custom World Menu"
 Cohesion: 0.09
-Nodes (14): GameMenu, ActiveDescription, DefaultDescription, DescriptionAreaHeight, Items, KeepOpen, MaxDescriptionLineCount, MaxDescriptionWidth (+6 more)
+Nodes (9): MenuItemEventArgs, Value, Regex, CustomizeWorld, OffsetX, OffsetY, MenuItemEventAction, Size (+1 more)
 
-### Community 135 - "Original Text Validation"
+### Community 114 - "City Basic Data"
+Cohesion: 0.06
+Nodes (30): ICityBasic, Buildings, CityOwnerPlayerIndex, ContinentId, CurrentProduction, EntertainerLuxuries, Entertainers, Food (+22 more)
+
+### Community 115 - "New Game Screen"
+Cohesion: 0.10
+Nodes (8): NewGame, DifficultyPicture, OffsetX, OffsetY, EventArgs, SuppressMessage, INewGameMenuHost, Menu
+
+### Community 116 - "Goto Command Handling"
+Cohesion: 0.12
+Nodes (9): Goto, GotoDelegate, Goto, CurrentGamePlay, X, Y, GotoDelegate, Point (+1 more)
+
+### Community 117 - "Font Set Rendering"
 Cohesion: 0.13
-Nodes (11): IOriginalTextLanguageValidationService, OriginalTextLanguageValidationDefaultDefinitions, OriginalTextLanguageSegmentSource, ByteWindow, MarkerBodyLine, OriginalTextLanguageValidationFileDefinition, OriginalTextLanguageValidationSegmentDefinition, OriginalTextLanguageValidationFileResult (+3 more)
+Nodes (9): Fontset, FirstChar, FontHeight, LastChar, Dictionary, InternationalSimulatedFontSet, Dictionary, LeftDotX (+1 more)
 
-### Community 136 - "Production YAML Mapping"
-Cohesion: 0.11
-Nodes (18): IProduction, BuyPrice, Price, ProductionId, IYamlMapperDependenciesFactory, YamlMapperDependenciesFactory, ProductionDtoMapper, ProductionDto (+10 more)
-
-### Community 137 - "Setup Wizard Actions"
+### Community 118 - "Map Locations"
 Cohesion: 0.07
-Nodes (27): WizardEntryAction, Back, BrowseDataFolder, BrowseSoundFolder, Continue, Finish, None, OpenGamePatchesScreen (+19 more)
+Nodes (34): MapArea, MapLocation, AreaBasedStartPositionService, MapArea, IReadOnlyList, List, FallbackTileScanDelegate, IReadOnlyList (+26 more)
 
-### Community 138 - "Map Export and Save"
-Cohesion: 0.14
-Nodes (6): GamePlayExportMapImageDelegate, GamePlaySaveMapDelegate, DirectoryService, IDirectoryService, GameTaskCommandQueueAdapter, IGameTaskCommandQueue
+### Community 119 - "Game State Data"
+Cohesion: 0.06
+Nodes (33): GameState, AcceleratedTurns, AdvanceOrigin, AnthologyTurn, BarbarianActivity, Cities, CityNames, CivilizationIdentity (+25 more)
 
-### Community 139 - "Colour and Bitmap Conversion"
+### Community 120 - "City Name Dialog"
+Cohesion: 0.09
+Nodes (16): CityName, NameId, OffsetX, OffsetY, Value, EventArgs, IScreenCommandService, IScreenQueryService (+8 more)
+
+### Community 121 - "Terrain Editor Delegate"
+Cohesion: 0.09
+Nodes (11): TerrainEditorDelegate, BrushSizeCount, Civilizations, Game, MapEditor, Action, Civilization, Game (+3 more)
+
+### Community 122 - "Adlib Tune Player"
+Cohesion: 0.06
+Nodes (36): AdlibRandomDelegate, Seed, AdlibTunePlayer, AnyVoiceRestarted, IsPlaying, PassCompleted, List, AdlibVoiceState (+28 more)
+
+### Community 123 - "Civilization Classes"
+Cohesion: 0.05
+Nodes (60): Arab, Babylonian, BaseCivilization, Brazilian, Byzantine, Carthaginian, Chinese, English (+52 more)
+
+### Community 124 - "Advance Requirements"
+Cohesion: 0.07
+Nodes (14): IEnumerable, IAdvance, Id, OriginalColours, RequiredTechs, ChooseTech, OffsetX, OffsetY (+6 more)
+
+### Community 125 - "City Info Frames"
+Cohesion: 0.11
+Nodes (11): CityInfo, HappyFrame, InfoFrame, IsUnitsInfoActive, MapFrame, City, ICityCitizenLayoutService, CityInfoUnits (+3 more)
+
+### Community 126 - "Original Text Validation"
+Cohesion: 0.10
+Nodes (14): IOriginalTextLanguageValidationService, OriginalTextLanguageValidationDefaultDefinitions, OriginalTextLanguageSegmentSource, ByteWindow, MarkerBodyLine, OriginalTextLanguageValidationFileDefinition, OriginalTextLanguageValidationSegmentDefinition, OriginalTextLanguageValidationFileResult (+6 more)
+
+### Community 127 - "End Game Screens"
+Cohesion: 0.11
+Nodes (12): IKeepPlayingDialog, KeepPlaying, IScreen, Cursor, OriginalColours, UseFullWindowCanvas, Palette, EndGameScreenFactory (+4 more)
+
+### Community 128 - "Spaceship Layout Orders"
+Cohesion: 0.08
+Nodes (24): ISpaceShipSlotBlueprint, ComponentOrder, Footprint, FuelOrder, FuelOrderMap, HabitationOrder, HabitationOrderMap, LifeSupportOrder (+16 more)
+
+### Community 129 - "OPL Operator Envelope"
+Cohesion: 0.09
+Nodes (16): OplOperator, AttackRate, DecayRate, IsActive, KeyScaleLevelSetting, KeyScaleRate, Multiplier, Output (+8 more)
+
+### Community 130 - "Sound Playback Strategies"
+Cohesion: 0.09
+Nodes (10): AliasSoundPlaybackStrategy, TimeSpan, ISoundPlaybackStrategy, TimeSpan, NoSoundPlaybackStrategy, TimeSpan, SoundPackPlaybackStrategy, SoundPlaybackStrategyFactory (+2 more)
+
+### Community 131 - "Hall of Fame Screen"
+Cohesion: 0.12
+Nodes (11): X, Y, HallOfFameScreen, OffsetX, OffsetY, IReadOnlyList, HallOfFameDisplayDataService, HallOfFameDisplayRow (+3 more)
+
+### Community 132 - "Terrain and Units UI"
+Cohesion: 0.07
+Nodes (26): Free, Arctic, Desert, Difficulties, Food, Forest, Fortify, Grassland (+18 more)
+
+### Community 133 - "Intro and Map Generation"
+Cohesion: 0.09
+Nodes (11): pacedSteps, pictureChanges, Intro, IntroPicture, TextColour, WorldGenerationMusicDelegate, Strategy, TimeSpan (+3 more)
+
+### Community 134 - "Score and Spaceship Services"
+Cohesion: 0.07
+Nodes (3): CivOne.Services.Historian, CivOne.Services.SpaceShip, CivOne.Services.Score
+
+### Community 135 - "A* Pathfinding"
+Cohesion: 0.21
+Nodes (9): AStarState, fScore, position, AStarState, UnitGotoService2, Dictionary, IMapTiles, List (+1 more)
+
+### Community 136 - "Government and Resolvers"
+Cohesion: 0.06
+Nodes (29): IGovernment, CorruptionMultiplier, Id, NameAdjective, RequiredTech, ILogger, RuntimeAdvanceResolver, IEnumerable (+21 more)
+
+### Community 137 - "Font Viewer and Scaling"
+Cohesion: 0.05
+Nodes (29): FontGlyphZoomDelegate, Divisor, Factor, Multiplier, FontViewerScreen, BackgroundColour, Browser, CellHeight (+21 more)
+
+### Community 138 - "City Citizen Service"
 Cohesion: 0.16
-Nodes (12): Colour, A, B, Black, G, R, Transparent, DecodedImageToBitmapDelegate (+4 more)
+Nodes (11): CityCitizenService, CityBuildings, GameState, LuxuryRate, SpecialistCount, ICityBasic, ICityBuildings, IMap (+3 more)
 
-### Community 140 - "Image Decoder Service"
-Cohesion: 0.18
-Nodes (6): IImageDecoderService, ImageDecoderService, ImageDecoderServiceFactory, PngDecoderDelegate, Signature, PngHeader
+### Community 139 - "GamePlay Map Editor Menus"
+Cohesion: 0.11
+Nodes (9): GamePlay, GamePlaySaveMapDelegate, GamePlayTerrainEditorDelegate, AutoStartPositions, EventArgs, GamePlayExportMapImageDelegate, IPlayerGame, StartPositionAlgorithmType (+1 more)
 
-### Community 141 - "Space Race Rules"
-Cohesion: 0.14
-Nodes (10): IPlayerSpaceRace, SpaceShipGrid, SpaceShipLaunchYear, SpaceShipPopulation, ISpaceShipLaunchRules, ISpaceShipPlacementRules, ISpaceShipScreenDataFactory, ISpaceShipService (+2 more)
-
-### Community 142 - "City Economy Service"
-Cohesion: 0.12
-Nodes (12): CityEconomyServiceImpl, EntertainerLuxuryPoints, CityEconomyBreakdown, Luxuries, Science, Taxes, TotalTrade, TradeLuxuries (+4 more)
-
-### Community 143 - "End Game and Score"
-Cohesion: 0.20
-Nodes (4): CivilizationScore, EndGameService, IEndGameService, IScreenCommandService
-
-### Community 144 - "Runtime Interface"
-Cohesion: 0.12
-Nodes (10): IRuntime, CanvasHeight, CanvasWidth, CurrentPlatform, Layers, Palette, Settings, StorageDirectory (+2 more)
-
-### Community 145 - "MCP Map Window Tool"
-Cohesion: 0.12
-Nodes (9): IMcpGameTickProvider, CurrentTick, RuntimeHandlerGameTickProvider, CurrentTick, GameGetMapWindowToolHandler, Definition, Method, GameStateDtoSnapshotProvider (+1 more)
-
-### Community 146 - "Intro and Map Generation"
-Cohesion: 0.15
-Nodes (3): Intro, IntroPicture, TextColour
-
-### Community 147 - "Hall of Fame Screen"
-Cohesion: 0.16
-Nodes (6): HallOfFameScreen, OffsetX, OffsetY, HallOfFameDisplayDataService, HallOfFameDisplayRow, IHallOfFameDisplayDataService
-
-### Community 148 - "Adlib Instruments"
+### Community 140 - "Adlib Instrument Definitions"
 Cohesion: 0.08
 Nodes (24): AdlibInstrument, Carrier, Index, IsNoise, Modulator, NoiseBase, NoiseDuration, NoiseMask (+16 more)
 
-### Community 149 - "Sound Pack Conversion"
-Cohesion: 0.09
-Nodes (21): IsoundCvlConverter, Device, DisplayName, PackId, SoundPackContent, Device, Driver, FastTickHz (+13 more)
+### Community 141 - "Civilopedia Screen"
+Cohesion: 0.10
+Nodes (8): Civilopedia, OffsetX, OffsetY, ICivilopedia, SetPlayerAdvances, Value, EventArgs, Player
 
-### Community 150 - "OPL2 Chip Emulation"
+### Community 142 - "Plugin Management"
+Cohesion: 0.11
+Nodes (13): Settings, IPlugin, Plugin, Assembly, Author, Deleted, Enabled, Filename (+5 more)
+
+### Community 143 - "Confirm Quit Dialog"
+Cohesion: 0.13
+Nodes (10): ConfirmQuit, EventArgs, Func, IMenu, ConfirmQuitLayout, IReadOnlyList, ConfirmQuitLayoutDelegate, FontHeightProvider (+2 more)
+
+### Community 144 - "Palace Upgrade Trigger"
+Cohesion: 0.10
+Nodes (16): CivOne.Services.Palace, IPalaceUpgradeService, HumanCivScorePalaceTrigger, IPalaceUpgradeTrigger, IPlayerGameState, CivilizationScore, Difficulty, HasPalaceCity (+8 more)
+
+### Community 145 - "Preview Palace Parts"
+Cohesion: 0.11
+Nodes (15): PreviewPalacePart, Center, Left, Right, WallLeft, WallRight, PreviewPalaceResourcesWrapper, Dictionary (+7 more)
+
+### Community 146 - "Wonders and Availability"
+Cohesion: 0.13
+Nodes (4): Anarchy, ApolloProgram, ManhattanProject, Pyramids
+
+### Community 147 - "Load Map Screen"
+Cohesion: 0.13
+Nodes (8): MapEntry, LoadMapScreen, CurrentMenu, Cursor, DialogX, PathProvider, MapEntry, List
+
+### Community 148 - "Startup Wizard Documentation"
+Cohesion: 0.07
+Nodes (27): 10) "Open Folder" Behavior, 11) Rendering Notes, 12) Dependency Injection and Testability, 13) Where To Start As New Contributor, 1) What Is This Wizard?, 2) Why Do We Need It?, 3) Quick Mental Model (Beginner), 4) Data Structures (+19 more)
+
+### Community 149 - "Atomic File Operations"
 Cohesion: 0.12
-Nodes (4): Opl2Chip, ChannelCount, IsActive, SampleRate
+Nodes (7): AtomicFileOperations, Stream, AtomicFileReplacementService, Action, Stream, IAtomicFileOperations, Stream
 
-### Community 151 - "Audio Engine Devices"
+### Community 150 - "Power Graph Selection"
+Cohesion: 0.11
+Nodes (13): IPowerGraphSelectionService, DefaultVisiblePlayers, MaxVisiblePlayers, SelectedCount, IReadOnlyList, PowerGraphSelectionService, DefaultVisiblePlayers, MaxVisiblePlayers (+5 more)
+
+### Community 151 - "Spaceship Slot Blueprint"
+Cohesion: 0.09
+Nodes (24): SpaceShipSlotBlueprint, ComponentOrder, Footprint, FuelOrder, FuelOrderMap, HabitationOrder, HabitationOrderMap, LifeSupportOrder (+16 more)
+
+### Community 152 - "Game Texts Loading"
+Cohesion: 0.13
+Nodes (7): IGameTexts, IGameTextsCommand, ITextFileLoader, TextFile, Dictionary, List, TextFileFactory
+
+### Community 153 - "Barbarian Activity Settings"
+Cohesion: 0.11
+Nodes (16): BarbarianActivity, LandRaids, None, Raids, SeaRaids, Villages, VillagesAndRaids, NewGameBarbarianMenuDelegate (+8 more)
+
+### Community 154 - "Sound Pack Playback Queue"
+Cohesion: 0.09
+Nodes (9): ISoundPackRenderQueue, Task, SoundPackPlaybackService, IRuntime, Task, TimeSpan, TimeSpan, WaveFileDurationDelegate (+1 more)
+
+### Community 155 - "Original Random Emulation"
+Cohesion: 0.11
+Nodes (8): Random, Counter, DS5BDA, DS5BDC, InitialSeed, Stack, ArrangementPickerDelegate, Random
+
+### Community 156 - "Wizard Entry Actions"
+Cohesion: 0.07
+Nodes (27): WizardEntryAction, Back, BrowseDataFolder, BrowseSoundFolder, Continue, Finish, None, OpenGamePatchesScreen (+19 more)
+
+### Community 157 - "Core Game Singletons"
 Cohesion: 0.08
-Nodes (11): CivOne.Sound.Engine, IAudioDevice, SampleRate, SoundLoop, Always, None, WhenMarked, VoiceFadeAction (+3 more)
+Nodes (20): Player, BaseInstance, Game, GFX256, GlobalMenus, Human, Logger, Map (+12 more)
 
-### Community 152 - "Tile Rendering Settings"
-Cohesion: 0.09
-Nodes (14): TileSettings, ActiveUnit, BlinkOff, BlinkOn, Cities, CityLabels, CityManager, CitySmallFonts (+6 more)
-
-### Community 153 - "Random Number Service"
-Cohesion: 0.14
-Nodes (4): CommonRandomService, IRandomService, RandomServiceFactory, BarbariansEventHandler
-
-### Community 155 - "Settings Interface"
-Cohesion: 0.10
-Nodes (17): ISettings, AutoSaveOnQuit, CaptureDirectory, ConfirmExit, CosSavesDirectory, DataDirectory, DebugMenu, MapsDirectory (+9 more)
-
-### Community 156 - "Original Random Emulation"
-Cohesion: 0.14
-Nodes (6): Random, Counter, DS5BDA, DS5BDC, InitialSeed, ArrangementPickerDelegate
-
-### Community 157 - "Sound Pack Index"
-Cohesion: 0.09
-Nodes (22): SoundPackIndex, Device, DisplayName, Driver, FastTickHz, PackId, PitClockHz, SchemaVersion (+14 more)
-
-### Community 158 - "OPL Envelope Operators"
-Cohesion: 0.11
-Nodes (16): OplOperator, AttackRate, DecayRate, IsActive, KeyScaleLevelSetting, KeyScaleRate, Multiplier, Output (+8 more)
-
-### Community 159 - "Sound Playback Strategies"
-Cohesion: 0.12
-Nodes (7): AliasSoundPlaybackStrategy, ISoundPlaybackStrategy, NoSoundPlaybackStrategy, SoundPackPlaybackStrategy, SoundPlaybackStrategyFactory, WorldGenerationMusicDelegate, Strategy
-
-### Community 160 - "Plugin Management"
-Cohesion: 0.12
-Nodes (10): Plugin, Assembly, Author, Deleted, Enabled, Filename, Id, Name (+2 more)
-
-### Community 161 - "YAML Doc Emitters"
-Cohesion: 0.15
-Nodes (7): DocAttribute, AllowedValues, AllowedValuesPropertyName, CommentValuesPropertyName, Description, DocCommentEventEmitter, CurrentType
-
-### Community 163 - "Hall of Fame Persistence"
-Cohesion: 0.25
-Nodes (4): HallOfFameEntry, HallOfFameFileRepositoryImpl, HallOfFamePersistService, IHallOfFameFileRepository
-
-### Community 164 - "City View Rendering"
-Cohesion: 0.14
-Nodes (4): CityView, GetCityMap, OffsetX, OffsetY
-
-### Community 166 - "Setup Wizard Documentation"
-Cohesion: 0.09
-Nodes (22): 10) "Open Folder" Behavior, 11) Rendering Notes, 13) Where To Start As New Contributor, 1) What Is This Wizard?, 3) Quick Mental Model (Beginner), 4) Data Structures, 6.1) External Context Sync: `HasContextChanged`, 7) Validation: How Data Validity Is Checked (+14 more)
-
-### Community 167 - "Palace Upgrade Triggers"
-Cohesion: 0.13
-Nodes (13): PlayerGameStateAdapter, CivilizationScore, IsHuman, Palace, IPalaceUpgradeService, HumanCivScorePalaceTrigger, IPalaceUpgradeTrigger, IPlayerGameState (+5 more)
-
-### Community 168 - "Government Resolution"
-Cohesion: 0.10
-Nodes (16): IGovernment, CorruptionMultiplier, Id, NameAdjective, RequiredTech, RuntimeGovernmentResolver, RuntimeFactory, Advances (+8 more)
-
-### Community 169 - "Translation and Fonts"
-Cohesion: 0.15
-Nodes (3): ModernDos8X16, TranslationFileRepository, TranslationIdentityService
-
-### Community 170 - "MCP Entities and State Tools"
-Cohesion: 0.17
-Nodes (8): GameGetEntitiesIndexToolHandler, Definition, Method, GameGetStateToolHandler, Definition, Method, McpJsonToolResponse, JsonSaveGameStateWriter
-
-### Community 171 - "Editor Modes"
-Cohesion: 0.09
-Nodes (22): EditorMode, Clear, Fortress, FoundCity, Hut, Irrigation, Mine, None (+14 more)
-
-### Community 172 - "Atomic File Operations"
-Cohesion: 0.18
-Nodes (3): AtomicFileOperations, AtomicFileReplacementService, IAtomicFileOperations
-
-### Community 173 - "Sound Handles and System"
-Cohesion: 0.18
-Nodes (10): ISoundHandle, IsPaused, IsPlaying, Volume, LoadedWave, SoundRequest, SoundSystem, IsRunning (+2 more)
-
-### Community 174 - "Settler Terrain Improvements"
+### Community 158 - "Turn Processing"
 Cohesion: 0.23
-Nodes (4): BridgeBuilding, RailRoad, Settlers, MenuItems
+Nodes (3): Turn, ITurn, Turn
 
-### Community 175 - "Earth Age Generation"
+### Community 159 - "Building Interface"
+Cohesion: 0.06
+Nodes (35): IBuilding, Id, Maintenance, ObsoleteTechs, RequiredTech, SellPrice, SmallIcon, Type (+27 more)
+
+### Community 160 - "Save Game Screen"
 Cohesion: 0.10
-Nodes (16): EarthAge, FiveBillionYears, FourBillionYears, ThreeBillionYears, Ocean, Defense, Food, FortressCost (+8 more)
+Nodes (15): MouseCursor, Goto, None, Pointer, SaveGame, AtomicFileReplacementService, Cursor, OffsetX (+7 more)
 
-### Community 176 - "FPS Overlay"
-Cohesion: 0.14
-Nodes (8): FpsCorner, BottomLeft, BottomRight, Off, TopLeft, TopRight, FpsMetricCounter, FpsOverlayDrawDelegate
+### Community 161 - "MCP Get Units Tool"
+Cohesion: 0.16
+Nodes (9): LocationRadius, GameGetUnitsToolHandler, Definition, Method, LocationRadius, Dictionary, Guid, HashSet (+1 more)
 
-### Community 177 - "Text Alignment Settings"
+### Community 162 - "MCP Validate Path Tool"
 Cohesion: 0.10
-Nodes (15): TextAlign, Center, Left, Right, IDefaultTextSettings, DefaultTextSettings, TextSettings, Alignment (+7 more)
+Nodes (18): GameValidatePathToolHandler, Definition, Method, JsonElement, SuppressMessage, McpGameStatePathResolver, PathSegment, DisplayText (+10 more)
 
-### Community 178 - "Game Query Interfaces"
-Cohesion: 0.16
-Nodes (14): IGame, IGameBarbarianSettings, BarbarianActivity, IGameCityQuery, IGamePlayerQuery, IGameSettings, Difficulty, MaxDifficulty (+6 more)
-
-### Community 179 - "MCP Path Validation Tool"
-Cohesion: 0.13
-Nodes (12): GameValidatePathToolHandler, Definition, Method, McpGameStatePathResolver, PathSegment, DisplayText, Index, Kind (+4 more)
-
-### Community 180 - "City Debug Snapshot"
-Cohesion: 0.10
-Nodes (21): CityDebugSnapshotDto, BaseUnhappyRaw, CityIndex, Difficulty, EmpireSizeBase, EmpireSizePenalty, FinalContent, FinalHappy (+13 more)
-
-### Community 181 - "City Selection Dialogs"
-Cohesion: 0.15
-Nodes (4): AddBuilding, IsBuildingSelectionActive, CityGridMenuDelegate, DiplomatCitySelection
-
-### Community 182 - "Save Path Provider"
-Cohesion: 0.16
-Nodes (3): ISaveGamePathProvider, QuitAutoSaveService, SaveGamePathProvider
-
-### Community 183 - "Civilization Ranking Screen"
-Cohesion: 0.14
-Nodes (12): CivilizationRankingScreen, CivilizationRankingCategory, Happiest, Largest, MostAdvanced, Richest, Strongest, CivilizationRankingHistorian (+4 more)
-
-### Community 184 - "Wonders and Advances"
-Cohesion: 0.15
-Nodes (11): Electricity, Magnetism, MapMaking, Navigation, Sail, Cargo, Trireme, Cargo (+3 more)
-
-### Community 185 - "Civilization Definitions"
-Cohesion: 0.11
-Nodes (18): American, Babylonian, BaseCivilization, Civilization, Modifications, Hungarian, Inca, Korean (+10 more)
-
-### Community 186 - "New Game Rules"
-Cohesion: 0.12
-Nodes (12): NewGameRulesDelegate, Civilizations, DeityEnabled, MainMenuMaxOpponents, MainMenuMinOpponents, MaxOpponents, MinOpponents, OpponentCount (+4 more)
-
-### Community 187 - "Game Snapshot Persistence"
-Cohesion: 0.10
-Nodes (17): CivOne.Services.Persistence, BinarySaveWriter, GameSnapshot, ActiveCivilizations, CitizenNames, CivilizationIdentity, CivilizationNames, CurrentResearch (+9 more)
-
-### Community 188 - "Extension Methods"
-Cohesion: 0.14
-Nodes (3): Extensions, CVS, Settings
-
-### Community 189 - "MCP Game Load Tool"
-Cohesion: 0.16
-Nodes (4): CosSaveFileInspector, GameLoadToolHandler, Definition, Method
-
-### Community 190 - "Player Game Interface"
-Cohesion: 0.14
-Nodes (11): IPlayerGame, BuiltWonders, Competition, CurrentPlayer, Difficulty, DisableBuddyCivilizationRespawn, GameTurn, HumanPlayer (+3 more)
-
-### Community 191 - "Null Player Game"
-Cohesion: 0.11
-Nodes (10): NullPlayerGame, BuiltWonders, Competition, CurrentPlayer, Difficulty, DisableBuddyCivilizationRespawn, GameTurn, HumanPlayer (+2 more)
-
-### Community 192 - "MCP City Tool"
-Cohesion: 0.19
-Nodes (3): GameGetCityToolHandler, Definition, Method
-
-### Community 193 - "Palette Viewer Screen"
-Cohesion: 0.13
-Nodes (9): PaletteViewerScreen, CurrentMenu, GridHeight, GridRows, GridStartX, GridStartY, GridWidth, OffsetX (+1 more)
-
-### Community 194 - "Terrain Selector Screen"
-Cohesion: 0.14
-Nodes (10): TerrainSelectorItem, Hotkey, Label, Terrain, TerrainSelectorScreen, GridHeight, GridRows, GridWidth (+2 more)
-
-### Community 195 - "Terrain Menu Actions"
-Cohesion: 0.10
-Nodes (20): TerrainMenuAction, AutoStartPositions, BrushDecrease, BrushIncrease, ExportMapImage, ModeClear, ModeFortress, ModeFoundCity (+12 more)
-
-### Community 196 - "Civilization Ranking Service"
-Cohesion: 0.25
-Nodes (4): CivilizationRankingRow, CivilizationRankingService, CivilizationRankingServiceFactory, ICivilizationRankingService
-
-### Community 197 - "Global Warming Pollution"
-Cohesion: 0.14
-Nodes (12): IndicatorRange, WarmingIndicator, DarkRed, LightRed, None, White, Yellow, GlobalWarmingCountService (+4 more)
-
-### Community 198 - "Civilopedia Screen"
-Cohesion: 0.19
-Nodes (3): Civilopedia, OffsetX, OffsetY
-
-### Community 199 - "Menu Bar"
-Cohesion: 0.19
-Nodes (6): MenuBar, ExpectedMenuCount, MenuDrag, TerrainEditorMenuEnabled, MenuBarHotkeyDelegate, MenuBarTitle
-
-### Community 200 - "YAML Type Converters"
-Cohesion: 0.20
-Nodes (3): Bool2dMapYamlTypeConverter, ByteArrayArrayFlowStyleYamlTypeConverter, SpaceShipGridMapYamlTypeConverter
-
-### Community 201 - "New Game Tribe Menu"
-Cohesion: 0.19
-Nodes (7): NewGameTribeMenuDelegate, AvailableTribes, Host, Paging, RandomService, Rules, Translation
-
-### Community 203 - "Leader Personalities"
-Cohesion: 0.12
-Nodes (15): Indian, Mongol, BaseLeader, Aggression, DefaultName, Development, Leader, Militarism (+7 more)
-
-### Community 205 - "Decoded Image Pixels"
-Cohesion: 0.16
-Nodes (9): DecodedImage, Height, Indices, IsIndexed, Pixels, SourcePalette, Width, WizardHeaderIconDelegate (+1 more)
-
-### Community 206 - "Sound Pack Playback"
-Cohesion: 0.23
-Nodes (3): ISoundPackRenderQueue, SoundPackPlaybackService, WaveFileDurationDelegate
-
-### Community 207 - "Player Game Stub"
-Cohesion: 0.11
-Nodes (10): PlayerGameStub, BuiltWonders, Competition, CurrentPlayer, Difficulty, DisableBuddyCivilizationRespawn, GameTurn, HumanPlayer (+2 more)
-
-### Community 208 - "Hall of Fame Services"
-Cohesion: 0.19
-Nodes (6): HallOfFameScreenFactory, HallOfFameCommandService, HallOfFameServiceFactory, IHallOfFameCommandService, IHallOfFameEntryComposerService, IHallOfFamePersistService
-
-### Community 210 - "Menu Items"
-Cohesion: 0.12
-Nodes (10): MenuItem, _args, Description, Enabled, HighlightedCharacterIndex, SelectedCondition, Shortcut, Shortcuts (+2 more)
-
-### Community 211 - "Space Ship Sprites"
-Cohesion: 0.15
-Nodes (4): ISpaceShipSpriteProvider, ResourcesSpaceShipSpriteProvider, SpaceShipSpriteProviderFactory, SpaceShipOverlaySprite
-
-### Community 212 - "Sound Handles"
-Cohesion: 0.18
-Nodes (5): SoundHandle, Id, IsPaused, IsPlaying, Volume
-
-### Community 214 - "Player Slots Screen"
-Cohesion: 0.15
-Nodes (8): PlayerSlotsScreen, ColumnHeaderY, ListHeight, ListTop, OffsetX, RowHeight, RowsPerPage, SlotRow
-
-### Community 215 - "City Resource Icons"
-Cohesion: 0.12
-Nodes (16): Icons, Corruption, Food, FoodLoss, Luxuries, Newspaper, Resources, Science (+8 more)
-
-### Community 216 - "Resource Services"
-Cohesion: 0.15
-Nodes (12): IResourceFileBitmapProvider, IResourceFontHeightProvider, ISpaceShipResourceService, SpaceShipResourceServiceAdapter, SpaceShipViewServices, CalendarService, DebugSpaceShipServiceFactory, RandomService (+4 more)
-
-### Community 217 - "MCP Settings Tool"
-Cohesion: 0.21
-Nodes (3): GameGetSettingsToolHandler, Definition, Method
-
-### Community 218 - "Unmanaged Memory Buffers"
-Cohesion: 0.25
-Nodes (4): BaseUnmanaged, Handle, IsDisposed, Size
-
-### Community 219 - "Replay Data Mapping"
-Cohesion: 0.16
-Nodes (7): ReplayDataDtoMapper, CivilizationDestroyedData, DestroyedById, DestroyedId, CivilizationRespawnedData, CivilizationId, PlayerId
-
-### Community 220 - "Space Ship Launch Rules"
-Cohesion: 0.16
-Nodes (9): DebugSpaceShipLaunchRules, SpaceShipLaunchRules, SpaceShipPartCounter, SpaceShipPartCounts, ComponentTotal, DetailedPartCount, ModuleTotal, StructuralTotal (+1 more)
-
-### Community 221 - "Tune Rendering"
-Cohesion: 0.21
-Nodes (6): ITuneRenderer, Device, RenderedTune, SoundPackWaveRenderService, TuneRendererFactory, WaveFileWriter
-
-### Community 222 - "River Creation"
-Cohesion: 0.20
-Nodes (5): Climate, Arid, Normal, Wet, RiverCreationDelegate
-
-### Community 223 - "Terrain Editor Rendering"
-Cohesion: 0.22
-Nodes (3): GameTerrainEditorRenderDelegate, Civilizations, TranslationService
-
-### Community 225 - "MCP Tool Results"
-Cohesion: 0.22
-Nodes (5): McpContentItem, McpToolCallResult, GameGetPlayersToolHandler, Definition, Method
-
-### Community 226 - "Space Ship Factories"
-Cohesion: 0.23
-Nodes (7): SpaceShipViewServicesFactory, ISpaceShipServiceFactory, ISpaceShipSlotBlueprintFactory, SpaceShipServiceFactory, SpaceShipServiceFactoryProvider, SpaceShipSlotBlueprintFactory, SpaceShipSlotBlueprintFactoryProvider
-
-### Community 227 - "Screen Query Service"
-Cohesion: 0.17
-Nodes (8): IScreenQueryService, LastScreen, Screens, TopScreen, ScreenServiceImpl, LastScreen, Screens, TopScreen
-
-### Community 228 - "Adlib Event Kinds"
-Cohesion: 0.12
-Nodes (15): AdlibEventKind, LoopInner, LoopOuter, Note, PanEnvelope, RandomVariant, Restart, SetDetune (+7 more)
-
-### Community 229 - "Adlib Sound Layout"
-Cohesion: 0.12
-Nodes (16): AsoundLayout, ChannelOperatorTable, DeepTremoloFlag, DeepVibratoFlag, DefaultPan, DispatchTable, FrequencyNumberTable, InstrumentBank (+8 more)
-
-### Community 230 - "PNG Writer and CRC"
-Cohesion: 0.25
-Nodes (3): Crc32Delegate, Table, PngWriter
-
-### Community 231 - "Runtime Settings"
-Cohesion: 0.13
-Nodes (15): RuntimeSettings, ConsoleLogging, DataCheck, Demo, Free, InitialSeed, LanguagePostfix, LoadCosFile (+7 more)
-
-### Community 232 - "City Name Dialog"
-Cohesion: 0.16
-Nodes (6): CityName, NameId, OffsetX, OffsetY, Value, ScreenServiceFactory
-
-### Community 233 - "New Game Screen"
-Cohesion: 0.18
-Nodes (4): NewGame, DifficultyPicture, OffsetX, OffsetY
-
-### Community 234 - "Space Ship Civilization Selector"
-Cohesion: 0.20
-Nodes (9): ISpaceShipCivilizationEligibilityEvaluator, ISpaceShipCivilizationSelectorService, SpaceShipCivilizationEligibilityEvaluator, SpaceShipCivilizationListItem, SpaceShipCivilizationSelectorService, SpaceShipCivilizationSelectorServices, SelectorService, TranslationService (+1 more)
-
-### Community 235 - "OPL Channel"
-Cohesion: 0.14
-Nodes (9): OplChannel, Additive, Block, Carrier, FeedbackLevel, FrequencyNumber, IsActive, KeyOn (+1 more)
-
-### Community 236 - "Sound Alias Registry"
-Cohesion: 0.16
-Nodes (8): ISoundAliasRegistry, SoundAliasRegistry, SoundPackSelectionDelegate, SoundPlaybackStrategyProvider, Aliases, Current, SelectedPack, SoundPackPlaybackService
-
-### Community 237 - "Building and Wonder Effects"
-Cohesion: 0.24
-Nodes (6): Mysticism, Religion, ICityBuildings, IPlayerEffects, MichelangelosChapel, Oracle
-
-### Community 238 - "Hall of Fame Models"
-Cohesion: 0.14
-Nodes (13): HallOfFameEntryModel, CivilizationNamePlural, CreatedAtUtc, LeaderName, LeaderTitle, Population, RatingPercent, RatingRankLabel (+5 more)
-
-### Community 239 - "Government Types"
-Cohesion: 0.14
-Nodes (10): Anarchy, BaseGovernment, CorruptionMultiplier, Id, NameAdjective, RequiredTech, Communism, Despotism (+2 more)
-
-### Community 240 - "Bit Reader and LZW"
-Cohesion: 0.29
-Nodes (3): BitReader, BitWriter, LZWCorrected
-
-### Community 241 - "Palace Layout DTO"
-Cohesion: 0.14
-Nodes (14): PalaceDto, Center, GardenCenterLevel, GardenLeftLevel, GardenRightLevel, LeftAnnex, LeftTower, LeftWing (+6 more)
-
-### Community 243 - "Space Ship Components"
-Cohesion: 0.17
-Nodes (6): Plastics, SpaceFlight, ISpaceShip, SSComponent, SSModule, SSStructural
-
-### Community 244 - "Conquest Screen"
-Cohesion: 0.21
-Nodes (5): Conquest, HumanName, OffsetX, OffsetY, OpaqueBlackColour
-
-### Community 245 - "Map YAML Serialization"
-Cohesion: 0.18
-Nodes (8): MapDtoYamlRepresentation, LandValues, StartPositions, TerrainSeed, Tiles, MapLocationData, X, Y
-
-### Community 246 - "MCP Cities Tool"
-Cohesion: 0.27
-Nodes (3): GameGetCitiesToolHandler, Definition, Method
-
-### Community 249 - "Forest Terrain"
-Cohesion: 0.15
-Nodes (13): Forest, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
-
-### Community 250 - "Hills Terrain"
-Cohesion: 0.15
-Nodes (13): Hills, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
-
-### Community 251 - "Jungle Terrain"
-Cohesion: 0.15
-Nodes (13): Jungle, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
-
-### Community 252 - "Swamp Terrain"
-Cohesion: 0.15
-Nodes (13): Swamp, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
-
-### Community 253 - "Natural Sort Service"
-Cohesion: 0.24
-Nodes (4): CivOne.Services.Sorting, INaturalSortService, NaturalSortService, NaturalSortServiceFactory
-
-### Community 255 - "Map Dialog Path Provider"
-Cohesion: 0.23
-Nodes (3): IMapDialogPathProvider, MapDialogPathProvider, MapDialogPathProviderFactory
-
-### Community 256 - "MCP Player Tool"
-Cohesion: 0.29
-Nodes (3): GameGetPlayerToolHandler, Definition, Method
-
-### Community 257 - "MCP Visibility Tool"
-Cohesion: 0.29
-Nodes (3): GameGetVisibilityToolHandler, Definition, Method
-
-### Community 259 - "Game Calendar Service"
-Cohesion: 0.27
-Nodes (4): GameCalendarService, GameCalendarServiceFactory, Current, IGameCalendarService
-
-### Community 261 - "Sound System Provider"
-Cohesion: 0.24
-Nodes (4): ISoundSystem, SoundSystemProvider, Current, IsAvailable
-
-### Community 262 - "Barbarian Spawn Activity"
-Cohesion: 0.18
-Nodes (11): BarbarianSpawnDelegate, Activity, IsSpawnTurn, RandomService, BarbarianActivity, LandRaids, None, Raids (+3 more)
-
-### Community 263 - "Save Game Files"
-Cohesion: 0.18
-Nodes (8): SaveGameFile, CosFile, Difficulty, IsYamlFile, MapFile, Name, SveFile, ValidFile
-
-### Community 264 - "OPL Chip Emulation"
-Cohesion: 0.18
-Nodes (7): CivOne.Sound.Opl, OplEnvelopeState, Attack, Decay, Off, Release, Sustain
-
-### Community 265 - "Screen Fade Speed"
-Cohesion: 0.22
-Nodes (4): Speed, Fast, Normal, Slow
-
-### Community 267 - "Map Image Export"
-Cohesion: 0.24
-Nodes (6): IMap, IMapTerrain, TerrainMasterWord, IMapImageExportService, MapImageExportService, MapImageExportServiceFactory
-
-### Community 270 - "City Production Screen"
-Cohesion: 0.29
-Nodes (3): CityProduction, BuyButtonWidth, ProductionInvalid
-
-### Community 271 - "Mixer Bus Commands"
-Cohesion: 0.25
-Nodes (4): MixerCommand, SoundBus, Effect, Music
-
-### Community 272 - "OPL Lookup Tables"
-Cohesion: 0.18
-Nodes (4): OplTables, Exponent, KeyScaleLevel, LogSine
-
-### Community 273 - "Wave Sound Playback"
-Cohesion: 0.27
-Nodes (4): LegacyWaveNameDelegate, WaveSoundFileDelegate, SoundsDirectory, WaveSoundPlaybackStrategy
-
-### Community 274 - "Desert Terrain"
-Cohesion: 0.18
-Nodes (11): Desert, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
-
-### Community 275 - "Tundra Terrain"
-Cohesion: 0.18
-Nodes (11): Tundra, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
-
-### Community 276 - "Civilization Definitions"
-Cohesion: 0.20
-Nodes (10): BaseCivilization, CityNames, Id, Leader, Name, NamePlural, PreferredPlayerNumber, StartX (+2 more)
-
-### Community 279 - "Game Service"
-Cohesion: 0.24
-Nodes (3): GameServiceFactory, GameServiceImpl, IGameService
-
-### Community 280 - "MCP Land Values Tool"
-Cohesion: 0.33
-Nodes (3): GameGetMapLandValuesWindowToolHandler, Definition, Method
-
-### Community 281 - "King Meeting Screen"
-Cohesion: 0.22
-Nodes (4): King, OffsetX, OffsetY, OpaqueBlackColour
-
-### Community 282 - "Barbarian Menu Delegate"
-Cohesion: 0.24
-Nodes (6): NewGameBarbarianMenuDelegate, Current, Host, MenuEntryText, Options, Translation
-
-### Community 283 - "Browser Service"
-Cohesion: 0.27
-Nodes (4): BrowserServiceFactory, Instance, BrowserServiceImpl, IBrowserService
-
-### Community 284 - "Civilization Ranking Trigger"
-Cohesion: 0.36
-Nodes (3): CivilizationRankingTriggerService, CivilizationRankingTriggerServiceFactory, ICivilizationRankingTriggerService
-
-### Community 285 - "Isound Layout"
-Cohesion: 0.20
-Nodes (9): IsoundLayout, DispatchTable, EffectParamTable, EffectPlayer, FirstTimbreCode, MaxTuneId, MusicPlayer, PlainTimbreCode (+1 more)
-
-### Community 286 - "OPL Chip Interface"
-Cohesion: 0.22
-Nodes (3): IOplChip, ChannelCount, SampleRate
-
-### Community 288 - "City Status Flags"
-Cohesion: 0.22
-Nodes (9): CityStatus, AutoBuild, CelebrationCancelled, CelebrationOrRapture, Coastal, HydroAvailable, ImprovementSold, Riot (+1 more)
-
-### Community 289 - "Unit Roles"
-Cohesion: 0.22
-Nodes (8): UnitRole, AirAttack, Civilian, Defense, LandAttack, SeaAttack, Settler, Transport
-
-### Community 290 - "Map Generation Stages"
-Cohesion: 0.22
-Nodes (9): Stages, AgeAdjustments, CalculateContinentSize, CalculateLandValue, ClimateAdjustments, CreatePoles, CreateRivers, MergeElevationAndLatitude (+1 more)
-
-### Community 291 - "Plugin Overwrite Dialog"
-Cohesion: 0.44
-Nodes (4): IPluginOverwriteService, OverwritePlugin, OverwritePluginDialogFactory, PluginOverwriteService
-
-### Community 292 - "Mixer Command Kinds"
-Cohesion: 0.22
-Nodes (8): MixerCommandKind, Add, Pause, Resume, SetBusVolume, SetVolume, Stop, StopBus
-
-### Community 293 - "Barbarian Spawn Rules"
-Cohesion: 0.25
-Nodes (8): Barbarian, IsLandSpawnTurn, IsSeaSpawnTurn, IsSpawnTurn, LandSpawnPosition, LandSpawnUnits, SeaSpawnPosition, SeaSpawnUnits
-
-### Community 294 - "Map Bitmap Scalers"
-Cohesion: 0.39
-Nodes (4): IMapBitmapScaler, MapBitmapScalerFactory, NearestNeighborMapBitmapScaler, PaletteAwareWeightedMapBitmapScaler
-
-### Community 297 - "Set Game Year Dialog"
-Cohesion: 0.29
-Nodes (5): SetGameYear, ActiveInput, OffsetX, OffsetY, Value
-
-### Community 299 - "Confront Delegate"
-Cohesion: 0.43
-Nodes (3): ConfrontDelegate, ConfrontGameServicesAdapter, IConfrontGameServices
-
-### Community 301 - "Aspect Ratio Modes"
-Cohesion: 0.29
-Nodes (6): AspectRatio, Auto, Expand, Fixed, Scaled, ScaledFixed
-
-### Community 302 - "Advisor Face States"
-Cohesion: 0.33
-Nodes (5): FaceState, Angry, EyesClosed, Neutral, Smiling
-
-### Community 303 - "Hut Exploration Results"
-Cohesion: 0.29
-Nodes (7): HutResult, AdvancedTribe, AncientScrolls, Barbarians, FriendlyTribe, MetalDeposits, Random
-
-### Community 304 - "Continent Map Queries"
-Cohesion: 0.29
-Nodes (3): ICityOnContinent, IMapContinents, TerrainMasterWord
-
-### Community 305 - "Adlib Noise Channel"
-Cohesion: 0.29
-Nodes (6): AdlibNoiseSlot, Base, Channel, Mask, Step, Ticks
-
-### Community 306 - "Platform Detection"
-Cohesion: 0.33
-Nodes (5): Platform, Linux, macOS, Unknown, Windows
-
-### Community 307 - "City Built Event Data"
-Cohesion: 0.33
-Nodes (6): CityBuiltData, CityId, CityNameId, OwnerId, X, Y
-
-### Community 308 - "Map Location Serialization"
-Cohesion: 0.40
-Nodes (4): MapLocationData, X, Y, MapLocationYamlConverter
-
-### Community 309 - "Tech Choice Screen"
-Cohesion: 0.33
-Nodes (3): ChooseTech, OffsetX, OffsetY
-
-### Community 311 - "Character Creation Stages"
-Cohesion: 0.33
-Nodes (6): Stage, Message, Morph, SelectPart, SelectStyle, View
-
-### Community 315 - "Temperature Settings"
-Cohesion: 0.40
-Nodes (4): Temperature, Cool, Temperate, Warm
-
-### Community 316 - "Unit Class Types"
-Cohesion: 0.40
-Nodes (4): UnitClass, Air, Land, Water
-
-### Community 318 - "City Captured Event Data"
-Cohesion: 0.40
-Nodes (5): CityCapturedData, CityNameId, CivId, X, Y
-
-### Community 319 - "City Destroyed Event Data"
+### Community 163 - "City Destroyed Data"
 Cohesion: 0.40
 Nodes (5): CityDestroyedData, CityId, CityNameId, X, Y
 
-### Community 324 - "Vertical Alignment"
-Cohesion: 0.50
-Nodes (3): VerticalAlign, Bottom, Top
+### Community 164 - "Save Data Getters"
+Cohesion: 0.08
+Nodes (5): City, CityData, List, Unit, UnitData
 
-### Community 326 - "Byte Array Formats"
-Cohesion: 0.50
-Nodes (4): ByteArrayValueFormat, Binary, Decimal, Hexadecimal
+### Community 165 - "IO and Text Infrastructure"
+Cohesion: 0.09
+Nodes (6): CivOne.Screens.StartupWizard.DosFont, CivOne.IO.Text, CivOne.Services.Browser, CivOne.Sound.Playback, CivOne.Screens.StartupWizard, SoundPlaybackStrategyConstants
 
-### Community 329 - "Arab Leader"
+### Community 166 - "Text Alignment Settings"
+Cohesion: 0.08
+Nodes (18): TextAlign, Center, Left, Right, VerticalAlign, Bottom, Top, IDefaultTextSettings (+10 more)
+
+### Community 167 - "Face Bitmap Rendering"
+Cohesion: 0.11
+Nodes (14): FaceState, Angry, EyesClosed, Neutral, Smiling, BitmapExtensions, Point, Rectangle (+6 more)
+
+### Community 168 - "Civilization DTO Mapper"
+Cohesion: 0.07
+Nodes (24): IPlayerGame, CivilizationDtoMapper, IEnumerable, CivilizationDto, LeaderClassName, NoopPlayerOwnerResolver, NullPlayerGame, BuiltWonders (+16 more)
+
+### Community 169 - "Map Save Service"
+Cohesion: 0.21
+Nodes (9): MapSaveService, Civilizations, MapEditor, Dictionary, IAtomicFileReplacementService, IEnumerable, IMapEditor, Map (+1 more)
+
+### Community 170 - "Citizen Happiness Calculation"
+Cohesion: 0.13
+Nodes (16): redShirts, IEnumerable, WomensSuffrage, CitizenTypes, Buildings, Citizens, content, einstein (+8 more)
+
+### Community 171 - "Spawn Unit Screen"
+Cohesion: 0.12
+Nodes (6): SpawnUnit, Cursor, UnitX, UnitY, ValidTile, EventArgs
+
+### Community 172 - "Editor Modes"
+Cohesion: 0.09
+Nodes (24): EditorMode, Clear, Fortress, FoundCity, Hut, Irrigation, Mine, None (+16 more)
+
+### Community 173 - "Civ Ranking Screen"
+Cohesion: 0.07
+Nodes (28): HistorianAiPalace, BuiltOnly, BuiltOrGenerated, Generated, CivilizationRankingScreen, CivilizationRankingScreenFactory, IReadOnlyList, CivilizationRankingCategory (+20 more)
+
+### Community 174 - "Tune Wave Rendering"
+Cohesion: 0.13
+Nodes (10): ITuneRenderer, Device, RenderedTune, SoundPackWaveRenderService, SuppressMessage, TuneRendererFactory, Dictionary, WaveFileWriter (+2 more)
+
+### Community 175 - "Hall of Fame Model"
+Cohesion: 0.12
+Nodes (18): Collection, HallOfFameEntryModel, CivilizationNamePlural, CreatedAtUtc, LeaderName, LeaderTitle, Population, RatingPercent (+10 more)
+
+### Community 176 - "Wonder Definitions"
+Cohesion: 0.05
+Nodes (36): Wonder, ApolloProgram, Colossus, CopernicusObservatory, CureForCancer, DarwinsVoyage, GreatLibrary, GreatWall (+28 more)
+
+### Community 177 - "Translation Services"
+Cohesion: 0.10
+Nodes (12): CivOne.Services.Translation, ITranslationLanguageObserver, ITranslationFileRepository, Action, IReadOnlyDictionary, IReadOnlyList, TranslationLanguageInfo, TranslationServiceFactory (+4 more)
+
+### Community 178 - "Save Metadata DTO"
+Cohesion: 0.11
+Nodes (17): SaveGameMetaDataDtoFactory, SaveFileMetaData, SaveGameMetaDataDto, DisplayName, GameStartedAt, GameVersion, PlayDurationMinutes, SaveGuid (+9 more)
+
+### Community 179 - "MCP Map Window Tool"
+Cohesion: 0.22
+Nodes (5): GameGetMapWindowToolHandler, Definition, Method, Dictionary, JsonElement
+
+### Community 180 - "Text Input Screen"
+Cohesion: 0.10
+Nodes (13): Input, CenterTo320Coordinates, CoordinateOffsetX, CoordinateOffsetY, Text, X, Y, Search (+5 more)
+
+### Community 181 - "City Citizen Layout"
+Cohesion: 0.15
+Nodes (9): CityCitizenLayoutService, CitizenOffset, IsBigCity, IEnumerable, CitizenDrawInfo, ICityCitizenLayoutService, CitizenOffset, IsBigCity (+1 more)
+
+### Community 182 - "Map Interfaces"
+Cohesion: 0.16
+Nodes (12): ICityOnContinent, IMap, IMapContinents, TerrainMasterWord, IMapTerrain, TerrainMasterWord, IMapTiles, Height (+4 more)
+
+### Community 183 - "Save File Inspection"
+Cohesion: 0.11
+Nodes (15): CosSaveFileInspection, FormatVersion, GameState, Meta, SaveGuid, CosSaveFileInspector, Guid, SuppressMessage (+7 more)
+
+### Community 184 - "Wave Sound Files"
+Cohesion: 0.15
+Nodes (11): Path, Name, LegacyWaveNameDelegate, Dictionary, IReadOnlyList, SuppressMessage, WaveSoundFileDelegate, SoundsDirectory (+3 more)
+
+### Community 185 - "City View Drawing"
+Cohesion: 0.14
+Nodes (6): CityView, GetCityMap, OffsetX, OffsetY, City, IProduction
+
+### Community 186 - "Palette Viewer Screen"
+Cohesion: 0.11
+Nodes (12): PaletteViewerScreen, CurrentMenu, GridHeight, GridRows, GridStartX, GridStartY, GridWidth, OffsetX (+4 more)
+
+### Community 187 - "Terrain Selector Screen"
+Cohesion: 0.13
+Nodes (14): TerrainSelectorItem, Hotkey, Label, Terrain, TerrainSelectorScreen, GridHeight, GridRows, GridWidth (+6 more)
+
+### Community 188 - "Quick Save Hotkeys"
+Cohesion: 0.18
+Nodes (9): IQuickSaveLoadHotkeyService, QuickSaveLoadHotkeyService, Action, Func, IReadOnlyList, IRuntime, Key, List (+1 more)
+
+### Community 189 - "Sound Handle"
+Cohesion: 0.19
+Nodes (7): SoundHandle, Id, IsPaused, IsPlaying, Volume, Action, TimeSpan
+
+### Community 190 - "YAML Doc Comments"
+Cohesion: 0.17
+Nodes (14): ChainedEventEmitter, MappingEndEventInfo, MappingStartEventInfo, DocCommentEventEmitter, CurrentType, Dictionary, IEmitter, IEventEmitter (+6 more)
+
+### Community 191 - "Citizen Types"
+Cohesion: 0.11
+Nodes (12): Citizen, ContentFemale, ContentMale, Entertainer, HappyFemale, HappyMale, RedShirtFemale, RedShirtMale (+4 more)
+
+### Community 192 - "Historian Palace Service"
+Cohesion: 0.13
+Nodes (12): HistorianPalaceService, Game, Map, Settings, IMapTerrain, ISettings, Player, HistorianServiceFactory (+4 more)
+
+### Community 193 - "Game Icons"
+Cohesion: 0.09
+Nodes (20): Icons, Corruption, Food, FoodLoss, Luxuries, Newspaper, Resources, Science (+12 more)
+
+### Community 194 - "Spaceship Civilization Selector"
+Cohesion: 0.16
+Nodes (12): ISpaceShipCivilizationEligibilityEvaluator, ISpaceShipCivilizationSelectorService, SpaceShipCivilizationEligibilityEvaluator, SpaceShipCivilizationListItem, SpaceShipCivilizationSelectionRules, SpaceShipCivilizationSelectorService, SpaceShipCivilizationSelectorServices, SelectorService (+4 more)
+
+### Community 195 - "Sound Engine Types"
+Cohesion: 0.12
+Nodes (9): CivOne.Sound.Engine, SoundLoop, Always, None, WhenMarked, VoiceFadeAction, None, Pause (+1 more)
+
+### Community 196 - "Colour Type"
+Cohesion: 0.13
+Nodes (13): Colour, A, B, Black, G, R, Transparent, IEquatable (+5 more)
+
+### Community 197 - "Image Decoder Service"
+Cohesion: 0.14
+Nodes (11): IImageDecoderService, IBitmap, Palette, ReadOnlySpan, Stream, ImageDecoderService, IBitmap, Palette (+3 more)
+
+### Community 198 - "MCP Settings Tool"
+Cohesion: 0.16
+Nodes (8): IDictionary, GameGetSettingsToolHandler, Definition, Method, Dictionary, IRuntime, JsonElement, Tuple
+
+### Community 199 - "Game Query Interfaces"
+Cohesion: 0.10
+Nodes (20): IGame, IGameBarbarianSettings, BarbarianActivity, IGameCityQuery, IGamePeaceQuery, PeaceTurns, IGamePlayerQuery, IGameSettings (+12 more)
+
+### Community 200 - "City Debug Snapshot"
+Cohesion: 0.10
+Nodes (21): CityDebugSnapshotDto, BaseUnhappyRaw, CityIndex, Difficulty, EmpireSizeBase, EmpireSizePenalty, FinalContent, FinalHappy (+13 more)
+
+### Community 201 - "Sound Pack Picker"
+Cohesion: 0.15
+Nodes (9): SoundPackPickerDelegate, Translation, Action, Func, IReadOnlyList, SuppressMessage, SoundPackPickerEntry, SoundPackPickerScreen (+1 more)
+
+### Community 202 - "Space Victory Animation"
+Cohesion: 0.11
+Nodes (11): From, Rate, PaletteCycleDelegate, SpaceVictory, OffsetX, OffsetY, Action, IReadOnlyList (+3 more)
+
+### Community 203 - "DOS Font Renderer"
+Cohesion: 0.17
+Nodes (5): ModernDosFontRenderer, Action, WizardMouseMarkerDelegate, BaseScreen, Rectangle
+
+### Community 204 - "New Game Rules"
+Cohesion: 0.12
+Nodes (10): NewGameRulesDelegate, Civilizations, DeityEnabled, MainMenuMaxOpponents, MainMenuMinOpponents, MaxOpponents, MinOpponents, OpponentCount (+2 more)
+
+### Community 205 - "OPL Chip Interface"
+Cohesion: 0.22
+Nodes (4): IOplChip, ChannelCount, SampleRate, Span
+
+### Community 206 - "Binary Save Snapshot"
+Cohesion: 0.10
+Nodes (17): CivOne.Services.Persistence, BinarySaveWriter, GameSnapshot, ActiveCivilizations, CitizenNames, CivilizationIdentity, CivilizationNames, CurrentResearch (+9 more)
+
+### Community 207 - "Save Game Paths"
+Cohesion: 0.15
+Nodes (6): ISaveGamePathProvider, SaveGamePathProvider, Action, Func, IRuntime, ISettings
+
+### Community 208 - "Menu Bar"
+Cohesion: 0.17
+Nodes (7): MenuBar, ExpectedMenuCount, MenuDrag, TerrainEditorMenuEnabled, Rectangle, MenuBarHotkeyDelegate, MenuBarTitle
+
+### Community 209 - "Civilization Score Layout"
+Cohesion: 0.15
+Nodes (10): IconX, IconY, NameX, NameY, CivilizationScoreLayout, IReadOnlyList, X, Y (+2 more)
+
+### Community 210 - "MCP Game State Tools"
+Cohesion: 0.14
+Nodes (10): GameGetEntitiesIndexToolHandler, Definition, Method, GameGetStateToolHandler, Definition, Method, JsonElement, McpJsonToolResponse (+2 more)
+
+### Community 211 - "Runtime Settings"
+Cohesion: 0.10
+Nodes (18): RuntimeSettings, ConsoleLogging, DataCheck, Demo, Free, InitialSeed, LanguagePostfix, LoadCosFile (+10 more)
+
+### Community 212 - "Unit Selector Screen"
+Cohesion: 0.15
+Nodes (12): UnitSelectorItem, Hotkey, Label, UnitType, UnitSelectorScreen, GridHeight, GridRows, GridWidth (+4 more)
+
+### Community 214 - "Terrain Editor Menu Actions"
+Cohesion: 0.10
+Nodes (20): TerrainMenuAction, AutoStartPositions, BrushDecrease, BrushIncrease, ExportMapImage, ModeClear, ModeFortress, ModeFoundCity (+12 more)
+
+### Community 217 - "Screen Behavior Attributes"
+Cohesion: 0.17
+Nodes (6): Attribute, BreakAttribute, ScreenResizeableAttribute, ModalAttribute, FastAttribute, DefaultUnitProductionAttribute
+
+### Community 218 - "Terrain Editor Rendering"
+Cohesion: 0.23
+Nodes (3): GameTerrainEditorRenderDelegate, Civilizations, TranslationService
+
+### Community 219 - "Climate and River Creation"
+Cohesion: 0.16
+Nodes (8): Climate, Arid, Normal, Wet, RiverCreationDelegate, Action, Func, List
+
+### Community 220 - "FPS Overlay"
+Cohesion: 0.17
+Nodes (10): FpsMetricCounter, FpsMetricCounter, FpsOverlayDrawDelegate, FpsCorner, Height, Stopwatch, Width, X (+2 more)
+
+### Community 221 - "Player Slots Screen"
+Cohesion: 0.12
+Nodes (11): PlayerSlotsScreen, ColumnHeaderY, ListHeight, ListTop, OffsetX, RowHeight, RowsPerPage, SlotRow (+3 more)
+
+### Community 222 - "PNG Decoder"
+Cohesion: 0.25
+Nodes (6): PngDecoderDelegate, Signature, PngHeader, ReadOnlySpan, SuppressMessage, PngHeader
+
+### Community 223 - "Quick Load Slots"
+Cohesion: 0.13
+Nodes (7): IsValid, QuickLoadSlotsDialog, Action, Func, HashSet, Key, Text
+
+### Community 224 - "New Game Competition Menu"
+Cohesion: 0.16
+Nodes (7): NewGameCompetitionMenuDelegate, Host, Paging, Rules, Translation, Action, EventArgs
+
+### Community 225 - "Font Factory"
+Cohesion: 0.08
+Nodes (18): DefaultFont, FirstChar, FontHeight, LastChar, Dictionary, FontSetFactory, IFont, FirstChar (+10 more)
+
+### Community 226 - "SVE Compatibility Snapshot"
+Cohesion: 0.11
+Nodes (19): SveSaveCompatibilitySnapshot, CityCount, CityOwners, CivilizationIds, FortifiedUnitCountsPerCity, FortifiedUnitsCount, HasInvalidTradeCityReferences, HasInvalidUnitHomeCityReferences (+11 more)
+
+### Community 227 - "Sound System Playback"
+Cohesion: 0.17
+Nodes (8): ISoundSystem, TimeSpan, LoadedWave, SoundRequest, TimeSpan, SoundSystem, IsRunning, TimeSpan
+
+### Community 228 - "Language Selection"
+Cohesion: 0.20
+Nodes (7): defaultIndex, labels, postfixes, Action, Func, Func, IReadOnlyList
+
+### Community 229 - "Leader Traits"
+Cohesion: 0.18
+Nodes (10): ILeader, Aggression, Development, Militarism, Name, PortraitSmall, AggressionLevel, DevelopmentLevel (+2 more)
+
+### Community 230 - "Screen Event Args"
+Cohesion: 0.09
+Nodes (11): EventArgs, ResizeEventArgs, Height, Size, Width, UpdateEventArgs, Empty, HasUpdate (+3 more)
+
+### Community 231 - "Extension Methods"
+Cohesion: 0.07
+Nodes (21): Extensions, CVS, Settings, AggressionLevel, AspectRatio, BarbarianActivity, City, CityData (+13 more)
+
+### Community 232 - "Palette Mapper"
+Cohesion: 0.51
+Nodes (5): PaletteMapperDelegate, Colour, Palette, ReadOnlySpan, SuppressMessage
+
+### Community 233 - "File System Setup"
+Cohesion: 0.25
+Nodes (4): FileSystem, MouseCursorFiles, HashSet, IReadOnlyList
+
+### Community 234 - "Map Dialog Paths"
+Cohesion: 0.14
+Nodes (7): IMapDialogPathProvider, MapDialogPathProvider, Action, Func, IRuntime, ISettings, MapDialogPathProviderFactory
+
+### Community 235 - "Demographics Report"
+Cohesion: 0.35
+Nodes (4): Demographics, TableRow, IEnumerable, TableRow
+
+### Community 236 - "Attitude Survey Screen"
+Cohesion: 0.18
+Nodes (7): AttitudeSurvey, Bank, Cathedral, City, Colosseum, MarketPlace, Temple
+
+### Community 237 - "Legacy Map Save Compatibility"
+Cohesion: 0.16
+Nodes (13): ILegacyMapSaveCompatibilityService, LegacyMapSaveCompatibilityResult, CanSaveAsLegacyMap, Compatible, Reason, LegacyMapSaveCompatibilityService, LegacyMapSaveCompatibilitySnapshot, HasFortress (+5 more)
+
+### Community 238 - "Game Score State"
+Cohesion: 0.12
+Nodes (16): GameScoreState, GameTurn, IsWorldConquered, OpponentCount, PeaceTurns, PollutedSquaresCount, Year, Game (+8 more)
+
+### Community 239 - "Sound Alias Registry"
+Cohesion: 0.13
+Nodes (10): ISoundAliasRegistry, SoundAliasRegistry, Dictionary, SoundPackSelectionDelegate, SuppressMessage, SoundPlaybackStrategyProvider, Aliases, Current (+2 more)
+
+### Community 240 - "World Generation Options"
+Cohesion: 0.12
+Nodes (12): EarthAge, FiveBillionYears, FourBillionYears, ThreeBillionYears, LandMass, Large, Normal, Small (+4 more)
+
+### Community 241 - "Game End Conquest Check"
+Cohesion: 0.09
+Nodes (19): PlayerGameStateAdapter, CivilizationScore, Difficulty, HasPalaceCity, IsHuman, Palace, PalaceOptionEnabled, ScoringCompleted (+11 more)
+
+### Community 242 - "Palette Handling"
+Cohesion: 0.15
+Nodes (8): Palette, Palette, Entries, Length, IEnumerable, Obsolete, SuppressMessage, TopLeaderScreenEnvironment
+
+### Community 243 - "CRC32 and PNG Writer"
+Cohesion: 0.21
+Nodes (6): Crc32Delegate, Table, ReadOnlySpan, SuppressMessage, PngWriter, Stream
+
+### Community 244 - "Isound Music Player"
+Cohesion: 0.11
+Nodes (16): IsoundLayout, DispatchTable, EffectParamTable, EffectPlayer, FirstTimbreCode, MaxTuneId, MusicPlayer, PlainTimbreCode (+8 more)
+
+### Community 245 - "Map Editor Start Positions"
+Cohesion: 0.10
+Nodes (12): IMapQueries, FixedStartPositions, IEnumerable, AutoStartPositionDelegate, IMapEditor, IPlayerGame, IReadOnlyList, StartPositionAlgorithmType (+4 more)
+
+### Community 246 - "Unmanaged Memory Reader"
+Cohesion: 0.25
+Nodes (4): IntPtr, BaseUnmanaged, Handle, IsDisposed
+
+### Community 247 - "Game Settings Interface"
+Cohesion: 0.11
+Nodes (18): ISettings, AutoSaveOnQuit, CaptureDirectory, ConfirmExit, CosSavesDirectory, DataDirectory, DebugMenu, HistorianAiPalace (+10 more)
+
+### Community 248 - "MCP Cities Tool"
+Cohesion: 0.20
+Nodes (7): GameGetCitiesToolHandler, Definition, Method, Dictionary, Guid, HashSet, JsonElement
+
+### Community 249 - "Value Sanitizer"
+Cohesion: 0.11
+Nodes (9): CheckedValueSanitizerScope, ValueSanitizerFactory, ValueSanitizer, IDisposable, Lazy, SuppressMessage, ValueSanitizer, ICheckedValueSanitizer (+1 more)
+
+### Community 250 - "Save Metadata"
+Cohesion: 0.21
+Nodes (9): SaveFileMetaData, DisplayName, GameStartedAt, GameVersion, PlayDuration, SaveGuid, DateTimeOffset, Guid (+1 more)
+
+### Community 251 - "Land Unit Movement"
+Cohesion: 0.09
+Nodes (18): Armor, Artillery, BaseUnitLand, FastRiverMovement, FastRiverMovementCount, MenuItems, IEnumerable, Cannon (+10 more)
+
+### Community 252 - "End Game Service"
+Cohesion: 0.35
+Nodes (5): EndGameService, Screens, Sound, State, Task
+
+### Community 253 - "Spaceship Launch Rules"
+Cohesion: 0.15
+Nodes (10): DebugSpaceShipLaunchRules, ISpaceShipLaunchRules, SpaceShipLaunchRules, SpaceShipPartCounter, SpaceShipPartCounts, ComponentTotal, DetailedPartCount, ModuleTotal (+2 more)
+
+### Community 254 - "Translation File Repository"
+Cohesion: 0.23
+Nodes (6): TranslationFileRepository, Action, HashSet, IReadOnlyDictionary, IReadOnlyList, SuppressMessage
+
+### Community 255 - "Adlib Sound Layout"
+Cohesion: 0.11
+Nodes (17): AsoundLayout, ChannelOperatorTable, DeepTremoloFlag, DeepVibratoFlag, DefaultPan, DispatchTable, FrequencyNumberTable, InstrumentBank (+9 more)
+
+### Community 256 - "Government Types"
+Cohesion: 0.09
+Nodes (12): CivOne.Governments, Anarchy, BaseGovernment, CorruptionMultiplier, Id, NameAdjective, RequiredTech, Communism (+4 more)
+
+### Community 257 - "Palace Data Interface"
+Cohesion: 0.13
+Nodes (12): IPalaceData, BuildCount, CanUpgrade, PalaceLeft, PalaceRight, UpgradeCount, IPalaceData, SvePalaceDelegate (+4 more)
+
+### Community 258 - "City Economy Breakdown"
+Cohesion: 0.16
+Nodes (10): CityEconomyBreakdown, Luxuries, Science, Taxes, TotalTrade, TradeLuxuries, TradeScience, TradeTaxes (+2 more)
+
+### Community 259 - "Civilization Definitions"
+Cohesion: 0.14
+Nodes (15): CivilizationModification, BaseCivilization, CityNames, Id, Leader, Modifications, Name, NamePlural (+7 more)
+
+### Community 261 - "Civilization Score Screen"
+Cohesion: 0.15
+Nodes (8): CivilizationScore, CivilizationScoreService, ArrivalService, CalendarService, Player, ICivilizationScoreService, Player, CivilizationScoreBreakdown
+
+### Community 262 - "Civilization Rating Services"
+Cohesion: 0.23
+Nodes (7): GameCalendarService, HallOfFameEntryComposerService, ICivilizationScoreService, ITranslationService, CivilizationRatingService, LeaderOrder, ICivilizationRatingService
+
+### Community 263 - "Spaceship Sprite Services"
+Cohesion: 0.09
+Nodes (15): Resources, ISpaceShipSpriteProvider, ResourcesSpaceShipSpriteProvider, SpaceShipSpriteProviderFactory, SuppressMessage, SpaceShipViewServices, ArrivalService, CalendarService (+7 more)
+
+### Community 264 - "Tile Display Settings"
+Cohesion: 0.12
+Nodes (14): TileSettings, ActiveUnit, BlinkOff, BlinkOn, Cities, CityLabels, CityManager, CitySmallFonts (+6 more)
+
+### Community 265 - "Map Editor Interface"
+Cohesion: 0.18
+Nodes (4): IMapEditor, Civilization, Civilization, Terrain
+
+### Community 266 - "Player Game Interface"
+Cohesion: 0.12
+Nodes (12): IPlayerGame, BuiltWonders, Competition, CurrentPlayer, Difficulty, DisableBuddyCivilizationRespawn, GameTurn, HumanPlayer (+4 more)
+
+### Community 267 - "MCP Player Tool"
+Cohesion: 0.21
+Nodes (7): GameGetPlayerToolHandler, Definition, Method, Dictionary, Guid, HashSet, JsonElement
+
+### Community 268 - "YAML Byte Array Converter"
+Cohesion: 0.17
+Nodes (10): ByteArrayArrayFlowStyleYamlTypeConverter, ByteArrayValueFormat, Binary, Decimal, Hexadecimal, IEmitter, IParser, ObjectDeserializer (+2 more)
+
+### Community 269 - "YAML Writer"
+Cohesion: 0.21
+Nodes (7): YamlWriter, BasePath, Func, IEventEmitter, INamingConvention, IYamlTypeConverter, List
+
+### Community 271 - "Power Graph Screen"
+Cohesion: 0.18
+Nodes (5): PowerGraph, Selection, SelectionTitle, EventArgs, Player
+
+### Community 272 - "YAML Save Service"
+Cohesion: 0.20
+Nodes (8): Game, IAtomicFileReplacementService, Action, Stream, IYamlSaveGameService, IYamlSaveGameServiceFactory, YamlSaveGameService, YamlSaveGameServiceFactory
+
+### Community 273 - "Game End Check"
+Cohesion: 0.16
+Nodes (11): EndGameServiceFactory, GameEndCheckResult, EndsGame, HasSpaceshipWinner, GameEndCheckService, ArrivalService, CalendarService, IGameCalendarService (+3 more)
+
+### Community 274 - "Game End Sequence"
+Cohesion: 0.15
+Nodes (10): GameEndSequence, ConquestNews, HumanPalace, SpaceshipNews, SpaceshipWinnerIsHuman, YearEndNews, YearEndTune, PalaceData (+2 more)
+
+### Community 275 - "Adlib Event Kinds"
+Cohesion: 0.12
+Nodes (15): AdlibEventKind, LoopInner, LoopOuter, Note, PanEnvelope, RandomVariant, Restart, SetDetune (+7 more)
+
+### Community 276 - "Sound Handle Interface"
+Cohesion: 0.19
+Nodes (9): ISoundHandle, IsPaused, IsPlaying, Volume, TimeSpan, MusicStingDelegate, StartSting, Func (+1 more)
+
+### Community 277 - "Sound Pack Render Queue"
+Cohesion: 0.22
+Nodes (6): SoundPackRenderQueue, ConcurrentDictionary, Lazy, SuppressMessage, Task, SoundPackWarmUpOrderDelegate
+
+### Community 278 - "Peace Turn Service"
+Cohesion: 0.15
+Nodes (6): CivOne.Services.Peace, CivilizationScoreServiceFactory, IPeaceTurnService, PeaceTurns, PeaceTurnService, PeaceTurns
+
+### Community 279 - "Game Options and Sound Pack"
+Cohesion: 0.18
+Nodes (7): GameOption, Default, Off, On, SoundPackSwitchDelegate, Action, Func
+
+### Community 280 - "GIF Image Codec"
+Cohesion: 0.11
+Nodes (13): GifFile, LzwCodec, IEnumerable, Palette, IImageFormat, CachedSpriteCollection, Sprite, Bitmap (+5 more)
+
+### Community 281 - "SVE Save Compatibility Service"
+Cohesion: 0.20
+Nodes (7): ISveSaveCompatibilityProvider, ISveSaveCompatibilityService, SveSaveCompatibilityResult, CanSaveAsSve, Compatible, Reason, SveSaveCompatibilityService
+
+### Community 282 - "Leader Definitions"
+Cohesion: 0.10
+Nodes (19): Zulu, LeaderModification, BaseLeader, Aggression, DefaultName, Development, Leader, Militarism (+11 more)
+
+### Community 283 - "Value Sanitizer"
+Cohesion: 0.26
+Nodes (3): ValueSanitizer, Exception, ILogger
+
+### Community 284 - "Export Map Image"
+Cohesion: 0.19
+Nodes (8): GamePlayExportMapImageDelegate, Exception, Func, IMap, IPlayerGame, IRuntime, ISettings, SuppressMessage
+
+### Community 285 - "HTTP MCP Transport"
+Cohesion: 0.15
+Nodes (10): BlockingCollection, HttpListener, HttpListenerContext, HttpListenerResponse, HttpMcpTransport, StdinClosed, Action, ConcurrentDictionary (+2 more)
+
+### Community 286 - "Game Menu"
+Cohesion: 0.13
+Nodes (12): GameMenu, ActiveDescription, DefaultDescription, DescriptionAreaHeight, Items, KeepOpen, MaxDescriptionLineCount, MaxDescriptionWidth (+4 more)
+
+### Community 287 - "Stub Services"
+Cohesion: 0.17
+Nodes (6): StubCaravanChoiceService, StubPluginOverwriteService, City, MapImageExportDelegateFactory, GamePlayExportMapImageDelegate, SuppressMessage
+
+### Community 288 - "Menu Paging"
+Cohesion: 0.18
+Nodes (5): MenuPagingDelegate, IsFirstPage, Offset, PageSize, PageStart
+
+### Community 289 - "Civilization Respawn"
+Cohesion: 0.14
+Nodes (11): BuddyPair, IRespawnCivilizationService, IReadOnlyCollection, RespawnCivilizationResult, Civilization, Occurrence, RespawnCivilizationService, Civilizations (+3 more)
+
+### Community 291 - "City Building Effects"
+Cohesion: 0.13
+Nodes (11): CeremonialBurial, Mysticism, Religion, ICityBuildings, Bank, Cathedral, Colosseum, MarketPlace (+3 more)
+
+### Community 292 - "Barbarian Spawn"
+Cohesion: 0.12
+Nodes (12): BarbarianSpawnDelegate, Activity, IsSpawnTurn, RandomService, Func, BarbarianSpawnKind, Land, None (+4 more)
+
+### Community 293 - "Cached Sprite Resources"
+Cohesion: 0.22
+Nodes (6): BaseInstance, CachedSprite, Bitmap, Func, ResourceGenerationDelegate, ICached
+
+### Community 294 - "Global Warming Service"
+Cohesion: 0.13
+Nodes (15): IGlobalWarmingService, IndicatorRange, IndicatorRange, WarmingIndicator, DarkRed, LightRed, None, White (+7 more)
+
+### Community 295 - "YAML Reader Configuration"
+Cohesion: 0.20
+Nodes (6): INodeDeserializer, YamlReader, BasePath, INamingConvention, IYamlTypeConverter, List
+
+### Community 296 - "Terrain Base Properties"
+Cohesion: 0.14
+Nodes (13): Terrain, Ocean, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, IsOcean (+5 more)
+
+### Community 298 - "Browser Service"
+Cohesion: 0.19
+Nodes (5): BrowserServiceFactory, Instance, BrowserServiceImpl, IBrowserService, SuppressMessage
+
+### Community 299 - "Space Victory Text"
+Cohesion: 0.15
+Nodes (10): Action, PalaceData, TimeSpan, SpaceVictoryText, Action, PalaceData, TimeSpan, SpaceVictoryTextDelegate (+2 more)
+
+### Community 300 - "Mixer Commands and Buses"
+Cohesion: 0.17
+Nodes (4): MixerCommand, SoundBus, Effect, Music
+
+### Community 301 - "OPL Channel Synthesis"
+Cohesion: 0.15
+Nodes (9): OplChannel, Additive, Block, Carrier, FeedbackLevel, FrequencyNumber, IsActive, KeyOn (+1 more)
+
+### Community 302 - "Load Game Screen"
+Cohesion: 0.15
+Nodes (9): LoadGame, Cancel, CurrentMenu, Cursor, OffsetX, OffsetY, PathProvider, EventArgs (+1 more)
+
+### Community 303 - "Decoded Image Pixels"
+Cohesion: 0.19
+Nodes (9): DecodedImage, Height, Indices, IsIndexed, Pixels, SourcePalette, Width, Colour (+1 more)
+
+### Community 304 - "Visibility Tool Handler"
+Cohesion: 0.27
+Nodes (4): GameGetVisibilityToolHandler, Definition, Method, JsonElement
+
+### Community 305 - "Arctic Terrain"
+Cohesion: 0.15
+Nodes (13): Arctic, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 306 - "Forest Terrain"
+Cohesion: 0.15
+Nodes (13): Forest, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 307 - "Grassland Terrain"
+Cohesion: 0.15
+Nodes (12): Grassland, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+4 more)
+
+### Community 308 - "Hills Terrain"
+Cohesion: 0.15
+Nodes (13): Hills, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 309 - "Jungle Terrain"
+Cohesion: 0.15
+Nodes (13): Jungle, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 310 - "Mountains Terrain"
+Cohesion: 0.15
+Nodes (13): Mountains, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 311 - "Swamp Terrain"
+Cohesion: 0.15
+Nodes (13): Swamp, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+5 more)
+
+### Community 312 - "Natural Sort Service"
+Cohesion: 0.24
+Nodes (5): CivOne.Services.Sorting, IComparer, INaturalSortService, NaturalSortService, NaturalSortServiceFactory
+
+### Community 313 - "Save Data Storage"
+Cohesion: 0.15
+Nodes (7): City, SaveData, Unit, UnitType, SveCivilizationScoreDelegate, IReadOnlyList, SuppressMessage
+
+### Community 314 - "BMP Image Writer"
+Cohesion: 0.29
+Nodes (6): BmpImageWriterDelegate, BinaryWriter, IBitmap, Palette, Stream, SuppressMessage
+
+### Community 315 - "Map Location YAML Converter"
+Cohesion: 0.21
+Nodes (9): MapLocationData, X, Y, MapLocationYamlConverter, IEmitter, IParser, ObjectDeserializer, ObjectSerializer (+1 more)
+
+### Community 316 - "Quit Auto-Save Factory"
+Cohesion: 0.20
+Nodes (6): IQuitAutoSaveServiceFactory, IRuntime, ISettings, QuitAutoSaveServiceFactory, IRuntime, ISettings
+
+### Community 317 - "Cause Disaster Dialog"
+Cohesion: 0.21
+Nodes (6): CauseDisaster, OffsetX, OffsetY, Value, EventArgs, Menu
+
+### Community 318 - "Diplomat Incite Dialog"
+Cohesion: 0.13
+Nodes (12): StubDiplomatInciteService, DiplomatIncite, DiplomatInciteDialogFactory, DiplomatInciteService, Human, IDiplomatInciteService, EventArgs, IMenu (+4 more)
+
+### Community 319 - "Advance Discovery Tasks"
+Cohesion: 0.15
+Nodes (10): GameTask, GetAdvance, Player, ImprovementBuilt, IProduction, ProcessScience, EventArgs, Player (+2 more)
+
+### Community 320 - "Ranking Trigger Service"
+Cohesion: 0.29
+Nodes (5): CivilizationRankingTriggerService, CalendarService, CivilizationRankingTriggerServiceFactory, ICivilizationRankingTriggerService, Player
+
+### Community 321 - "Map Image Export"
+Cohesion: 0.20
+Nodes (7): IMapImageExportService, IMap, Player, MapImageExportService, IMap, Player, MapImageExportServiceFactory
+
+### Community 322 - "Unit Goto Pathfinding"
+Cohesion: 0.21
+Nodes (7): IUnitGotoService, UnitGotoServiceFactory, UnitGotoServiceImpl, Dictionary, IMapTiles, List, Point
+
+### Community 323 - "Spaceship Civ Selector"
+Cohesion: 0.18
+Nodes (5): SpaceShipCivilizationSelectorDialog, OffsetX, OffsetY, Action, Player
+
+### Community 324 - "Production Items"
+Cohesion: 0.14
+Nodes (11): IProduction, BuyPrice, Price, ProductionId, ProductionSeparator, BuyPrice, Price, ProductionId (+3 more)
+
+### Community 325 - "Audio DSP Mixer"
+Cohesion: 0.15
+Nodes (7): CivOne.Sound.Dsp, AudioResamplerDelegate, SuppressMessage, SoftLimiterDelegate, Span, SuppressMessage, PcmMixerDelegate
+
+### Community 326 - "Sound Test Menu"
+Cohesion: 0.22
+Nodes (4): IReadOnlyList, SoundTestEntry, SoundTitleTranslationDelegate, Translation
+
+### Community 327 - "Game Settings"
+Cohesion: 0.18
+Nodes (10): IEnumerable, GameSetting, Animations, AutoSave, CivilopediaText, EndOfTurn, EnemyMoves, InstantAdvice (+2 more)
+
+### Community 328 - "Stdio MCP Transport"
+Cohesion: 0.18
+Nodes (6): StdioMcpTransport, StdinClosed, Action, ConcurrentQueue, Thread, StreamReader
+
+### Community 330 - "MCP Map Land Values"
+Cohesion: 0.13
+Nodes (10): IMcpGameTickProvider, CurrentTick, GameGetMapLandValuesWindowToolHandler, Definition, Method, JsonElement, GameStateDtoSnapshotProvider, IGameStateDtoSnapshotProvider (+2 more)
+
+### Community 331 - "Palace Data Mapping"
+Cohesion: 0.08
+Nodes (26): PalaceData, BuildCount, CanUpgrade, PalaceLeft, PalaceRight, UpgradeCount, PalaceDtoMapper, Action (+18 more)
+
+### Community 332 - "Plugin Overwrite Dialog"
+Cohesion: 0.33
+Nodes (6): IPluginOverwriteService, OverwritePlugin, OverwritePluginDialogFactory, PluginOverwriteService, EventArgs, IScreen
+
+### Community 333 - "Dialog Window Handling"
+Cohesion: 0.29
+Nodes (4): WindowTitle, OffsetX, OffsetY, EventArgs
+
+### Community 334 - "Quit Auto-Save Service"
+Cohesion: 0.22
+Nodes (5): IQuitAutoSaveService, QuitAutoSaveService, Action, Func, SuppressMessage
+
+### Community 335 - "PC Speaker Renderer"
+Cohesion: 0.29
+Nodes (5): PcSpeakerTuneRenderer, Device, Gain, SpeakerPitchDelegate, List
+
+### Community 336 - "Sound Playback Strategy"
+Cohesion: 0.14
+Nodes (9): SettingsGatedSoundPlaybackStrategy, Game, Inner, Settings, IGameSoundOption, ISettings, TimeSpan, TitleMusicDelegate (+1 more)
+
+### Community 337 - "Desert Terrain"
+Cohesion: 0.18
+Nodes (11): Desert, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
+
+### Community 338 - "Plains Terrain"
+Cohesion: 0.18
+Nodes (11): Plains, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
+
+### Community 339 - "River Terrain"
+Cohesion: 0.18
+Nodes (11): River, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
+
+### Community 340 - "Tundra Terrain"
+Cohesion: 0.18
+Nodes (11): Tundra, Defense, Food, FortressCost, IrrigationCost, IrrigationFoodBonus, MiningCost, MiningShieldBonus (+3 more)
+
+### Community 341 - "Space Race Advances"
+Cohesion: 0.20
+Nodes (3): Plastics, Robotics, SpaceFlight
+
+### Community 342 - "Barbarian Spawning"
+Cohesion: 0.17
+Nodes (12): Barbarian, IsLandSpawnTurn, IsSeaSpawnTurn, IsSpawnTurn, LandSpawnPosition, LandSpawnUnits, SeaSpawnPosition, SeaSpawnUnits (+4 more)
+
+### Community 343 - "Civilization Name Builder"
+Cohesion: 0.24
+Nodes (5): CivilizationNameDelegate, CivilizationNames, SuppressMessage, Numeral, Value
+
+### Community 345 - "Game Service"
+Cohesion: 0.24
+Nodes (3): GameServiceFactory, GameServiceImpl, IGameService
+
+### Community 346 - "Bool Map YAML Converter"
+Cohesion: 0.24
+Nodes (7): IYamlTypeConverter, Bool2dMapYamlTypeConverter, IEmitter, IParser, ObjectDeserializer, ObjectSerializer, Type
+
+### Community 347 - "City Data Mapping"
+Cohesion: 0.10
+Nodes (19): ICityBasic, ICityStatus, ICityMapper, CityDebugSnapshotWrapper, City, IPlayerGame, ISettings, CityDtoMapper (+11 more)
+
+### Community 348 - "Save and Map Files"
+Cohesion: 0.20
+Nodes (8): SaveGameFile, CosFile, Difficulty, IsYamlFile, MapFile, Name, SveFile, ValidFile
+
+### Community 349 - "Save Map Delegate"
+Cohesion: 0.21
+Nodes (6): GamePlaySaveMapDelegate, Exception, IRuntime, ISettings, SuppressMessage, IMapSaveService
+
+### Community 350 - "Modern DOS Font"
+Cohesion: 0.20
+Nodes (4): KnownCp437Chars, ModernDos8X16, Dictionary, IReadOnlyDictionary
+
+### Community 351 - "Game Task Queue"
+Cohesion: 0.39
+Nodes (4): GameTaskCommandQueueAdapter, GameTask, IGameTaskCommandQueue, GameTask
+
+### Community 352 - "City Status Flags"
+Cohesion: 0.22
+Nodes (9): CityStatus, AutoBuild, CelebrationCancelled, CelebrationOrRapture, Coastal, HydroAvailable, ImprovementSold, Riot (+1 more)
+
+### Community 353 - "City Load Game"
+Cohesion: 0.31
+Nodes (5): CityLoadGame, City, List, dx, dy
+
+### Community 354 - "Hut Results"
+Cohesion: 0.22
+Nodes (7): HutResult, AdvancedTribe, AncientScrolls, Barbarians, FriendlyTribe, MetalDeposits, Random
+
+### Community 355 - "Unit Roles"
+Cohesion: 0.22
+Nodes (8): UnitRole, AirAttack, Civilian, Defense, LandAttack, SeaAttack, Settler, Transport
+
+### Community 357 - "City Status Interface"
+Cohesion: 0.22
+Nodes (9): ICityStatus, AutoBuild, BuildingSold, CelebrationCancelled, CelebrationOrRapture, HydroAvailable, IsCoastal, IsRiot (+1 more)
+
+### Community 358 - "Translation Service"
+Cohesion: 0.39
+Nodes (3): ITranslationService, FileTranslationService, IReadOnlyDictionary
+
+### Community 359 - "Map Generation Stages"
+Cohesion: 0.22
+Nodes (9): Stages, AgeAdjustments, CalculateContinentSize, CalculateLandValue, ClimateAdjustments, CreatePoles, CreateRivers, MergeElevationAndLatitude (+1 more)
+
+### Community 360 - "Spaceship Grid YAML Converter"
+Cohesion: 0.28
+Nodes (6): SpaceShipGridMapYamlTypeConverter, IEmitter, IParser, ObjectDeserializer, ObjectSerializer, Type
+
+### Community 362 - "Mixer Command Kinds"
+Cohesion: 0.22
+Nodes (8): MixerCommandKind, Add, Pause, Resume, SetBusVolume, SetVolume, Stop, StopBus
+
+### Community 363 - "Image to Bitmap"
+Cohesion: 0.32
+Nodes (5): DecodedImageToBitmapDelegate, IBitmap, Palette, Picture, SuppressMessage
+
+### Community 364 - "Window Size Menus"
+Cohesion: 0.36
+Nodes (4): Func, Height, Label, Width
+
+### Community 365 - "Save Metadata and Titles"
+Cohesion: 0.21
+Nodes (5): LeaderTitleDelegate, SaveMetaDataService, Calendar, Player, SaveFileMetaData
+
+### Community 368 - "Binary Save Writer"
+Cohesion: 0.25
+Nodes (4): BinarySaveGameStateWriter, Stream, IGameStateWriter, Stream
+
+### Community 369 - "Difficulty Levels"
+Cohesion: 0.25
+Nodes (7): DifficultyLevel, Chieftain, Deity, Emperor, King, Prince, Warlord
+
+### Community 370 - "Player Extensions"
+Cohesion: 0.43
+Nodes (4): PlayerExtensions, City, IEnumerable, Player
+
+### Community 371 - "City Citizen Service"
+Cohesion: 0.20
+Nodes (5): ICityCitizenService, IEnumerable, IGame, List, SuppressMessage
+
+### Community 373 - "Map Bitmap Scalers"
+Cohesion: 0.39
+Nodes (5): IMapBitmapScaler, MapBitmapScalerFactory, MapBitmapScalerType, NearestNeighborMapBitmapScaler, PaletteAwareWeightedMapBitmapScaler
+
+### Community 374 - "Wave Sample Loader"
+Cohesion: 0.50
+Nodes (3): WaveSampleLoaderDelegate, ReadOnlySpan, SuppressMessage
+
+### Community 375 - "Sound System Playback"
+Cohesion: 0.18
+Nodes (6): AudioDeviceFactoryDelegate, SequentialArrangementPickerDelegate, Dictionary, SoundSystemProvider, Current, IsAvailable
+
+### Community 376 - "Audio Device Interface"
+Cohesion: 0.29
+Nodes (3): AudioRenderCallback, IAudioDevice, SampleRate
+
+### Community 377 - "Continent Traversal"
+Cohesion: 0.38
+Nodes (3): ContinentTraversalDelegate, Action, Func
+
+### Community 378 - "Aspect Ratio Modes"
+Cohesion: 0.29
+Nodes (6): AspectRatio, Auto, Expand, Fixed, Scaled, ScaledFixed
+
+### Community 379 - "FPS Counter Corner"
+Cohesion: 0.29
+Nodes (6): FpsCorner, BottomLeft, BottomRight, Off, TopLeft, TopRight
+
+### Community 380 - "American Leader Lincoln"
 Cohesion: 0.67
-Nodes (3): Arab, Harun, Leader
+Nodes (3): American, Lincoln, Leader
 
-### Community 330 - "Aztec Leader"
+### Community 381 - "Game Query Interfaces"
+Cohesion: 0.29
+Nodes (7): IGameCityQuery, IGamePlayerQuery, IGameSettings, IGameTurnQuery, IGameUnitsQuery, IGameWonderQuery, IGameCitizenDependency
+
+### Community 382 - "Aztec Leader Montezuma"
 Cohesion: 0.67
 Nodes (3): Aztec, Montezuma, Leader
 
-### Community 331 - "Carthaginian Leader"
-Cohesion: 0.67
-Nodes (3): Carthaginian, Hannibal, Leader
+### Community 383 - "City Name Catalog"
+Cohesion: 0.33
+Nodes (4): ICityNameCatalog, IEnumerable, RuntimeCityNameCatalog, IEnumerable
 
-### Community 332 - "Chinese Leader"
+### Community 384 - "Egyptian Leader Ramesses"
 Cohesion: 0.67
-Nodes (3): Chinese, Mao, Leader
+Nodes (3): Egyptian, Ramesses, Leader
 
-### Community 333 - "English Leader"
+### Community 385 - "OPL2 Chip Components"
+Cohesion: 0.18
+Nodes (7): CivOne.Sound.Opl, OplEnvelopeState, Attack, Decay, Off, Release, Sustain
+
+### Community 386 - "OPL Lookup Tables"
+Cohesion: 0.18
+Nodes (4): OplTables, Exponent, KeyScaleLevel, LogSine
+
+### Community 387 - "Japanese Leader Tokugawa"
 Cohesion: 0.67
-Nodes (3): English, Elizabeth, Leader
+Nodes (3): Japanese, Tokugawa, Leader
 
-### Community 334 - "Ethiopian Leader"
+### Community 388 - "Versioned Save Parsing"
+Cohesion: 0.33
+Nodes (3): VersionedSaveFile, Guid, VersionedSaveFile
+
+### Community 389 - "Documentation Attribute"
+Cohesion: 0.33
+Nodes (5): DocAttribute, AllowedValues, AllowedValuesPropertyName, CommentValuesPropertyName, Description
+
+### Community 390 - "City Built Data"
+Cohesion: 0.33
+Nodes (6): CityBuiltData, CityId, CityNameId, OwnerId, X, Y
+
+### Community 391 - "Korean Leader Sejong"
 Cohesion: 0.67
-Nodes (3): Ethiopian, Selassie, Leader
+Nodes (3): Korean, Sejong, Leader
 
-### Community 335 - "German Leader"
-Cohesion: 0.67
-Nodes (3): German, Frederick, Leader
-
-### Community 336 - "Greek Leader"
-Cohesion: 0.67
-Nodes (3): Greek, Alexander, Leader
-
-### Community 337 - "Mali Leader"
+### Community 392 - "Mali Leader Mansa Musa"
 Cohesion: 0.67
 Nodes (3): Mali, MansaMusa, Leader
 
-### Community 338 - "Ottoman Leader"
-Cohesion: 0.67
-Nodes (3): Ottoman, Suleiman, Leader
+### Community 393 - "Palace Builder Stages"
+Cohesion: 0.33
+Nodes (6): Stage, Message, Morph, SelectPart, SelectStyle, View
 
-### Community 339 - "Persian Leader"
+### Community 394 - "Maya Leader Pacal"
 Cohesion: 0.67
-Nodes (3): Persian, Darius, Leader
+Nodes (3): Maya, Pacal, Leader
 
-### Community 340 - "Roman Leader"
+### Community 395 - "Wonder Effects"
+Cohesion: 0.33
+Nodes (4): CureForCancer, HangingGardens, JSBachsCathedral, ShakespearesTheatre
+
+### Community 399 - "Cursor Types"
+Cohesion: 0.40
+Nodes (4): CursorType, Builtin, Default, Native
+
+### Community 400 - "International Font Simulation"
+Cohesion: 0.40
+Nodes (4): SimulateInternationalFont, Auto, No, Yes
+
+### Community 401 - "City Captured Data"
+Cohesion: 0.40
+Nodes (5): CityCapturedData, CityNameId, CivId, X, Y
+
+### Community 403 - "Mongol Leader Genghis"
+Cohesion: 0.67
+Nodes (3): Mongol, Genghis, Leader
+
+### Community 404 - "Pending Unhappiness Equalising"
+Cohesion: 0.40
+Nodes (3): EqualisingPendingUnhappinessDelegate, Refill, PendingUnhappinessRefill
+
+### Community 405 - "Portuguese Leader Henrique"
+Cohesion: 0.67
+Nodes (3): Portuguese, Henrique, Leader
+
+### Community 406 - "Roman Leader Caesar"
 Cohesion: 0.67
 Nodes (3): Roman, Caesar, Leader
 
-### Community 341 - "Russian Leader"
-Cohesion: 0.67
-Nodes (3): Russian, Stalin, Leader
+### Community 407 - "Destroy Animation"
+Cohesion: 0.50
+Nodes (3): DestroyAnimation, Noise, Sprites
 
-### Community 342 - "Spanish Leader"
+### Community 408 - "Graphics Modes"
+Cohesion: 0.50
+Nodes (3): GraphicsMode, Graphics16, Graphics256
+
+### Community 414 - "Spanish Leader Isabella"
 Cohesion: 0.67
 Nodes (3): Spanish, Isabella, Leader
 
+### Community 415 - "Civ Type Id Data"
+Cohesion: 0.67
+Nodes (3): CivWithTypeIdData, CivId, TypeId
+
+### Community 417 - "Replay Summary Data"
+Cohesion: 0.67
+Nodes (3): ReplaySummaryData, CityCount, Population
+
+### Community 418 - "Global Warming Flag Enum"
+Cohesion: 0.67
+Nodes (3): GlobalWarmingFeatureFlag, None, SeaLevelRise
+
+### Community 419 - "LZW Codec Types"
+Cohesion: 0.67
+Nodes (3): LzwCodecType, Corrected, Original
+
+### Community 420 - "Map Bitmap Scaler Types"
+Cohesion: 0.67
+Nodes (3): MapBitmapScalerType, NearestNeighbor, PaletteAwareWeighted
+
+### Community 421 - "Start Position Algorithms"
+Cohesion: 0.67
+Nodes (3): StartPositionAlgorithmType, AreaBased, Legacy
+
+### Community 425 - "Two Civs Data"
+Cohesion: 0.67
+Nodes (3): TwoCivsData, CivId, CivId2
+
 ## Knowledge Gaps
-- **3093 isolated node(s):** `ActiveUnit`, `Animations`, `AutoSave`, `BarbarianActivity`, `BarbarianSpawn` (+3088 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3372 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **41 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **3199 isolated node(s):** `SoundPlaybackStrategyConstants`, `SoundNames`, `BinarySaveWriter`, `GameSnapshotFactory`, `PngHeader` (+3194 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4589 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Game` connect `Game Loading` to `AI and Barbarians`, `Player State`, `City Management`, `Game Singletons`, `Barbarian Spawn Activity`, `Unit Movement`, `City Production Menu`, `Disaster Dialog Events`, `DTO Mapping Resolvers`, `Tile Properties`, `Pathfinding Adapters`, `Start Position Placement`, `Game Service`, `Random Number Service`, `Settings Interface`, `Civilization Ranking Trigger`, `Screen Management`, `City State Mapping`, `Hall of Fame Persistence`, `Game Tasks`, `Palace Upgrade Triggers`, `Settler Terrain Improvements`, `SVE Save Compatibility`, `Continent Map Queries`, `Game Query Interfaces`, `Buddy Civilizations`, `Save Path Provider`, `Wonders and Advances`, `Adlib Bytecode Decoder`, `Save Metadata Service`, `Extension Methods`, `Player Game Interface`, `Game Play Screen`, `Turn Processing`, `Map Editor Interface`, `Game Options`, `Unit Factory and DTOs`, `Turn Handling`, `Save Game`, `Wonders`, `Sprite Cache`, `A* Pathfinding`, `Global Warming Services`, `A* Pathfinding`, `Replay Data Mapping`, `Terrain Editor Rendering`, `Save Game Metadata`, `Game State Handling`, `Government Types`, `Civilopedia Reflection Docs`, `AI and Barbarians`, `City Basic Data`, `Logging and Diplomat Bribes`, `Sea Transport Units`?**
-  _High betweenness centrality (0.113) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `Player` (e.g. with `.Create()` and `Despotism`) actually correct?**
-  _`Player` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `ActiveUnit`, `Animations`, `AutoSave` to the rest of the system?**
-  _3093 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Misc Core Contracts` be split into smaller, more focused modules?**
-  _Cohesion score 0.02556607962113364 - nodes in this community are weakly interconnected._
-- **Why does `Player` connect `Player State` to `Technology Advances`, `City Management`, `Game Singletons`, `City Production Menu`, `Game Loading`, `Map Image Export`, `Disaster Dialog Events`, `DTO Mapping Resolvers`, `Space Race Rules`, `Pathfinding Adapters`, `Unit Combat Capture`, `Screen Base Drawing`, `Start Position Placement`, `Dialog Menus`, `Tile Rendering Settings`, `King Meeting Screen`, `Civilization Ranking Trigger`, `City State Mapping`, `Change Player Dialog`, `Buildings and Wonders`, `Game Tasks`, `Palace Upgrade Triggers`, `Government Resolution`, `Player Interface`, `Debug Change Government`, `Confront Delegate`, `Game Query Interfaces`, `Buddy Civilizations`, `City Selection Dialogs`, `Wonders and Advances`, `Adlib Bytecode Decoder`, `Save Metadata Service`, `Spaceship Components`, `Spaceship View`, `Player Game Interface`, `Null Player Game`, `Palace Data`, `Player Factory`, `Advance Wonder Effects`, `Diplomat City Actions`, `Civilization Ranking Service`, `Turn Processing`, `Map Editor Interface`, `Top Leader Screen`, `Tribal Hut Events`, `Turn Handling`, `Player Game Stub`, `Power Graph`, `Diplomat Incite`, `Terrain Editor Rendering`, `Space Ship Factories`, `Space Ship Civilization Selector`, `Game State Handling`, `Government Types`, `Civilopedia Reflection Docs`, `AI and Barbarians`, `Space Ship Components`, `Advance Requirements`, `Caravan Choice Dialog`, `Page Navigation`?**
-  _High betweenness centrality (0.095) - this node is a cross-community bridge._
-- **Should `Graphics Core Types` be split into smaller, more focused modules?**
-  _Cohesion score 0.0291005291005291 - nodes in this community are weakly interconnected._
-- **Why does `BaseScreen` connect `Screen Base Drawing` to `Resource Disposal`, `Graphics Core Types`, `Game Singletons`, `Game Menu Descriptions`, `Mouse Event Args`, `Screen Fade Speed`, `City Production Menu`, `Colour and Bitmap Conversion`, `Disaster Dialog Events`, `City Production Screen`, `Intro and Map Generation`, `Hall of Fame Screen`, `Demographics Screen`, `Dialog Menus`, `Direction Enum`, `King Meeting Screen`, `Options Menus`, `Screen Management`, `City Manager Screen`, `Discovery Screen`, `Bitmap Extensions`, `Change Player Dialog`, `City View Rendering`, `Mouse Cursor Updates`, `Font Viewer`, `Quick Save Slots`, `Debug Change Government`, `Set Game Year Dialog`, `Help Overlay`, `Game Map Editor`, `Text Alignment Settings`, `Report Screens`, `Wizard Mouse Markers`, `Tech Choice Screen`, `City Selection Dialogs`, `Missing Files Screen`, `Civilization Ranking Screen`, `Adlib Bytecode Decoder`, `Spaceship View`, `Game Play Screen`, `Palace Data`, `Palette Viewer Screen`, `Terrain Selector Screen`, `Victory Screen`, `Civilopedia Screen`, `Menu Bar`, `Turn Processing`, `Top Leader Screen`, `Save Game`, `Wizard Action Interfaces`, `Power Graph`, `Player Slots Screen`, `Diplomat Incite`, `Goto Delegate`, `Quit Dialog Layout`, `Sprite Extensions`, `Text Input Handling`, `Wonders Screen`, `City Name Dialog`, `City Info Navigation`, `Customize World Menu`, `New Game Screen`, `Mini Map Rendering`, `Load Map Screen`, `World Map Editor View`, `Conquest Screen`, `Advance Requirements`, `Newspaper Screen`, `Unit Selector Screen`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+- **Why does `CivOne.Enums` connect `Civilization Definitions` to `Government Types`, `Tech Advances`, `Graphics and Screens`, `Persistence and Services`, `Unit Pathfinding`, `Score and Spaceship Services`, `Building Definitions`, `Cursor Types`, `Mouse Events`, `Preview Palace Parts`, `Direction Enum`, `International Font Simulation`, `Palace Upgrade Trigger`, `City Info and Events`, `Destroy Animation`, `Wonders and Units`, `Barbarian Activity Settings`, `Game Options and Sound Pack`, `Graphics Modes`, `Screen Drawing Base`, `Building Interface`, `Save Game Screen`, `Random and Event Handlers`, `Barbarian Spawn`, `IO and Text Infrastructure`, `Text Alignment Settings`, `Face Bitmap Rendering`, `Keyboard Input`, `City Turn Processing`, `Civ Ranking Screen`, `Wonder Definitions`, `Citizen Types`, `Spaceship Components`, `Spaceship Civilization Selector`, `Key Definitions`, `Game Query Interfaces`, `Palace Parts`, `Spaceship Services`, `MCP and Persistence`, `City View Map`, `Climate and River Creation`, `Platform Runtime Info`, `Hut Results`, `Unit Roles`, `World Generation Options`, `Sound System Playback`, `Aspect Ratio Modes`, `FPS Counter Corner`?**
+  _High betweenness centrality (0.201) - this node is a cross-community bridge._
+- **Why does `Game` connect `Game Core State` to `Graphics and Screens`, `Tech Advances`, `Civilization Definitions`, `Persistence and Services`, `Versioned Save Parsing`, `Unit Pathfinding`, `Tiles and Global Warming`, `Score and Spaceship Services`, `Map Editor Interface`, `Player Game Interface`, `Building Definitions`, `Turn Interface`, `Game State Loading`, `Palace Upgrade Trigger`, `Game End Check`, `Wonders and Availability`, `Peace Turn Service`, `SVE Save Compatibility Service`, `Unit Factory Mapping`, `Core Game Singletons`, `Turn Processing`, `End Of Game State`, `Barbarian Spawn`, `DTO Mapper Dependencies`, `City Turn Processing`, `Calendar Service`, `Wonder Definitions`, `AI and Leaders`, `Save Data Storage`, `Spaceship Arrival`, `Advance Discovery Tasks`, `Game Snapshot Data`, `Ranking Trigger Service`, `Game Settings`, `Game Query Interfaces`, `Save Game Paths`, `Report Screens`, `Game Service`, `Player Slots Screen`, `City Load Game`, `Buddy Civilization Assignment`, `Replay Data Mapping`, `Global Warming Services`, `Page Navigation`, `Game End Conquest Check`, `City Basic Data`, `Map Editor Start Positions`, `Map Locations`, `Value Sanitizer`, `Save Metadata`, `Game Query Interfaces`?**
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+- **Why does `BaseScreen` connect `Screen Drawing Base` to `Graphics and Screens`, `Intro and Map Generation`, `Screen Input Handling`, `City Manager Screen`, `Civilopedia Screen`, `Gameplay Screen`, `Power Graph Screen`, `Mouse Events`, `Direction Enum`, `Screen Management`, `Load Map Screen`, `Menu Rendering`, `Debug Menu Actions`, `Grid Menu`, `Game Menu`, `Save Game Screen`, `Setup Screen`, `Spaceship View`, `Cached Sprite Resources`, `Text Alignment Settings`, `Keyboard Input`, `Newspaper Screen`, `Load Game Screen`, `City Production Chooser`, `Text Input Screen`, `Overlay Screens`, `City View Drawing`, `Palace Sprite Provider`, `Spaceship Civ Selector`, `Conquest Screen`, `Sound Pack Picker`, `Space Victory Animation`, `Dialog Window Handling`, `Top Leader Order`, `Quick Load Slots`, `Screen Event Args`, `Screen Close Handling`, `Map Rendering Animation`, `World Map Editor View`, `Game Options Screen`, `Custom World Menu`, `New Game Screen`, `Goto Command Handling`, `City Name Dialog`, `Advance Requirements`, `End Game Screens`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **What connects `SoundPlaybackStrategyConstants`, `SoundNames`, `BinarySaveWriter` to the rest of the system?**
+  _3199 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Graphics and Screens` be split into smaller, more focused modules?**
+  _Cohesion score 0.024170597637519005 - nodes in this community are weakly interconnected._
+- **Should `Tech Advances` be split into smaller, more focused modules?**
+  _Cohesion score 0.017038777908343124 - nodes in this community are weakly interconnected._
+- **Should `Civilization Definitions` be split into smaller, more focused modules?**
+  _Cohesion score 0.05455251407493691 - nodes in this community are weakly interconnected._

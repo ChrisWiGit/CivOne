@@ -4,6 +4,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
+using CivOne.Services.Score;
 using CivOne.Services.HallOfFame;
 using CivOne.Sound;
 using CivOne.Sound.Playback;
@@ -56,7 +57,7 @@ namespace CivOne.Screens.Reports
 			return new HallOfFameEntryComposerService(
 				civilizationScoreService: CivilizationScoreServiceFactory.CreateDefault(),
 				gameCalendarService: new GameCalendarService(translationService),
-				leaderOrderDelegate: new LeaderOrderDelegate(translationService),
+				civilizationRatingService: new CivilizationRatingService(new LeaderOrderDelegate(translationService)),
 				translationService: translationService);
 		}
 

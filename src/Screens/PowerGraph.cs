@@ -218,7 +218,9 @@ namespace CivOne.Screens
 		{
 			_injectedSelection = selection;
 
-			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
+			// The end-game flow opens the graph after clearing the screen stack, so there may be no top screen.
+			using Palette palette = ScreenServiceFactory.CreateQueryService().TopScreen?.Palette.Copy() ?? Common.DefaultPalette;
+			Palette = palette;
 
 			// Drops a selection that belongs to a previously played game; a new game with the same number of
 			// players would otherwise inherit it and apply it to different civilizations.

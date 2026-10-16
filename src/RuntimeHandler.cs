@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -65,6 +66,7 @@ namespace CivOne
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
+		private readonly SoundPackPickerDelegate _soundPackPicker = new();
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
@@ -259,6 +261,13 @@ namespace CivOne
 				args.HasUpdate = true;
 
 			}
+
+			// The notification is drawn on top of the screens, so a screen that does not redraw
+			// itself would neither show it nor remove it after it timed out.
+			if (NotificationNeedsRedraw)
+			{
+				args.HasUpdate = true;
+			}
 		}
 
 		private void OnDraw(object? _, EventArgs args)
@@ -330,9 +339,16 @@ namespace CivOne
 
 		}
 
+		[MemberNotNullWhen(true, nameof(_notificationText))]
+		private bool IsNotificationVisible => !string.IsNullOrEmpty(_notificationText) && _gameTick < _notificationUntilTick;
+
+		private bool NotificationNeedsRedraw => IsNotificationVisible
+			? _notificationLayerText != _notificationText
+			: _notificationLayer != null;
+
 		private void AddNotificationLayer()
 		{
-			if (string.IsNullOrEmpty(_notificationText) || _gameTick >= _notificationUntilTick || Runtime.Layers == null)
+			if (!IsNotificationVisible || Runtime.Layers == null)
 			{
 				ClearNotificationLayer();
 				return;
@@ -442,7 +458,20 @@ namespace CivOne
 
 		private bool TryHandleSoundToggleHotkey(KeyboardEventArgs args)
 		{
-			if (args.Control || args.Shift || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
+			if (args.Control || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
+
+			if (args.Shift)
+			{
+				OpenSoundPackPicker(noSoundPack: false);
+				return true;
+			}
+
+			// Without a sound pack there is nothing to switch on, so offer to pick one instead.
+			if (string.Equals(SoundPlaybackStrategyProvider.SelectedPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase))
+			{
+				OpenSoundPackPicker(noSoundPack: true);
+				return true;
+			}
 
 			Settings.Sound = Settings.Sound == GameOption.Off ? GameOption.On : GameOption.Off;
 			
@@ -458,6 +487,24 @@ namespace CivOne
 
 			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");
 			return true;
+		}
+
+		private void OpenSoundPackPicker(bool noSoundPack)
+		{
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+
+			if (!_soundPackPicker.CanOpenOver(TopScreen))
+			{
+				ShowNotification(noSoundPack
+					? translation.Translate("No sound pack selected. Choose one in Setup.")
+					: translation.Translate("Change the sound pack in Setup."));
+				return;
+			}
+
+			if (!_soundPackPicker.TryOpen())
+			{
+				ShowNotification(translation.Translate("No sound packs found."));
+			}
 		}
 
 		private void ShowNotification(string text)

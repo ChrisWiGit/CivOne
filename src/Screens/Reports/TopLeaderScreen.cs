@@ -7,6 +7,7 @@ using CivOne.Graphics;
 using CivOne.Screens.GovernmentPortraits;
 using CivOne.Services;
 using CivOne.Services.Random;
+using CivOne.Services.Score;
 using Adv = CivOne.Advances;
 using Gov = CivOne.Governments;
 
@@ -31,6 +32,7 @@ namespace CivOne.Screens.Reports
 		private readonly IAdvisorPortraitSpriteProvider _portraitSpriteProvider;
 		private readonly LeaderOrderDelegate _leaderOrderDelegate;
 		private readonly ICivilizationScoreService _civilizationScoreService;
+		private ICivilizationRatingService? _civilizationRatingService;
 		private readonly bool _debugMode;
 		private readonly int _fontHeight;
 
@@ -52,16 +54,17 @@ namespace CivOne.Screens.Reports
 				.FillRectangle(x + width - 1, y, 1, height, frameColour);
 		}
 
-		private int GetPlayerRatingPercent()
+		private ICivilizationRatingService CivilizationRatingService => _civilizationRatingService ??= CivilizationScoreServiceFactory.CreateRatingService();
+
+		private LeaderOrderResult? GetFamousPerson()
 		{
 			if (_debugMode)
 			{
-				return _debugScore;
+				return _leaderOrderDelegate.Calculate(_debugScore);
 			}
 
 			int totalScore = _civilizationScoreService.TotalScore(Human);
-			int topLeaderThreshold = _leaderOrderDelegate.GetLeaderOrder()[0].RatingThreshold;
-			return _civilizationScoreService.RatingPercent(totalScore, topLeaderThreshold);
+			return CivilizationRatingService.FamousPerson(totalScore, Game.Difficulty, Human.Palace.UpgradeCount);
 		}
 
 		private void DrawMessageBox(int ox, int oy, LeaderOrderResult leaderOrderResult)
@@ -72,12 +75,20 @@ namespace CivOne.Screens.Reports
 			DrawPanel(ox + HeaderBoxX, oy + HeaderBoxY, HeaderBoxWidth, boxHeight, border: true);
 
 			int textCenterX = ox + HeaderBoxX + (HeaderBoxWidth / 2);
-			string[] lines =
-			[
-				Translate("Sire, your Civilization"),
-				TranslateFormatted("Rating of {0}% exceeds even", leaderOrderResult.RatingPercent),
-				TranslateFormatted("{0}!", leaderOrderResult.SelectedLeaderName)
-			];
+			// A rating of 0 means the original's score-0 fallback, which praises fame instead of the rating.
+			string[] lines = leaderOrderResult.RatingPercent == 0
+				?
+				[
+					Translate("Sire, your fame now"),
+					Translate("exceeds even that of"),
+					TranslateFormatted("{0}!", leaderOrderResult.SelectedLeaderName)
+				]
+				:
+				[
+					Translate("Sire, your Civilization"),
+					TranslateFormatted("Rating of {0}% exceeds even", leaderOrderResult.RatingPercent),
+					TranslateFormatted("{0}!", leaderOrderResult.SelectedLeaderName)
+				];
 
 			for (int i = 0; i < lines.Length; i++)
 			{
@@ -208,7 +219,13 @@ namespace CivOne.Screens.Reports
 		{
 			int ox = OffsetX;
 			int oy = OffsetY;
-			LeaderOrderResult leaderOrderResult = _leaderOrderDelegate.Calculate(GetPlayerRatingPercent());
+			LeaderOrderResult? famousPerson = GetFamousPerson();
+			if (famousPerson is not LeaderOrderResult leaderOrderResult)
+			{
+				// The original shows no Famous Persons window when the rating exceeds nobody.
+				Destroy();
+				return;
+			}
 
 			this.Clear(15);
 			DrawBorder(0);
@@ -291,12 +308,14 @@ namespace CivOne.Screens.Reports
 			TopLeaderScreenEnvironment? environment = null,
 			IAdvisorPortraitSpriteProvider? portraitSpriteProvider = null,
 			LeaderOrderDelegate? leaderOrderDelegate = null,
-			ICivilizationScoreService? civilizationScoreService = null) : base(MouseCursor.None)
+			ICivilizationScoreService? civilizationScoreService = null,
+			ICivilizationRatingService? civilizationRatingService = null) : base(MouseCursor.None)
 		{
 			var _environment = environment ?? new TopLeaderScreenEnvironment();
 			_portraitSpriteProvider = portraitSpriteProvider ?? AdvisorPortraitSpriteProviderFactory.GetInstance();
 			_leaderOrderDelegate = leaderOrderDelegate ?? new LeaderOrderDelegate(TranslationServiceFactory.CreateDefault());
 			_civilizationScoreService = civilizationScoreService ?? CivilizationScoreServiceFactory.CreateDefault();
+			_civilizationRatingService = civilizationRatingService;
 			_debugMode = debugMode;
 			_debugScore = 42;
 			_fontHeight = _environment.GetFontHeight(HeaderAndLeaderFontId);

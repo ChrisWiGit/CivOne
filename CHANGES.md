@@ -7,6 +7,27 @@ If you want to add a change, do not add technical details, but describe the chan
 
 ## History
 
+* Feature: The game now ends like the original game.
+  * The game ends in a fixed year that depends on the difficulty (2100 on Chieftain, 20 years earlier per level, 2000 on Deity).
+  * 20 years before the end, a newspaper warns that your leader plans retirement.
+  * After a spaceship arrives at Alpha Centauri, or after the final year, you can choose to keep playing.
+  * If you keep playing, no further score is recorded: there is no second Hall of Fame entry, the palace is no longer upgraded, and the score screen shows "SCORING COMPLETED".
+  * The space victory screen is now also shown when a rival's spaceship arrives.
+  * The space victory screen tells the story of the flight with the original text, first during the flight and then after the landing.
+  * The flight to Alpha Centauri lasts as long as its music, so your ship lands when the music ends. Before your space station appears, the screen fades to black like in the original.
+  * A civilization loses its spaceship when its capital is captured or the civilization is destroyed: a ship in flight returns to Earth, one under construction is cancelled.
+  * Like the original, the research progress of all civilizations doubles once when the calendar reaches 1 AD.
+  * The leader title follows the government, for example "Mr." under Anarchy.
+  * The lights in the spaceship view blink and glow at the speed of the original game, including the engine glow.
+* Feature: The calendar works like the original game while a spaceship is in flight.
+  * Between 1750 and 1850 the year advances by 1 instead of 2, so the spaceship arrives exactly in the year shown at launch.
+  * The arrival year is fixed at launch and saved with the game.
+  * SVE saves now keep the spaceship launch, arrival year and population.
+* Feature: The civilization score now follows the original game's formula and is always up to date.
+  * The score screen (F9) uses the original layout.
+  * Top Leader, Hall of Fame, palace upgrades and the historian all use the same score.
+  * AI civilizations get mini palaces in the historian screen, based on their score.
+  * The end-game screens appear in the same order as in the original game.
 * Fix: Reset peace counter to 0 when a nuclear strike occurs.
   * This differs from the original game, where the peace counter is only reset during combat and not by nuclear strikes.
 * Rename to CivOneX.

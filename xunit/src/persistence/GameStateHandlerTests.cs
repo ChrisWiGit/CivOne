@@ -97,6 +97,8 @@ namespace CivOne.UnitTests.Persistence
             public ushort GameTurn { get; set; } = 1;
             public ushort AnthologyTurn { get; set; }
 			public ushort PeaceTurns { get; set; }
+			public IReadOnlyCollection<ushort> AcceleratedTurns { get; set; } = [];
+			public bool ScoringCompleted { get; set; }
 			public ushort PlayerFutureTech { get; set; }
             public string[] CityNames { get; set; } = [];
             public List<ReplayData> ReplayData { get; set; } = [];

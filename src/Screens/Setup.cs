@@ -62,6 +62,7 @@ namespace CivOne.Screens
 		/// <summary>The sting playing over the test tune, if any.</summary>
 		private ISoundHandle? _testSting;
 		private readonly SoundTitleTranslationDelegate _soundTitles = new();
+		private readonly SoundPackSwitchDelegate _soundPackSwitch = new();
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
 		[
@@ -902,18 +903,7 @@ namespace CivOne.Screens
 
 		private void SelectSoundPack(string packId)
 		{
-			Settings.SoundPack = packId ?? string.Empty;
-			if (Settings.Sound == GameOption.Off)
-			{
-				SoundPlaybackStrategyProvider.Abort();
-			}
-
-			// Also covers picking the pack that was already selected, which changes no setting and
-			// would therefore not be noticed anywhere else.
-			SoundPlaybackStrategyProvider.WarmUp();
-
-			NotifySoundPackSelection(SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory)));
-
+			_soundPackSwitch.Switch(packId, CurrentSoundPackText);
 			SoundMenu();
 		}
 
@@ -933,13 +923,6 @@ namespace CivOne.Screens
 			// A pack that was selected and has since been removed; showing its id beats showing
 			// something that is not what will play.
 			return selected;
-		}
-
-		private void NotifySoundPackSelection(string packName)
-		{
-			if (!Game.Started) return;
-
-			GameTask.Enqueue(Message.General(TranslateFormatted("Sound pack switched to {0}.", packName)));
 		}
 
 		private int ActiveBehaviorPatchCount()

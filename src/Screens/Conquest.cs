@@ -16,6 +16,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Screens
 {
@@ -257,7 +258,7 @@ namespace CivOne.Screens
 				.Where(entry => entry.Destroyed.DestroyedById == Game.HumanPlayerId)
 				.Select(entry => new Enemy
 				{
-					DestroyYear = Common.YearString((ushort)entry.Destroyed.Turn),
+					DestroyYear = GameCalendarServiceFactory.Current.FormatYear((ushort)entry.Destroyed.Turn),
 					Leader = entry.Civilization.Leader,
 					// Several players can share one civilization once there are more players than civilizations,
 					// so use the same numbered name the destroyed player had ("Roman II").

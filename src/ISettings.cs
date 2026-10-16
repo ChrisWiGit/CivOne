@@ -93,6 +93,11 @@
 		string SoundsDirectory { get; }
 
 		/// <summary>
+		/// Gets whether sound is switched on in the setup.
+		/// </summary>
+		Enums.GameOption Sound { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the entire world map is revealed.
 		/// </summary>
 		bool RevealWorld { get; }

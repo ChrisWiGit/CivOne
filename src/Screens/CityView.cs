@@ -1341,13 +1341,7 @@ namespace CivOne.Screens
 				}
 				CreateWalkOffsets(CrowdOffsetsX.Length);
 
-				string leaderTitle = Translate("President");
-				if (Game.CurrentPlayer.Government is Governments.Monarchy)
-					leaderTitle = Translate("King");
-				if (Game.CurrentPlayer.Government is Governments.Communism)
-					leaderTitle = Translate("Comrade");
-				if (Game.CurrentPlayer.Government is Despotism)
-					leaderTitle = Translate("Emperor");
+				string leaderTitle = new LeaderTitleDelegate(Translation).Title(Game.CurrentPlayer.Government);
 
 				string[] lines = TranslateFormattedArray("'We Love the {0}'\nday celebrated in\n{1}!", leaderTitle, city.Name);
 				drawMessage(lines);

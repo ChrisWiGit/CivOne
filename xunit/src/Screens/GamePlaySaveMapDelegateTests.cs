@@ -219,6 +219,7 @@ namespace CivOne.Screens
 			public string DataDirectory => throw new NotImplementedException();
 			public string PluginsDirectory => throw new NotImplementedException();
 			public string SoundsDirectory => throw new NotImplementedException();
+			public GameOption Sound => throw new NotImplementedException();
 			public bool RevealWorld => throw new NotImplementedException();
 			public bool DebugMenu => throw new NotImplementedException();
 			public bool AutoSaveOnQuit => true;

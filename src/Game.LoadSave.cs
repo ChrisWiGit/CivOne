@@ -20,6 +20,8 @@ using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Random;
+using CivOne.Services.Historian;
+using CivOne.Services.Score;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -84,6 +86,10 @@ namespace CivOne
 			gameData.PlayerGold = [.. _players.Select(x => x.Gold)];
 			gameData.ResearchProgress = [.. _players.Select(x => x.Science)];
 			gameData.TaxRate = [.. _players.Select(x => CVS.CheckedUInt16(x.TaxesRate, nameof(Game), "Save.TaxRate"))];
+			IHistorianPalaceService historian = HistorianServiceFactory.CreatePalaceService();
+			gameData.CivilizationScore = new SveCivilizationScoreDelegate().Collapse(
+				((Persistence.Game.IPlayer)HumanPlayer).CivilizationScore,
+				[.. _players.Select(historian.CitySum)]);
 			gameData.ScienceRate = [.. _players.Select(p => CVS.CheckedUInt16(p.ScienceRate, nameof(Game), "Save.ScienceRate"))];
 			gameData.HumanContactTurns = [.. _players.Select(p => p.HumanContactTurn)];
 			gameData.StartingPositionX = [.. _players.Select(x => CVS.CheckedUInt16(x.StartX, nameof(Game), "Save.StartingPositionX"))];
@@ -130,8 +136,9 @@ namespace CivOne
 			];
 			gameData.NextAnthologyTurn = _anthologyTurn;
 			gameData.OpponentCount = CVS.CheckedUInt16(_players.Length - 2, nameof(Game), "Save.OpponentCount");
-			gameData.PeaceTurns = _peaceTurns;
+			gameData.PeaceTurns = PeaceTurns;
 			gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
+			StoreSpaceRace(gameData);
 			gameData.ReplayData = [.. _replayData];
 			GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(_globalWarmingService, _valueSanitizer).Store(gameData);
 			File.WriteAllBytes(sveFile, gameData.GetBytes());
@@ -199,7 +206,8 @@ namespace CivOne
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
-			_peaceTurns = gameData.PeaceTurns;
+			PeaceTurnService.Restore(gameData.PeaceTurns);
+			RestoreSpaceRace(gameData);
 			_playerFutureTech = gameData.PlayerFutureTech;
 			HumanPlayer.FutureTechCount = _playerFutureTech;
 

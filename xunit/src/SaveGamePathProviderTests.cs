@@ -151,6 +151,7 @@ namespace CivOne.UnitTests
 			public string PluginsDirectory => throw new NotImplementedException();
 
 			public string SoundsDirectory => throw new NotImplementedException();
+			public GameOption Sound => throw new NotImplementedException();
 
 			public bool RevealWorld => throw new NotImplementedException();
 

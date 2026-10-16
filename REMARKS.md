@@ -255,7 +255,7 @@ The following table summarizes the SpaceShip-related classes and core types and 
 | ISpaceShipSpriteProvider | [src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs) | Contract for retrieving part sprites by component type. |
 | ResourcesSpaceShipSpriteProvider | [src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs) | Sprite provider backed by docker resource sprite atlas. |
 | SpaceShipSpriteProviderFactory | [src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs](./src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs) | Singleton-like provider factory for sprite access. |
-| SpaceShipPaletteAnimationDelegate | [src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs](./src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs) | Palette-cycle animation for spaceship lights/modules. |
+| PaletteCycleDelegate | [src/Screens/SpaceShip/PaletteCycleDelegate.cs](./src/Screens/SpaceShip/PaletteCycleDelegate.cs) | Palette-cycle animation of the spaceship view and the space station, at the original's rates. |
 | ISpaceShipService | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | High-level build/launch/screen-data service contract. |
 | IPlayerSpaceRace | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Minimal player projection required by spaceship services. |
 | ISpaceShipServiceFactory | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Factory for per-player spaceship services. |

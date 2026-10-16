@@ -137,7 +137,11 @@ namespace CivOne.IO
 		public fixed ushort ScienceRate[8];					// 35760:35775
 		public ushort NextAnthologyTurn;					// 35776:35777
 		public fixed ushort EpicRanking[8];					// 35778:35793
-		public fixed byte SpaceShips[1462];					// 35794:37255
+		public fixed byte SpaceShipParts[1440];				// 35794:37233 (8 x 180 bytes)
+		public ushort SpaceshipFlags;						// 37234:37235 (bit 1<<p: in flight, bit 1<<(p+8): has parts, bit 0x100: scoring completed)
+		public short SpaceshipSuccessRateHuman;				// 37236:37237
+		public short SpaceshipSuccessRateAi;				// 37238:37239
+		public fixed short SpaceshipEtaYear[8];				// 37240:37255 (-1: none)
 		public fixed byte Palace[8 * 6];					// 37256:37303
 		public fixed byte CityX[256];						// 37304:37559
 		public fixed byte CityY[256];						// 37560:37815

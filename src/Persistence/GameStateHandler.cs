@@ -38,6 +38,8 @@ namespace CivOne
 		ushort GameTurn { get; }
 		ushort AnthologyTurn { get; }
 		ushort PeaceTurns { get; }
+		IReadOnlyCollection<ushort> AcceleratedTurns { get; }
+		bool ScoringCompleted { get; }
 		ushort PlayerFutureTech { get; }
 
 		string[] CityNames { get; }
@@ -133,6 +135,8 @@ namespace CivOne
 				AdvanceOrigin = game.AdvanceOrigin,
 				ReplayData = [.. game.ReplayData],
 				PeaceTurns = game.PeaceTurns,
+				AcceleratedTurns = [.. game.AcceleratedTurns],
+				ScoringCompleted = game.ScoringCompleted,
 				PlayerFutureTech = game.PlayerFutureTech,
 				DisableBuddyCivilizationRespawn = game.DisableBuddyCivilizationRespawn,
 				BarbarianActivity = game.BarbarianActivity,

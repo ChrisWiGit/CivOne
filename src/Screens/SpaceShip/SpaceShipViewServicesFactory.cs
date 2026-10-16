@@ -21,6 +21,7 @@ namespace CivOne.Screens
 				SlotBlueprint = SpaceShipSlotBlueprintFactoryProvider.GetInstance().Create(),
 				Resources = new SpaceShipResourceServiceAdapter(Resources.Instance, Resources.Instance),
 				CalendarService = new GameCalendarService(translationService),
+				ArrivalService = SpaceShipServiceFactoryProvider.CreateArrivalService(),
 				RandomService = RandomServiceFactory.Create()
 			};
 		}

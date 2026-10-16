@@ -51,7 +51,6 @@ namespace CivOne.Persistence.Game
 		new ushort[] UnitsDestroyedBy { get; set; }
 		new ushort EpicRanking { get; set; }
 		new ushort MilitaryPower { get; set; }
-		new ushort CivilizationScore { get; set; }
 		new IGovernment Government { get; set; }
 		new int LuxuriesRate { get; set; }
 		new int TaxesRate { get; set; }
@@ -61,6 +60,7 @@ namespace CivOne.Persistence.Game
 		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		ushort SpaceShipPopulation { get; set; }
 		short SpaceShipLaunchYear { get; set; }
+		short SpaceShipEtaYear { get; set; }
 		new List<ICity> Cities { get; set; }
 	}
 }

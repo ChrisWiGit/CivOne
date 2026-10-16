@@ -27,6 +27,8 @@ namespace CivOne.Tasks
 	{
 		private readonly IScreen _screen;
 
+		internal IScreen Content => _screen;
+
 		public void Closed(object? _, EventArgs __) => EndTask();
 
 		public override void Run()

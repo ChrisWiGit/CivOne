@@ -14,6 +14,8 @@ using CivOne.Graphics;
 using CivOne.Enums;
 using CivOne.Screens.Services;
 using CivOne.Services;
+using CivOne.Services.Score;
+using CivOne.Wonders;
 
 namespace CivOne.Screens.Reports
 {
@@ -28,12 +30,15 @@ namespace CivOne.Screens.Reports
 	{
 		private readonly ICivilizationScoreService _civilizationScoreService;
 
-		private const int HappyCitizenScoreWeight = 2;
-		private const int CityScoreWeight = 3;
-		private const int AdvanceScoreWeight = 10;
-		private const int WonderScoreWeight = 50;
-		private const int GoldPerScorePoint = 25;
-		
+		private const int TextX = 16;
+		private const int TotalMaxY = 186;
+		private const int ScoreBarX = 35;
+		private const int ScoreBarY = 192;
+		private const int ScoreBarWidth = 250;
+		private const int ScoreBarHeight = 7;
+
+		private readonly CivilizationScoreLayoutDelegate _layout = new();
+
 		// prevents accidental immediate closure of the report when opened via a key press
 		private const int InitialInputDelayMs = 500;
 
@@ -91,110 +96,94 @@ namespace CivOne.Screens.Reports
 			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.redShirt, group.elvis, group.einstein, group.taxman);
 		}
 
-		private int DrawCityCitizens(Citizen[] citizens, int startX, int maxX, int startY, ref int currentX)
-		{
-			int group = -1;
-			int y = startY;
-			const int citizenStep = 6;
-			const int lineStep = 8;
-
-			for (int i = 0; i < citizens.Length; i++)
-			{
-				int nextX = currentX + citizenStep;
-				if (group != (group = Common.CitizenGroup(citizens[i])) && group > 0 && i > 0)
-				{
-					nextX += (group == 3) ? 2 : 1;
-				}
-
-				if (nextX > maxX)
-				{
-					y += lineStep;
-					currentX = startX;
-					nextX = currentX + citizenStep;
-				}
-
-				currentX = nextX;
-				this.AddLayer(Icons.Citizen(citizens[i]), currentX, y);
-			}
-
-			return y;
-		}
-
-		private static int CityScore(CitizenTypes citizens)
-        {
-			// don't count unhappy
-			// happy is *2
-			// all others are content
-			return HappyCitizenScoreWeight * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
-        }
-
 		private void Render()
 		{
 			this.Clear(3);
+			if (Game.ScoringCompleted)
+			{
+				// Like the original, the score is no longer evaluated once the final score was recorded.
+				this.DrawText(Translate("SCORING COMPLETED"), 0, 15, OffsetX + 160, OffsetY + 100, TextAlign.Center);
+				return;
+			}
+
 			DrawReportHeader();
 
 			City[] cities = Human.Cities;
-			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
-			int wonderCount = 0;
-			CitizenTypes[] citizens = [.. cities.Select(c => c.GetCitizenTypes(CivilizationScoreService.ScoringLuxuryRate))];
+			Citizen[] citizens = [.. cities.SelectMany(c => c.GetCitizenTypes(CivilizationScoreService.ScoringLuxuryRate).Citizens)];
+			IWonder[] wonders = [.. cities.SelectMany(c => c.Wonders).OrderBy(w => w.Id)];
+			CivilizationScoreBreakdown score = _civilizationScoreService.Calculate(Human);
+			string otherTerms = OtherTermsLine(score);
+			CivilizationScoreLayout layout = _layout.Calculate(citizens.Length, wonders.Length, score.SpaceShipValue != 0, otherTerms.Length > 0);
 
-			int cityCount = cities.Length;
-			int populationScore = Human.Population;
-			int cityScore = cityCount * CityScoreWeight;
-			int advanceScore = Human.Advances.Length * AdvanceScoreWeight;
-			int goldScore = Math.Max(0, Human.Gold / GoldPerScorePoint);
-			int citizenScore = 0;
-
-			foreach (CitizenTypes cityCitizens in citizens)
+			DrawLine(TranslateFormatted("{0} Citizens ({1})", tribeName, score.CitizenScore), layout.CitizensHeaderY);
+			for (int i = 0; i < layout.CitizenIcons.Count; i++)
 			{
-				citizenScore += CityScore(cityCitizens);
+				(int x, int y) = layout.CitizenIcons[i];
+				this.AddLayer(Icons.Citizen(citizens[i]), OffsetX + x, OffsetY + y);
 			}
 
-			int yy = OffsetY + 32;
-			this.DrawText(TranslateFormatted("{0} Citizens ({1})", tribeName, citizenScore), 0, 15, OffsetX + 8, yy);
-
-			int citizenStartX = OffsetX + 8;
-			int citizenMaxX = OffsetX + 312;
-			int currentX = citizenStartX;
-			int citizenY = yy + fontHeight;
-			int lastCitizenY = citizenY;
-			foreach (CitizenTypes cityCitizens in citizens)
+			DrawLine(TranslateFormatted("{0} Achievements ({1})", tribeName, score.WonderScore), layout.AchievementsHeaderY);
+			for (int i = 0; i < layout.Wonders.Count; i++)
 			{
-				lastCitizenY = DrawCityCitizens(cityCitizens.Citizens, citizenStartX, citizenMaxX, citizenY, ref currentX);
-				currentX += 1;
-				if (currentX > citizenMaxX)
+				(int iconX, int iconY, int nameX, int nameY) = layout.Wonders[i];
+				if (wonders[i].SmallIcon is IBitmap icon)
 				{
-					lastCitizenY += 8;
-					currentX = citizenStartX;
+					this.AddLayer(icon, OffsetX + iconX, OffsetY + iconY);
 				}
+				this.DrawText(wonders[i].Name, 0, 11, OffsetX + nameX, OffsetY + nameY);
 			}
 
-			foreach (City city in cities)
+			if (layout.SpaceShipY is int spaceShipY)
 			{
-				wonderCount += city.Wonders.Length;
+				DrawLine(score.SpaceShipApplied
+					? TranslateFormatted("SpaceShip: ({0})", score.SpaceShipValue)
+					: TranslateFormatted("SpaceShip: ({0} possible)", score.SpaceShipValue), spaceShipY);
 			}
 
-			int wonderScore = wonderCount * WonderScoreWeight;
-			int totalScore = _civilizationScoreService.TotalScore(Human);
+			if (layout.OtherTermsY is int otherTermsY)
+			{
+				DrawLine(otherTerms, otherTermsY);
+			}
 
-			yy = lastCitizenY + 16;
-			this.DrawText(TranslateFormatted("Cities ({0})", cityScore), 0, 15, OffsetX + 8, yy);
+			if (layout.TotalY < TotalMaxY)
+			{
+				DrawLine(score.IsBonus
+					? TranslateFormatted("Bonus Score: {0}", score.Total)
+					: TranslateFormatted("Total Score: {0}", score.Total), layout.TotalY);
+			}
 
-			yy += fontHeight + 4;
-			this.DrawText(TranslateFormatted("Population ({0})", populationScore), 0, 15, OffsetX + 8, yy);
+			DrawScoreBar(score.Total);
+		}
 
-			yy += fontHeight + 4;
-			this.DrawText(TranslateFormatted("Advances ({0})", advanceScore), 0, 15, OffsetX + 8, yy);
+		private void DrawLine(string text, int y) => this.DrawText(text, 0, 15, OffsetX + TextX, OffsetY + y);
 
-			yy += fontHeight + 4;
-			this.DrawText(TranslateFormatted("{0} Achievements ({1})", tribeName, wonderScore), 0, 15, OffsetX + 8, yy);
+		private void DrawScoreBar(int total)
+		{
+			this.FillRectangle(OffsetX + ScoreBarX, OffsetY + ScoreBarY, ScoreBarWidth, ScoreBarHeight, 8);
+			if (total > 0)
+			{
+				this.FillRectangle(OffsetX + ScoreBarX, OffsetY + ScoreBarY, Math.Clamp(total / 4, 0, ScoreBarWidth), ScoreBarHeight, 11);
+			}
+		}
 
-			yy += fontHeight + 4;
-			this.DrawText(TranslateFormatted("Treasury ({0})", goldScore), 0, 15, OffsetX + 8, yy);
+		private string OtherTermsLine(CivilizationScoreBreakdown score)
+		{
+			string line = string.Empty;
+			if (score.PollutionScore != 0)
+			{
+				line += TranslateFormatted("Pollution: ({0})", score.PollutionScore) + "   ";
+			}
+			if (score.PeaceScore != 0)
+			{
+				line += TranslateFormatted("Peace: (+{0})", score.PeaceScore) + " ";
+			}
+			if (score.FutureTechScore != 0)
+			{
+				line += TranslateFormatted("Future Tech: (+{0})", score.FutureTechScore);
+			}
 
-			yy += fontHeight + 4;
-			this.DrawText(TranslateFormatted("Total Score: {0}", totalScore), 0, 15, OffsetX + 8, yy);
+			return line.TrimEnd();
 		}
 
 		protected override bool HasUpdate(uint gameTick)

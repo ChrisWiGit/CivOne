@@ -50,7 +50,7 @@ namespace CivOne.Units
 		internal override bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
 		{
 			// Not reproduced from the original: see the remark above.
-			RegisterHostileAction();
+			RegisterHostileAction(moveTarget);
 			HandleNuclear(moveTarget, relX, relY);
 
 			return PostConfront(moveTarget, relX, relY, movement);

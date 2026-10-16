@@ -84,7 +84,6 @@ namespace CivOne.Persistence.Model
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
 			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
 			player.MilitaryPower = _valueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
-			player.CivilizationScore = _valueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Spaceship state
@@ -93,6 +92,7 @@ namespace CivOne.Persistence.Model
 				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 				player.SpaceShipPopulation = _valueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
 				player.SpaceShipLaunchYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
+				player.SpaceShipEtaYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.EtaYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.EtaYear)}");
 			}
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
@@ -276,7 +276,8 @@ namespace CivOne.Persistence.Model
 				{
 					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
 					Population = 0,
-					LaunchYear = 0
+					LaunchYear = 0,
+					EtaYear = -1
 				};
 			}
 
@@ -286,7 +287,8 @@ namespace CivOne.Persistence.Model
 			{
 				Grid = new SpaceShipGridMap2D(grid),
 				Population = restorablePlayer.SpaceShipPopulation,
-				LaunchYear = restorablePlayer.SpaceShipLaunchYear
+				LaunchYear = restorablePlayer.SpaceShipLaunchYear,
+				EtaYear = restorablePlayer.SpaceShipEtaYear
 			};
 		}
 
