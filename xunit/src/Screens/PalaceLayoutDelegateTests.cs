@@ -141,6 +141,18 @@ namespace CivOne.UnitTests.Screens
 			Assert.Equal(expected, _testee.ChoiceAt(x, y));
 		}
 
+		[Theory]
+		[InlineData(-1, 100)]
+		[InlineData(320, 100)]
+		[InlineData(160, 200)]
+		[InlineData(160, 220)]
+		[InlineData(-80, 160)]
+		[InlineData(100, -5)]
+		public void MouseOutsideThePalaceChoosesNothing(int x, int y)
+		{
+			Assert.Null(_testee.ChoiceAt(x, y));
+		}
+
 		[Fact]
 		public void PreviewOfALeftEndShowsTowerAndWall()
 		{
@@ -151,6 +163,49 @@ namespace CivOne.UnitTests.Screens
 			Assert.Equal(2, pieces.Count);
 			Assert.All(pieces, piece => Assert.Equal(PalaceStyle.Islamic, piece.Style));
 			Assert.Contains(pieces, p => p.Kind == PalacePieceKind.LeftTower && p.X == 36);
+		}
+
+		[Fact]
+		public void PreviewOfABaseLeftEndAlwaysShowsTheShadowedWall()
+		{
+			// Section 3 at level 0 is drawn with a plain wall, but the preview shows the shadowed one like the original.
+			IReadOnlyList<PalacePiece> pieces = _testee.Preview(new PalaceData(), 2, PalaceStyle.Medieval, 1, 36);
+
+			Assert.Equal([PalacePieceKind.WallShadow, PalacePieceKind.LeftTower], pieces.Select(p => p.Kind));
+			Assert.All(pieces, piece => Assert.Equal(1, piece.Level));
+		}
+
+		[Fact]
+		public void PreviewOfTheOutermostSectionsShowsOnlyTheTower()
+		{
+			PalaceData palace = Palace(PalaceStyle.Medieval, 0, 1, 1, 1, 1, 1, 0);
+
+			Assert.Equal([PalacePieceKind.LeftTower], _testee.Preview(palace, 0, PalaceStyle.Medieval, 1, 36).Select(p => p.Kind));
+			Assert.Equal([PalacePieceKind.RightTower], _testee.Preview(palace, 6, PalaceStyle.Medieval, 1, 36).Select(p => p.Kind));
+		}
+
+		[Fact]
+		public void PreviewOfARightEndShowsPlainWallAndTower()
+		{
+			PalaceData palace = Palace(PalaceStyle.Medieval, 0, 0, 1, 1, 4, 1, 0);
+
+			IReadOnlyList<PalacePiece> pieces = _testee.Preview(palace, 5, PalaceStyle.Medieval, 2, 36);
+
+			Assert.Equal([PalacePieceKind.Wall, PalacePieceKind.RightTower], pieces.Select(p => p.Kind));
+			Assert.Equal([36, 60], pieces.Select(p => p.X));
+		}
+
+		[Theory]
+		[InlineData(0, 1)] // the wing is not complete: one wall
+		[InlineData(1, 2)] // the outermost section is built: two walls
+		public void PreviewOfAnInnerSectionShowsPlainWalls(byte outermostLevel, int expectedWalls)
+		{
+			PalaceData palace = Palace(PalaceStyle.Medieval, outermostLevel, 1, 1, 1, 1, 0, 0);
+
+			IReadOnlyList<PalacePiece> pieces = _testee.Preview(palace, 2, PalaceStyle.Medieval, 2, 36);
+
+			Assert.Equal(expectedWalls, pieces.Count);
+			Assert.All(pieces, piece => Assert.Equal(PalacePieceKind.Wall, piece.Kind));
 		}
 
 		private static PalaceData Palace(PalaceStyle style, params byte[] levels)

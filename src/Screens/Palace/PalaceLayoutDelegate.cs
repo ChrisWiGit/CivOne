@@ -174,6 +174,12 @@ namespace CivOne.Screens.PalaceAssets
 		/// <summary>
 		/// Lays out the sprites of one section for the style preview, like the original's "Select new section." panel.
 		/// </summary>
+		/// <remarks>
+		/// Like the original, the sprites depend only on the position of the section, not on its level or its
+		/// neighbours' levels: a left end shows its tower and a shadowed wall (only the tower for section 1),
+		/// a right end a plain wall and its tower (only the tower for section 7), and an inner section plain walls -
+		/// one while the outermost section of its wing is not built, two otherwise.
+		/// </remarks>
 		/// <param name="palace">The palace.</param>
 		/// <param name="section">The CivOneX section, 0..6.</param>
 		/// <param name="style">The style to preview.</param>
@@ -187,31 +193,33 @@ namespace CivOne.Screens.PalaceAssets
 
 			Sections sections = new(palace);
 			int i = section + 1;
-			(PalacePieceKind? first, PalacePieceKind? second) = sections.Pieces(i, preview: true);
 			List<PalacePiece> pieces = [];
-			int x = left;
 
 			switch (RoleOf(sections, i))
 			{
 				case Role.LeftEnd:
-					if (i != 1 && second is PalacePieceKind wall)
+					if (i != 1)
 					{
-						pieces.Add(PreviewPiece(level, style, wall, x + TowerAdvance));
+						pieces.Add(PreviewPiece(level, style, PalacePieceKind.WallShadow, left + TowerAdvance));
 					}
-					pieces.Add(PreviewPiece(level, style, PalacePieceKind.LeftTower, x));
+					pieces.Add(PreviewPiece(level, style, PalacePieceKind.LeftTower, left));
 					break;
 				case Role.Center:
-					pieces.Add(PreviewPiece(level, style, PalacePieceKind.Center, x));
+					pieces.Add(PreviewPiece(level, style, PalacePieceKind.Center, left));
 					break;
-				default:
-					if (first is PalacePieceKind firstKind)
+				case Role.RightEnd:
+					if (i != SectionCount - 2)
 					{
-						pieces.Add(PreviewPiece(level, style, firstKind, x));
-						x += WallAdvance;
+						pieces.Add(PreviewPiece(level, style, PalacePieceKind.Wall, left));
 					}
-					if (second is PalacePieceKind secondKind)
+					pieces.Add(PreviewPiece(level, style, PalacePieceKind.RightTower, i != SectionCount - 2 ? left + WallAdvance : left));
+					break;
+				case Role.Inner:
+					pieces.Add(PreviewPiece(level, style, PalacePieceKind.Wall, left));
+					int outermost = i < CenterSection ? 1 : SectionCount - 2;
+					if (sections.Level(outermost) != -1)
 					{
-						pieces.Add(PreviewPiece(level, style, secondKind, x));
+						pieces.Add(PreviewPiece(level, style, PalacePieceKind.Wall, left + WallAdvance));
 					}
 					break;
 			}
@@ -263,6 +271,11 @@ namespace CivOne.Screens.PalaceAssets
 		[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
 		public char? ChoiceAt(int x, int y)
 		{
+			if (x < 0 || x >= 320 || y < 0 || y >= 200)
+			{
+				return null;
+			}
+
 			if (y >= 154)
 			{
 				int garden = x / 107;
@@ -339,17 +352,17 @@ namespace CivOne.Screens.PalaceAssets
 
 			/// <summary>
 			/// Gets the two sprites of a section. The palace screen draws the wall half of an end only for
-			/// sections 3 and 5; the style preview always shows it.
+			/// sections 3 and 5.
 			/// </summary>
-			public (PalacePieceKind? First, PalacePieceKind? Second) Pieces(int i, bool preview)
+			public (PalacePieceKind? First, PalacePieceKind? Second) Pieces(int i)
 			{
 				int level = _levels[i];
 				return RoleOf(this, i) switch
 				{
-					Role.LeftEnd => (PalacePieceKind.LeftTower, EndWall(i == 3 || preview, level > 0)),
+					Role.LeftEnd => (PalacePieceKind.LeftTower, EndWall(i == 3, level > 0)),
 					Role.Inner => (WallKind(Level(i - 1) > level || i == 5 || Level(i - 2) == -1), PalacePieceKind.Wall),
 					Role.Center => (PalacePieceKind.Center, null),
-					_ => (EndWall(i == 5 || preview, Level(i - 1) > level || i == 5), PalacePieceKind.RightTower),
+					_ => (EndWall(i == 5, Level(i - 1) > level || i == 5), PalacePieceKind.RightTower),
 				};
 			}
 
@@ -363,7 +376,7 @@ namespace CivOne.Screens.PalaceAssets
 			/// </summary>
 			public void Add(List<PalacePiece> pieces, int level, int i, int x, int baseY, bool second)
 			{
-				(PalacePieceKind? first, PalacePieceKind? other) = Pieces(i, preview: false);
+				(PalacePieceKind? first, PalacePieceKind? other) = Pieces(i);
 				if ((second ? other : first) is not PalacePieceKind kind)
 				{
 					return;

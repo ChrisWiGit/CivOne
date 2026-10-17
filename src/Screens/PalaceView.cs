@@ -355,7 +355,15 @@ namespace CivOne.Screens
 					}
 					break;
 				case Stage.SelectStyle:
-					ChooseStyle(((args.X - OffsetX) / 107) + 1);
+					{
+						// Clicks in the resize margin around the 320×200 palace are ignored.
+						int x = args.X - OffsetX;
+						int y = args.Y - OffsetY;
+						if (x >= 0 && x < 320 && y >= 0 && y < 200)
+						{
+							ChooseStyle((x / 107) + 1);
+						}
+					}
 					break;
 				case Stage.View:
 					Destroy();
