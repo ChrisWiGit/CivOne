@@ -56,5 +56,12 @@ namespace CivOne.Persistence.Model
 		public byte GardenCenterLevel { get; set; }
 		[Doc("The build level of the right garden.", 0, 3)]
 		public byte GardenRightLevel  { get; set; }
+
+		/// <summary>
+		/// How often a palace upgrade was earned; drives the upgrade threshold.
+		/// Missing in older saves, then derived from the built levels.
+		/// </summary>
+		[Doc("How often a palace upgrade was earned. Drives the score needed for the next upgrade.", 0, 32767)]
+		public int? BuildCount { get; set; }
 	}
 }

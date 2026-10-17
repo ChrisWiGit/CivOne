@@ -1,3 +1,5 @@
+using CivOne.Screens.PalaceAssets;
+
 namespace CivOne.Services.Historian
 {
 	/// <summary>
@@ -9,8 +11,11 @@ namespace CivOne.Services.Historian
 		/// Gets the palace to show for <paramref name="player"/>.
 		/// </summary>
 		/// <param name="player">The player of the ranking row.</param>
-		/// <returns>The real palace for the human player, a generated one for AI players.</returns>
-		IPalaceData PalaceFor(Player player);
+		/// <returns>
+		/// The real palace for the human player, a generated one for AI players, and an empty one for a player
+		/// without cities.
+		/// </returns>
+		MiniPalaceLayout PalaceFor(Player player);
 
 		/// <summary>
 		/// Sums <c>Size + Happy - (Unhappy + RedShirt)</c> over the player's cities at the player's real luxury rate.

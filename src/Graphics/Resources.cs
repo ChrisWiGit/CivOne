@@ -361,8 +361,8 @@ namespace CivOne.Graphics
 			get { return this[filename]; }
 		}
 
-		public Picture GetPalace(PalaceStyle style, PalacePart part, int level)
-			=> _palaceResources.GetPalacePart(style, part, level);
+		internal Picture GetPalacePiece(int level, PalaceStyle style, PalacePieceKind kind)
+			=> _palaceResources.GetPalacePiece(level, style, kind);
 		
 		private static Resources? _instance;
 		public static Resources Instance

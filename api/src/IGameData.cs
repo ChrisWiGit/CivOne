@@ -32,6 +32,11 @@ namespace CivOne
 		ushort[] HumanContactTurns { get; set; }
 		ushort[] StartingPositionX { get; set; }
 		ushort[] Government { get; set; }
+
+		/// <summary>
+		/// Gets or sets the diplomacy block as 64 flag words: 8 rows (player) of 8 columns (other player).
+		/// </summary>
+		ushort[] Diplomacy { get; set; }
 		CityData[] Cities { get; set; }
 		UnitData[][] Units { get; set; }
 		ushort[] Wonders { get; set; }
@@ -53,6 +58,16 @@ namespace CivOne
 		short[] SpaceshipEtaYear { get; set; }
 		short[] SpaceShipLaunchYear { get; set; }
 		ushort[] SpaceShipPopulation { get; set; }
+
+		/// <summary>
+		/// Gets or sets the human player's palace as 24 values: 12 levels (sections 0..8, gardens 9..11), then 12 styles.
+		/// </summary>
+		short[] Palace { get; set; }
+
+		/// <summary>
+		/// Gets or sets the human player's palace build counter.
+		/// </summary>
+		ushort PalaceBuildCount { get; set; }
 
 		bool ValidData { get; }
 		byte[] GetBytes();

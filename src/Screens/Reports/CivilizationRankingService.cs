@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Screens.PalaceAssets;
 using CivOne.Services.Historian;
 using PersistencePlayer = CivOne.Persistence.Game.IPlayer;
 
@@ -26,7 +27,7 @@ namespace CivOne.Screens.Reports
 		Gibbon
 	}
 
-	public readonly record struct CivilizationRankingRow(int RankNumber, string CivilizationName, IPalaceData PalaceData, byte PlayerColorId);
+	public readonly record struct CivilizationRankingRow(int RankNumber, string CivilizationName, MiniPalaceLayout Palace, byte PlayerColorId);
 
 	public interface ICivilizationRankingService
 	{

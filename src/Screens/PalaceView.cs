@@ -40,6 +40,7 @@ namespace CivOne.Screens
 		private readonly Picture _background;
 		private readonly IPalaceSpriteProvider _sprites;
 		private readonly PalaceData _palace;
+		private readonly PalaceLayoutDelegate _layout = new();
 		private readonly byte[,] _noiseMap;
 		private readonly bool _build;
 		private readonly bool _debug;
@@ -69,20 +70,6 @@ namespace CivOne.Screens
 
 		private bool _update = true;
 
-		private static PalacePart GetPalacePartPreview(PalaceData palace, int index)
-		{
-			return index switch
-			{
-				0 => PalacePart.LeftTower,
-				1 or 2 => palace.GetPalaceLevel(index - 1) > 0 ? PalacePart.Wall : PalacePart.LeftTowerWall,
-				3 => PalacePart.Center,
-				4 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.WallShadow : PalacePart.RightTowerWallShadow,
-				5 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.Wall : PalacePart.RightTowerWall,
-				6 => PalacePart.RightTower,
-				_ => PalacePart.None
-			};
-		}
-
 		private void StartMorph(Picture palaceMorph)
 		{
 			if (_disableNoise)
@@ -99,150 +86,6 @@ namespace CivOne.Screens
 
 		private Stage GetPostMorphStage() => _build && _debug ? Stage.SelectPart : Stage.View;
 
-		private void DrawLeftPalaceSide(IBitmap picture, PalaceData palace)
-		{
-			// The left side of the palace consists of sections 0, 1 and 2. 
-			const int maxLeftSectionIndex = 2;
-			const int minLeftSectionIndex = 0;
-
-			// buildings start from the right and draw leftwards
-			// so startSection is the rightmost section that can be drawn, 
-			int startSection = Math.Max(palace.PalaceLeft, minLeftSectionIndex);
-			// and endSection is the leftmost section that can be drawn
-			int endSection = Math.Min(palace.PalaceRight, maxLeftSectionIndex);
-
-			const int spriteBaseY = 37;
-
-			for (int sectionIndex = endSection; sectionIndex >= startSection; sectionIndex--)
-			{
-				if (sectionIndex < minLeftSectionIndex || sectionIndex > maxLeftSectionIndex)
-					continue;
-
-				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
-
-				bool isEmptySection = sectionLevel == 0;
-				bool isInnerSection = sectionIndex < maxLeftSectionIndex;
-
-				if (isEmptySection && isInnerSection)
-					continue;
-
-				PalacePart part;
-				int spriteX;
-
-				if (sectionIndex == minLeftSectionIndex)
-				{
-					spriteX = 9;
-					part = PalacePart.LeftTower;
-				}
-				else
-				{
-					const int sectionWidth = 48;
-					const int leftmostSpriteX = 17;
-					const int towerWallOverlap = 24;
-					const int leftTowerWallOffset = 33;
-
-					spriteX = leftmostSpriteX + (sectionWidth * sectionIndex);
-
-					bool hasLeftNeighbor = palace.GetPalaceLevel(sectionIndex - 1) > 0;
-
-					if (hasLeftNeighbor)
-					{
-						part = PalacePart.Wall;
-						spriteX -= towerWallOverlap;
-					}
-					else
-					{
-						part = PalacePart.LeftTowerWall;
-						spriteX -= leftTowerWallOffset;
-					}
-				}
-
-				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
-			}
-		}
-
-		void AddPalaceLayer(IBitmap picture, int left, int top,
-				int sectionIndex,
-				int sectionLevel,
-				PalaceData palace,
-				PalacePart part)
-		{
-			IBitmap sprite = _sprites.GetPalacePart(
-					palace.GetPalaceStyle(sectionIndex),
-					part,
-					sectionLevel);
-
-			picture.AddLayer(sprite, left, top);
-		}
-
-		private void DrawRightPalaceSide(IBitmap picture, PalaceData palace)
-		{
-			// The right side of the palace consists of sections 4, 5 and 6.
-			const int minRightSectionIndex = 4;
-			const int maxRightSectionIndex = 6;
-
-			int startSection = Math.Max(palace.PalaceLeft, minRightSectionIndex);
-			int endSection = Math.Min(palace.PalaceRight, maxRightSectionIndex);
-
-			const int spriteBaseY = 37;
-
-			for (int sectionIndex = startSection; sectionIndex <= endSection; sectionIndex++)
-			{
-				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
-
-				bool isEmptySection = sectionLevel == 0;
-				bool isInnerSection = sectionIndex > minRightSectionIndex;
-
-				if (isEmptySection && isInnerSection)
-					continue;
-
-				PalacePart part;
-
-				if (sectionIndex == minRightSectionIndex)
-				{
-					const int leftmostSpriteX = 185;					
-					part = GetPalacePartWithRightNeighbour(palace, PalacePart.WallShadow, PalacePart.RightTowerWallShadow, sectionIndex);
-
-					AddPalaceLayer(picture, leftmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
-					continue;
-				}
-
-				if (sectionIndex == 5)
-				{
-					const int rightmostSpriteX = 233;					
-					part = GetPalacePartWithRightNeighbour(palace, PalacePart.Wall, PalacePart.RightTowerWall, sectionIndex);
-
-					AddPalaceLayer(picture, rightmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
-					continue;
-				}
-				
-				const int rightTowerSpriteX = 278;
-				int spriteX = rightTowerSpriteX;
-				if (sectionLevel == 4)
-				{
-					// For the highest level of the rightmost tower, the sprite is 1 pixel wider and overlaps with the center part by 1 pixel, so adjust left position to compensate.
-					spriteX -= 1;
-				}
-				part = PalacePart.RightTower;
-
-				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
-			}
-		}
-
-		/// <summary>
-		/// Returns the palace part for a section based on whether the section to the right exists.
-		/// </summary>
-		/// <param name="palace">The palace data.</param>
-		/// <param name="wall">Part to return when the section has a right neighbor.</param>
-		/// <param name="rightTowerWall">Part to return when the section has no right neighbor.</param>
-		/// <param name="sectionIndex">Current section index.</param>
-		/// <returns>The selected palace part for the current section.</returns>
-		static PalacePart GetPalacePartWithRightNeighbour(PalaceData palace,  PalacePart wall, PalacePart rightTowerWall, int sectionIndex)
-		{
-			bool hasRightNeighbor = palace.GetPalaceLevel(sectionIndex + 1) > 0;
-			return hasRightNeighbor ? wall : rightTowerWall;
-		}
-
 		private Picture DrawPalace()
 		{
 			PalaceData palace = _palace;
@@ -255,11 +98,10 @@ namespace CivOne.Screens
 				picture.AddLayer(backdrop, 0, 135);
 			}
 
-			DrawLeftPalaceSide(picture, palace);
-			DrawRightPalaceSide(picture, palace);
-
-			// Draw palace middle
-			picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
+			foreach (PalacePiece piece in _layout.Layout(palace))
+			{
+				picture.AddLayer(_sprites.GetPalacePiece(piece.Level, piece.Style, piece.Kind), piece.X, piece.Y);
+			}
 
 			Picture? leftGarden = _sprites.GetGardenBrush(0, palace.GetGardenLevel(0));
 			if (leftGarden != null)
@@ -363,36 +205,7 @@ namespace CivOne.Screens
 					}
 					break;
 				case Stage.SelectStyle:
-					{
-						Picture message = new(280, 118);
-
-						message
-							.Tile(Pattern.PanelGrey)
-							.DrawRectangle3D()
-							.DrawText(Translate("Which style shall we use?"), 0, 15, 4, 4);
-
-						if (_pendingPartIndex >= 0)
-						{
-							PalacePart previewPart = GetPalacePartPreview(palace, _pendingPartIndex);
-							byte previewLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
-							for (int i = 1; i <= 3; i++)
-							{
-								int panelX = 12 + ((i - 1) * 88);
-								Picture preview = _sprites.GetPalacePart((PalaceStyle)i, previewPart, previewLevel);
-								message.DrawRectangle(panelX, 18, 76, 92, 5)
-									.DrawText($"{i}", 0, 14, panelX + 33, 21);
-								if (preview != null)
-								{
-									int previewX = panelX + ((76 - preview.Width) / 2);
-									int previewY = 108 - preview.Height;
-									message.AddLayer(preview, previewX, previewY);
-								}
-							}
-						}
-
-						this.FillRectangle(20 + ox, 16 + oy, 282, 120, 5)
-							.AddLayer(message, 21 + ox, 17 + oy);
-					}
+					DrawStyleSelection(palace, ox, oy);
 					break;
 				case Stage.Morph:
 					if (_noiseCounter > 0 && _palaceMorph != null)
@@ -423,8 +236,6 @@ namespace CivOne.Screens
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			PalaceData palace = _palace;
-
 			if (_debug && args[Key.Escape])
 			{
 				Destroy();
@@ -445,41 +256,12 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					if (args.KeyChar >= 'A' && args.KeyChar <= 'C')
-					{
-						int index = args.KeyChar - 'A';
-						if (palace.GetGardenLevel(index) < 3)
-						{
-							Picture palaceMorph = DrawPalace();
-							palace.SetGarden(index, (byte)(palace.GetGardenLevel(index) + 1));
-							StartMorph(palaceMorph);
-						}
-						break;
-					}
-
-					if (args.KeyChar >= '1' && args.KeyChar <= '7')
-					{
-						int index = args.KeyChar - '1';
-						if (palace.IsSlotUnlocked(index) && palace.GetPalaceLevel(index) < 4)
-						{
-							_pendingPartIndex = index;
-							_currentStage = Stage.SelectStyle;
-							_update = true;
-						}
-					}
+					Choose(char.ToUpperInvariant(args.KeyChar));
 					break;
 				case Stage.SelectStyle:
-					if (args.KeyChar >= '1' && args.KeyChar <= '3' && _pendingPartIndex >= 0)
+					if (args.KeyChar >= '1' && args.KeyChar <= '3')
 					{
-						byte newLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
-						if (newLevel <= 4)
-						{
-							PalaceStyle style = (PalaceStyle)(args.KeyChar - '0');
-							Picture palaceMorph = DrawPalace();
-							palace.SetPalace(_pendingPartIndex, (byte)style, newLevel);
-							_pendingPartIndex = -1;
-							StartMorph(palaceMorph);
-						}
+						ChooseStyle(args.KeyChar - '0');
 					}
 					break;
 				case Stage.View:
@@ -487,6 +269,74 @@ namespace CivOne.Screens
 					break;
 			}
 			return true;
+		}
+
+		/// <summary>
+		/// Handles a section number '1'..'7' or a garden 'A'..'C', like the original upgrade dialog.
+		/// </summary>
+		private void Choose(char choice)
+		{
+			PalaceData palace = _palace;
+			if (choice >= 'A' && choice <= 'C')
+			{
+				int garden = choice - 'A';
+				if (palace.GetGardenLevel(garden) < 3)
+				{
+					Picture palaceMorph = DrawPalace();
+					palace.SetGarden(garden, (byte)(palace.GetGardenLevel(garden) + 1));
+					StartMorph(palaceMorph);
+				}
+				return;
+			}
+
+			if (choice >= '1' && choice <= '7' && _layout.ResolveSection(palace, choice - '0') is int section)
+			{
+				_pendingPartIndex = section;
+				_currentStage = Stage.SelectStyle;
+				_update = true;
+			}
+		}
+
+		private void ChooseStyle(int style)
+		{
+			if (style < 1 || style > 3 || _pendingPartIndex < 0)
+			{
+				return;
+			}
+
+			PalaceData palace = _palace;
+			byte newLevel = (byte)Math.Min(palace.GetPalaceLevel(_pendingPartIndex) + 1, 4);
+			Picture palaceMorph = DrawPalace();
+			palace.SetPalace(_pendingPartIndex, (byte)style, newLevel);
+			_pendingPartIndex = -1;
+			StartMorph(palaceMorph);
+		}
+
+		/// <summary>
+		/// Draws the style choice like the original: three panels with the chosen section in each style.
+		/// </summary>
+		private void DrawStyleSelection(PalaceData palace, int ox, int oy)
+		{
+			this.FillRectangle(16 + ox, 2 + oy, 288, 102, 9)
+				.DrawText(Translate("Select new section."), 0, 15, 160 + ox, 3 + oy, TextAlign.Center);
+
+			if (_pendingPartIndex < 0)
+			{
+				return;
+			}
+
+			int level = Math.Min(palace.GetPalaceLevel(_pendingPartIndex) + 1, 4);
+			for (int i = 1; i <= 3; i++)
+			{
+				int panelX = (100 * i) - 80;
+				this.FillRectangle(panelX + ox, 10 + oy, 80, 92, 1);
+				foreach (PalacePiece piece in _layout.Preview(palace, _pendingPartIndex, (PalaceStyle)i, level, panelX + 16))
+				{
+					this.AddLayer(_sprites.GetPalacePiece(piece.Level, piece.Style, piece.Kind), piece.X + ox, piece.Y + oy);
+				}
+				this.DrawText($"{i}", 0, 5, (100 * i) - 43 + ox, 13 + oy)
+					.DrawText($"{i}", 0, 15, (100 * i) - 44 + ox, 12 + oy);
+			}
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)
@@ -498,10 +348,21 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					if (!_debug)
+					// Like the original, a click chooses the section or garden under the mouse.
+					if (_layout.ChoiceAt(args.X - OffsetX, args.Y - OffsetY) is char choice)
 					{
-						_currentStage = Stage.View;
-						_update = true;
+						Choose(choice);
+					}
+					break;
+				case Stage.SelectStyle:
+					{
+						// Clicks in the resize margin around the 320×200 palace are ignored.
+						int x = args.X - OffsetX;
+						int y = args.Y - OffsetY;
+						if (x >= 0 && x < 320 && y >= 0 && y < 200)
+						{
+							ChooseStyle((x / 107) + 1);
+						}
 					}
 					break;
 				case Stage.View:

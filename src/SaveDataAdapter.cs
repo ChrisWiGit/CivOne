@@ -326,6 +326,15 @@ namespace CivOne
 			set => _saveData.PollutionEffect = value;
 		}
 
+		/// <summary>
+		/// Gets or sets the diplomacy block, 8 rows of 8 flag words at offset 1608.
+		/// </summary>
+		public ushort[] Diplomacy
+		{
+			get => GetArray<ushort>(nameof(SaveData.Diplomacy), 8 * 8);
+			set => SetArray(nameof(SaveData.Diplomacy), value);
+		}
+
 		public ushort PeaceTurns
 		{
 			get => _saveData.PeaceTurns;
@@ -372,6 +381,24 @@ namespace CivOne
 		{
 			get => GetArray<ushort>(nameof(SaveData.SpaceShipPopulation), 8);
 			set => SetArray(nameof(SaveData.SpaceShipPopulation), value);
+		}
+
+		/// <summary>
+		/// Gets or sets the human player's palace block at offset 37256: 12 levels, then 12 styles.
+		/// </summary>
+		public short[] Palace
+		{
+			get => GetArray<short>(nameof(SaveData.Palace), 24);
+			set => SetArray(nameof(SaveData.Palace), value);
+		}
+
+		/// <summary>
+		/// Gets or sets the human player's palace build counter at offset 37816.
+		/// </summary>
+		public ushort PalaceBuildCount
+		{
+			get => _saveData.PalaceLevel;
+			set => _saveData.PalaceLevel = value;
 		}
 
 		public ushort PlayerFutureTech

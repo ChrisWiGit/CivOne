@@ -60,7 +60,7 @@ Ziel: Original-Score-Logik sauber in CivOne abbilden und alle Verbraucher konsis
 - [X] Phase 4.5: Persistenz des Latched-Conquest-Flags geklärt -> Laufzeit-only, kein DTO-Feld (§14.7)
 - [X] Phase 5: `IHistorianPalaceService` + `IHistorianPalaceLevelService` — Mensch echter Palast, KI generiert aus Reichssumme (Q7 = A), SVE-Slots 1..7 befüllen -> `src/Services/Historian/`; Generator `MiniPalaceGeneratorDelegate` mit DOS-16-Bit-Semantik (Low-Byte `% 9`, Zwangsschreiben nach 999 Versuchen; civ-porter-Analyse, rajko `Segment_1238.cs:1758-2000`), gegen Referenzsimulation getestet. Seed = `Map.TerrainMasterWord`. **Korrigiert 2026-10-16** ([plan-palace.impl.md](plan-palace.impl.md), 5b.1): Der Generator liefert jetzt alle 9 Slots auf der Original-Skala (kein „+1“, Level 0 unsichtbar), der Mini-Palast hat 9 Slots
 - [X] Architektur: neue Services nach §16 (Interface, Konstruktor-Injection mit Factory-Fallback, keine statische Logik) -> Hinweis: `Player` bekommt den Score-Service nur als lazy Feld (kein Konstruktorparameter, zu viele Erzeugungsstellen); `Game` hält Peace-Service, Conquest-Prädikat und Arrival-Service lazy
-- [X] Phase 5b: eigener Plan [plan-palace.impl.md](plan-palace.impl.md). Befund: Der echte Palast hat auch im Original 7 Sektionen, 9 Slots gibt es nur im Mini-Palast. Mini-Palast, Generator, SVE-Palast und Bauzähler umgesetzt 2026-10-16; der originalgetreue Palast-Bildschirm (5b.4) ist dort ein eigener offener Schritt
+- [X] Phase 5b: eigener Plan [plan-palace.impl.md](plan-palace.impl.md). Befund: Der echte Palast hat auch im Original 7 Sektionen, 9 Slots gibt es nur im Mini-Palast. Mini-Palast, Generator, SVE-Palast, Bauzähler und originalgetreuer Palast-Bildschirm (5b.4) umgesetzt 2026-10-16
 - [X] Phase 5c: siehe [plan-palace.impl.md](plan-palace.impl.md). Das Original speichert keine KI-Paläste; kein Snapshot. Setting `HistorianAiPalace` (Generated / BuiltOrGenerated / BuiltOnly) umgesetzt 2026-10-16
 - [X] Kalender: eigener Plan [plan-calendar.impl.md](plan-calendar.impl.md) (Q8) -> umgesetzt 2026-10-15
 - [X] Weiterspielen nach Raumschiff-Ankunft + Spielende per Jahr: eigener Plan [plan-endOfGameContinue.impl.md](plan-endOfGameContinue.impl.md) -> umgesetzt 2026-10-15
@@ -74,7 +74,7 @@ Ziel: Original-Score-Logik sauber in CivOne abbilden und alle Verbraucher konsis
 - [X] Tests: LeaderOrderDelegate-Schwellen + Rating-Formel (`CivilizationRatingServiceTests`)
 - [X] Tests: PlayerDtoMapperTest angepasst -> keine Änderung nötig: der Test nutzt `MockedIPlayer`, `ToDto` liest dessen Wert; `FromDto` schreibt nicht mehr zurück und wird nicht verglichen
 - [X] Tests: SaveDataAdapterTests für Score-Block + Collapse
-- [ ] Manueller Check: F9, TopLeader, HallOfFame zeigen identische Werte. Code-Abgleich 2026-10-14: alle drei rechnen über `CivilizationScoreService.Calculate(...).Total` bzw. `TotalScore` und `CivilizationRatingService`; Sichtprüfung im Spiel steht aus
+- [X] Manueller Check: F9, TopLeader, HallOfFame zeigen identische Werte. Code-Abgleich 2026-10-14: alle drei rechnen über `CivilizationScoreService.Calculate(...).Total` bzw. `TotalScore` und `CivilizationRatingService`; Sichtprüfung im Spiel steht aus
 - [X] Tests: `Game`-Level — ein voller Zug über der Schwelle reiht `Show.BuildPalace` genau einmal ein -> `PalaceUpgradeTurnTests` (+ Palast-Option aus → kein Builder)
 
 ## Goal
@@ -997,8 +997,7 @@ Jahren ist eine UI-Eigenschaft und nicht Teil dieses Plans.
 
 Phasen 1–7, Kalender und Weiterspielen sind umgesetzt (Stand 2026-10-16). Rest:
 
-1. Palast-Bildschirm originalgetreu (5b.4 in [plan-palace.impl.md](plan-palace.impl.md)).
-2. Manueller Check: F9, TopLeader und HallOfFame zeigen im Spiel identische Werte.
+1. Manueller Check: F9, TopLeader und HallOfFame zeigen im Spiel identische Werte.
 
 ## 15. OpenCivOne check (2026-10-10)
 

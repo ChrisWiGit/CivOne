@@ -7,13 +7,15 @@ namespace CivOne.Services.Palace
 	/// The original checks this once per turn, only with the game option "Palace" on and only while the human player
 	/// owns a palace city, and no longer after the final score was recorded ("scoring completed").
 	/// The caller runs the check once per turn; this trigger tests the remaining conditions.
+	/// Like the original, the check goes on after the palace is complete; the caller counts each earned upgrade
+	/// and opens the dialog only while there is something left to build.
 	/// See <c>docs/plan-civilizationScore.impl.md</c>, §5.
 	/// </remarks>
 	internal sealed class HumanCivScorePalaceTrigger : IPalaceUpgradeTrigger
 	{
 		public bool ShouldTrigger(IPlayerGameState player)
 		{
-			if (player == null || player.Palace == null || !player.Palace.CanUpgrade)
+			if (player == null || player.Palace == null)
 			{
 				return false;
 			}
@@ -23,17 +25,17 @@ namespace CivOne.Services.Palace
 				return false;
 			}
 
-			return player.CivilizationScore >= Threshold(player.Palace.UpgradeCount, player.Difficulty);
+			return player.CivilizationScore >= Threshold(player.Palace.BuildCount, player.Difficulty);
 		}
 
 		/// <summary>
-		/// Original formula, with <c>n = upgrades so far + 1</c> and <c>D</c> the difficulty:
+		/// Original formula, with <c>n = build counter + 1</c> and <c>D</c> the difficulty:
 		/// <c>threshold(n) = (7 - D) * n * (n + 1) / 2 / 2 + 1</c>, integer division.
 		/// The original's difficulties run 0-4; CivOneX's Deity (5) continues the curve with coefficient 2.
 		/// </summary>
-		private static long Threshold(int upgradeCount, int difficulty)
+		private static long Threshold(int buildCount, int difficulty)
 		{
-			long n = upgradeCount + 1L;
+			long n = buildCount + 1L;
 			return ((7L - difficulty) * n * (n + 1) / 2 / 2) + 1;
 		}
 	}

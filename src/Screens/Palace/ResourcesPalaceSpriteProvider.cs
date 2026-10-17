@@ -52,7 +52,7 @@ namespace CivOne.Screens.PalaceAssets
 			return null;
 		}
 
-		public Picture GetPalacePart(PalaceStyle style, PalacePart part, int level)
-			=> _resources.GetPalace(style, part, level);
+		public Picture GetPalacePiece(int level, PalaceStyle style, PalacePieceKind kind)
+			=> _resources.GetPalacePiece(level, style, kind);
 	}
 }

@@ -4,7 +4,12 @@ using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {
-	public class PalaceDtoMapper(IValueSanitizer yamlReadValueSanitizer) : IDtoMapper<PalaceDto, PalaceData>
+	/// <summary>
+	/// Maps the palace between its YAML form and <see cref="PalaceData"/>.
+	/// </summary>
+	/// <param name="yamlReadValueSanitizer">Clamps values read from YAML.</param>
+	/// <param name="logger">Reports defaults used for missing values; <c>null</c> logs nothing.</param>
+	public class PalaceDtoMapper(IValueSanitizer yamlReadValueSanitizer, ILogger? logger = null) : IDtoMapper<PalaceDto, PalaceData>
 	{
 		private static readonly Func<PalaceDto, PalaceSectionDto>[] _sectionGetters =
 		[
@@ -44,6 +49,7 @@ namespace CivOne.Persistence.Model
 			palace.SetGarden(0, yamlReadValueSanitizer.ClampToByte(dto.GardenLeftLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenLeftLevel), min: 0, max: 3));
 			palace.SetGarden(1, yamlReadValueSanitizer.ClampToByte(dto.GardenCenterLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenCenterLevel), min: 0, max: 3));
 			palace.SetGarden(2, yamlReadValueSanitizer.ClampToByte(dto.GardenRightLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenRightLevel), min: 0, max: 3));
+			palace.SetBuildCount(BuildCountFrom(dto, palace));
 			return palace;
 		}
 
@@ -58,7 +64,20 @@ namespace CivOne.Persistence.Model
 			dto.GardenLeftLevel   = palace.GetGardenLevel(0);
 			dto.GardenCenterLevel = palace.GetGardenLevel(1);
 			dto.GardenRightLevel  = palace.GetGardenLevel(2);
+			dto.BuildCount        = palace.BuildCount;
 			return dto;
+		}
+
+		private int BuildCountFrom(PalaceDto dto, PalaceData palace)
+		{
+			if (dto.BuildCount is int buildCount)
+			{
+				return yamlReadValueSanitizer.ClampToInt32(buildCount, nameof(PalaceDtoMapper), nameof(PalaceDto.BuildCount), min: 0, max: short.MaxValue);
+			}
+
+			// Older saves have no build counter; each built level stands for one earned upgrade.
+			logger?.Log("YAML palace has no build counter, using the built levels ({0}).", palace.UpgradeCount);
+			return palace.UpgradeCount;
 		}
 	}
 }

@@ -534,7 +534,8 @@ namespace CivOne
 
 			// As in the original, the palace upgrade is checked once per turn, for the human player only.
 			if (turnWrapped && _palaceUpgradeService != null && HumanPlayer != null
-				&& _palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(HumanPlayer, Difficulty, Palace, ScoringCompleted)))
+				&& _palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(HumanPlayer, Difficulty, Palace, ScoringCompleted))
+				&& HumanPlayer.Palace.RecordEarnedUpgrade())
 			{
 				GameTask.Enqueue(Show.BuildPalace());
 			}

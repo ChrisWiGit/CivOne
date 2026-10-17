@@ -70,6 +70,7 @@ namespace CivOne
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
 		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
+		private HistorianAiPalace _historianAiPalace = HistorianAiPalace.Generated;
 		private bool _arrowHelper;
 		private bool _pathFinding;
 		private bool _computerPlayerPathFinding = true;
@@ -445,6 +446,19 @@ namespace CivOne
 				_canalCity = value;
 				SetSetting("CanalCity", _canalCity ? "1" : "0");
 				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets which palace the Historian shows for AI players.
+		/// </summary>
+		public HistorianAiPalace HistorianAiPalace
+		{
+			get => _historianAiPalace;
+			set
+			{
+				_historianAiPalace = value;
+				SetSetting("HistorianAiPalace", ((int)_historianAiPalace).ToString(CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -940,6 +954,7 @@ namespace CivOne
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
+			GetSetting("HistorianAiPalace", ref _historianAiPalace);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetBoolSetting("AutoSaveOnQuit", ref _autoSaveOnQuit);
 			GetBoolSetting("ConfirmExit", ref _confirmExit);

@@ -17,6 +17,42 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void RecordEarnedUpgradeCountsAndOpensTheDialogWhileSomethingIsLeft()
+		{
+			var palaceData = new PalaceData();
+
+			Assert.True(palaceData.RecordEarnedUpgrade());
+			Assert.Equal(1, palaceData.BuildCount);
+		}
+
+		[Fact]
+		public void RecordEarnedUpgradeStopsOpeningTheDialogAfterThirtySevenButKeepsCounting()
+		{
+			var palaceData = new PalaceData();
+			palaceData.SetBuildCount(37);
+
+			Assert.False(palaceData.RecordEarnedUpgrade());
+			Assert.False(palaceData.RecordEarnedUpgrade());
+			Assert.Equal(39, palaceData.BuildCount);
+		}
+
+		[Fact]
+		public void RecordEarnedUpgradeDoesNotOpenTheDialogForACompletePalace()
+		{
+			var palaceData = new PalaceData();
+			for (int i = 0; i < 7; i++)
+			{
+				palaceData.SetPalace(i, 1, 4);
+			}
+			for (int i = 0; i < 3; i++)
+			{
+				palaceData.SetGarden(i, 3);
+			}
+
+			Assert.False(palaceData.RecordEarnedUpgrade());
+		}
+
+		[Fact]
 		public void IsSlotUnlockedWhenAdjacentWingBuiltUnlocksNextOuterSlot()
 		{
 			var palaceData = new PalaceData();

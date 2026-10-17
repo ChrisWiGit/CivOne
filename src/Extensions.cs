@@ -362,6 +362,18 @@ namespace CivOne
 			};
 		}
 
+		/// <summary>
+		/// Gets the display text of a Historian AI palace mode.
+		/// </summary>
+		/// <param name="mode">The mode.</param>
+		/// <returns>The translated text.</returns>
+		public static string ToText(this HistorianAiPalace mode) => mode switch
+		{
+			HistorianAiPalace.BuiltOrGenerated => T("Built, else generated"),
+			HistorianAiPalace.BuiltOnly => T("Built only"),
+			_ => T("Generated"),
+		};
+
 		public static string ToText(this BarbarianActivity barbarianActivity)
 		{
 			Debug.Assert((barbarianActivity & ~BarbarianActivity.VillagesAndRaids) == 0, $"Unexpected BarbarianActivity value {barbarianActivity} in Extensions.ToText");

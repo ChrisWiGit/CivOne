@@ -80,7 +80,9 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawPreviewPalace(IBitmap targetLayer)
 		{
-			IBitmap palacePreview = _palaceRenderer.RenderPalace(Human.Palace);
+			// Like the original, a player without cities has no mini palace.
+			MiniPalaceLayout palace = Human.Cities.Length == 0 ? MiniPalaceLayout.Empty : MiniPalaceLayout.FromPalace(Human.Palace);
+			IBitmap palacePreview = _palaceRenderer.RenderPalace(palace);
 			int palacePreviewX = (SideBarWidth - palacePreview.Width()) / 2;
 			targetLayer.AddLayer(palacePreview, palacePreviewX, 1);
 		}

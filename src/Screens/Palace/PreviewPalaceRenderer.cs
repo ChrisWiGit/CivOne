@@ -4,90 +4,59 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.PalaceAssets
 {
+	/// <summary>
+	/// Draws the mini palace like the original game: 9 slots on a fixed 7 pixel grid, only slots above level 0,
+	/// with sprite stage <c>level - 1</c>. Empty slots stay gaps.
+	/// </summary>
 	public sealed class PreviewPalaceRenderer(PreviewPalaceResourcesWrapper resources) : IPreviewPalaceRenderer
 	{
-		private const int PART_WIDTH = 7;
 		private const int PART_HEIGHT = 13;
+		private const int BASE_OFFSET = -1;
 
-		// Maps PalaceData index (0–6) to the corresponding sprite part.
-		// Indices 1 and 2 share the WallLeft sprite; indices 4 and 5 share the WallRight sprite.
-		private static readonly PreviewPalacePart[] IndexToPart =
-		[
-			PreviewPalacePart.Left,
-			PreviewPalacePart.WallLeft,
-			PreviewPalacePart.WallLeft,
-			PreviewPalacePart.Center,
-			PreviewPalacePart.WallRight,
-			PreviewPalacePart.WallRight,
-			PreviewPalacePart.Right,
-		];
-
-		public IBitmap RenderPalace(IPalaceData palace)
+		/// <inheritdoc />
+		public IBitmap RenderPalace(MiniPalaceLayout palace)
 		{
-			int partCount = CountRenderParts(palace);
-			if (partCount == 0)
+			ArgumentNullException.ThrowIfNull(palace);
+
+			if (!palace.HasVisibleSlot)
 			{
 				return new Picture(1, 1);
 			}
 
-			Picture result = new(partCount * PART_WIDTH, PART_HEIGHT);
-			int xPos = 0;
-
-			for (int i = 0; i < 7; i++)
+			Picture result = new(MiniPalaceLayout.Width, PART_HEIGHT);
+			for (int slot = 0; slot < MiniPalaceLayout.SlotCount; slot++)
 			{
-				byte level = palace.GetPalaceLevel(i);
-				PalaceStyle style = palace.GetPalaceStyle(i);
-
-				// Towers are always shown when the adjacent wall is built, even if the tower itself isn't upgraded yet.
-				if (i == 0 && palace.GetPalaceLevel(1) > 0)
+				if (!palace.IsVisible(slot))
 				{
-					level = palace.GetPalaceLevel(1);
-					style = palace.GetPalaceStyle(1);
-				}
-				else if (i == 6 && palace.GetPalaceLevel(5) > 0)
-				{
-					level = palace.GetPalaceLevel(5);
-					style = palace.GetPalaceStyle(5);
+					continue;
 				}
 
-				if (level == 0) continue;
-
-				const int baseOffset = -1;
-
-				result.AddLayer(resources.GetPreviewPart(IndexToPart[i], level, style), xPos, baseOffset);
-				xPos += PART_WIDTH;
+				Picture part = resources.GetPreviewPart(palace.PartAt(slot), palace.Level(slot), palace.Style(slot));
+				result.AddLayer(part, slot * MiniPalaceLayout.SlotWidth, BASE_OFFSET);
 			}
 
 			return result;
 		}
 
-		private static int CountRenderParts(IPalaceData palace)
+		/// <inheritdoc />
+		public int GetMaxPalaceHeight(MiniPalaceLayout palace)
 		{
-			int count = 0;
-			for (int i = 0; i < 7; i++)
+			ArgumentNullException.ThrowIfNull(palace);
+
+			int height = 0;
+			for (int slot = 0; slot < MiniPalaceLayout.SlotCount; slot++)
 			{
-				byte level = palace.GetPalaceLevel(i);
-				if (level > 0)
+				if (palace.IsVisible(slot))
 				{
-					count++;
-					continue;
+					height = Math.Max(height, PartHeight(palace.Level(slot), palace.Style(slot)));
 				}
-				if (i == 0 && palace.GetPalaceLevel(1) > 0) count++;
-				else if (i == 6 && palace.GetPalaceLevel(5) > 0) count++;
 			}
-			return count;
+
+			return height;
 		}
 
-		public int GetMaxPalaceHeight(IPalaceData palace)
+		private static int PartHeight(int level, PalaceStyle style)
 		{
-			var style = palace.GetPalaceStyle(3);
-			byte level = palace.GetPalaceLevel(3);
-
-			if (level == 0)
-			{
-				return 0;
-			}
-
 			const int baseClassic = 14;
 			const int baseMedieval = 30;
 			const int baseIslamic = 46;
@@ -108,7 +77,7 @@ namespace CivOne.Screens.PalaceAssets
 				(2, PalaceStyle.Islamic) => baseIslamic - 36 + 1, // = 11
 				(3, PalaceStyle.Islamic) => baseIslamic - 34 + 1, // = 13
 				(4, PalaceStyle.Islamic) => baseIslamic - 33 + 1, // = 14
-				(_, _) => throw new ArgumentOutOfRangeException($"Unexpected palace style/level combination: style={style}, level={level}")
+				(_, _) => throw new ArgumentOutOfRangeException(nameof(level), $"Unexpected palace style/level combination: style={style}, level={level}")
 			};
 		}
 	}

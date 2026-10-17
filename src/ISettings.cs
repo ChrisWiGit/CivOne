@@ -116,5 +116,10 @@
 		/// Gets a value indicating whether closing a running game asks for confirmation first.
 		/// </summary>
 		bool ConfirmExit { get; }
+
+		/// <summary>
+		/// Gets which palace the Historian shows for AI players.
+		/// </summary>
+		Enums.HistorianAiPalace HistorianAiPalace { get; }
 	}
 }
