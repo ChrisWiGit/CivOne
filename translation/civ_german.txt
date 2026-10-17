@@ -1661,3 +1661,4 @@ SHOW THE PALACE THE COMPUTER PLAYER BUILT.=Zeigt den Palast, den der Computerspi
 GENERATE ONE WHILE NOTHING IS BUILT.=Erzeugt einen, solange nichts gebaut ist.
 SHOW ONLY THE PALACE THE COMPUTER PLAYER BUILT.=Zeigt nur den Palast, den der Computerspieler gebaut hat.
 F3: AI PALACES: {0}=F3: KI-Paläste: {0}
+SELECT NEW SECTION.=Neuen Abschnitt wählen.
