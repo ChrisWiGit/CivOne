@@ -25,8 +25,6 @@ namespace CivOne.Services.EndGame
 		ISpaceShipArrivalService? arrivalService = null,
 		IGameCalendarService? calendarService = null) : IGameEndCheckService
 	{
-		private const int SlotCount = 8;
-
 		private readonly ISpaceShipArrivalService? _arrivalService = arrivalService;
 		private readonly IGameCalendarService? _calendarService = calendarService;
 
@@ -66,7 +64,7 @@ namespace CivOne.Services.EndGame
 		private int SpaceshipWinner(IReadOnlyList<IPlayerSpaceRace> playersBySlot, ushort turn)
 		{
 			int winner = GameEndCheckResult.NoWinner;
-			for (int slot = 1; slot < Math.Min(playersBySlot.Count, SlotCount); slot++)
+			for (int slot = 1; slot < Math.Min(playersBySlot.Count, PlayerLimits.MaxPlayers); slot++)
 			{
 				if (ArrivalService.ArrivedThisTurn(playersBySlot[slot], turn))
 				{

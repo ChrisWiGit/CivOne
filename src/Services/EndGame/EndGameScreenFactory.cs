@@ -20,8 +20,8 @@ namespace CivOne.Services.EndGame
 
 		/// <inheritdoc />
 		public IScreen SpaceVictory(SpaceVictoryText text, PalaceData? rivalBackground, Action? onLanding, TimeSpan? flightDuration) => rivalBackground == null
-			? new SpaceVictory(text, Resources.Instance["SPACEST"], ownsLandingBackground: false, humanArrival: true, onLanding, flightDuration)
-			: new SpaceVictory(text, PalaceView.CreatePicture(palaceData: rivalBackground), ownsLandingBackground: true, humanArrival: false, onLanding, flightDuration);
+			? new SpaceVictory(text, Resources.Instance["SPACEST"], humanArrival: true, onLanding, flightDuration)
+			: new SpaceVictory(text, PalaceView.CreatePicture(palaceData: rivalBackground), humanArrival: false, onLanding, flightDuration);
 
 		/// <inheritdoc />
 		public IScreen PowerGraph() => new Screens.PowerGraph();

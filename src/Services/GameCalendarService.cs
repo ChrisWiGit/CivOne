@@ -115,6 +115,12 @@ namespace CivOne.Services
 			int year = TurnToYear(turn);
 			if (zeroAd && year == 1) year = 0;
 
+			return FormatCalendarYear(year);
+		}
+
+		/// <inheritdoc />
+		public string FormatCalendarYear(int year)
+		{
 			if (year < 0)
 			{
 				string bc = Translation.Translate("BC");

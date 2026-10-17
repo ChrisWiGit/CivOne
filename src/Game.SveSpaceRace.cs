@@ -37,6 +37,8 @@ namespace CivOne
 				_players[slot].SpaceShipPopulation = populations[slot];
 			}
 
+			// The ship parts are not loaded, so a ship in flight has a success rate of 0 here.
+			// Known gap, see TODO.md, chapter "Spaceship".
 			SveSpaceRaceDelegate spaceRace = new(SpaceShipArrivalService);
 			spaceRace.RestoreArrivalYears(_players, gameData.SpaceshipFlags, gameData.SpaceshipEtaYear);
 			ScoringCompleted = spaceRace.IsScoringCompleted(gameData.SpaceshipFlags);

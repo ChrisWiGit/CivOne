@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using CivOne.Enums;
 using CivOne.Services;
 using CivOne.Services.Calendar;
@@ -52,6 +53,15 @@ namespace CivOne.UnitTests.Services.EndGame
 			FakePlayer[] players = [new(), new() { EtaYear = 1900 }, new(), new() { EtaYear = 1900 }];
 
 			Assert.Equal(3, testee.Check(players, TurnOf(1900), 0, false).SpaceshipWinnerSlot);
+		}
+
+		[Fact]
+		public void ShipsBeyondTheEightSveSlotsAlsoArrive()
+		{
+			GameEndCheckService testee = CreateService();
+			FakePlayer[] players = [.. Enumerable.Range(0, 12).Select(slot => slot == 10 ? new FakePlayer { EtaYear = 1900 } : new FakePlayer())];
+
+			Assert.Equal(10, testee.Check(players, TurnOf(1900), 0, false).SpaceshipWinnerSlot);
 		}
 
 		[Fact]

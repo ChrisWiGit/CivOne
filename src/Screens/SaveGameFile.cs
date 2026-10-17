@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using CivOne.Services;
+using CivOne.Services.Calendar;
 
 namespace CivOne.Screens
 {
@@ -69,7 +70,7 @@ namespace CivOne.Screens
                         return;
                     }
 
-                    string turn = GameCalendarServiceFactory.Current.FormatYear(ReadUShort(br, 0));
+                    string turn = FormatSavedYear(ReadUShort(br, 0), (short)ReadUShort(br, 8));
                     ushort humanPlayer = ReadUShort(br, 2);
                     ushort difficultyLevel = ReadUShort(br, 10);
                     string leaderName = ReadStrings(br, 16, 112, 14)[humanPlayer];
@@ -87,6 +88,15 @@ namespace CivOne.Screens
                 BaseInstance.Log($"Could not open .SVE file: {ex.InnerException}");
                 Name = Translate("(COULD NOT READ SAVE FILE HEADER)");
             }
+        }
+
+        // Formats the year from the save's own calendar, not from the running game's history:
+        // spaceship flights speed up the calendar, so the same turn can stand for different years.
+        private static string FormatSavedYear(ushort turn, short year)
+        {
+            CalendarState state = new();
+            state.Restore(new SveCalendarDelegate().Rebuild(turn, year));
+            return GameCalendarServiceFactory.Create(state).FormatYear(turn);
         }
 
         public static IEnumerable<SaveGameFile> GetSaveGames(char driveLetter)

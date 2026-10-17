@@ -65,7 +65,7 @@ internal sealed class SoundPackPickerDelegate(
 	public bool CanOpenOver(IScreen? topScreen) => topScreen switch
 	{
 		GamePlay => !GameTask.Any(),
-		Credits credits => credits.IsMainMenuShown,
+		Menu { Id: "MainMenu" } => true,
 		_ => false
 	};
 
