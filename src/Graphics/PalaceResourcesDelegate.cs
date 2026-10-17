@@ -62,7 +62,8 @@ namespace CivOne.Graphics
 				_ => throw new ArgumentOutOfRangeException(nameof(kind), $"Unknown palace piece: {kind}"),
 			};
 
-			Picture piece = _getPictureByName($"CASTLE{level}")[x, y, width, PIECE_HEIGHT];
+			using Picture source = _getPictureByName($"CASTLE{level}");
+			Picture piece = source[x, y, width, PIECE_HEIGHT];
 			_cache[key] = piece;
 			return piece;
 		}

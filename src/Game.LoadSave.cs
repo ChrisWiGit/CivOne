@@ -140,6 +140,7 @@ namespace CivOne
 			gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 			StoreSpaceRace(gameData);
 			StorePalace(gameData);
+			StoreDiplomacy(gameData);
 			gameData.ReplayData = [.. _replayData];
 			GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(_globalWarmingService, _valueSanitizer).Store(gameData);
 			File.WriteAllBytes(sveFile, gameData.GetBytes());
@@ -210,6 +211,7 @@ namespace CivOne
 			PeaceTurnService.Restore(gameData.PeaceTurns);
 			RestoreSpaceRace(gameData);
 			RestorePalace(gameData);
+			RestoreDiplomacy(gameData);
 			_playerFutureTech = gameData.PlayerFutureTech;
 			HumanPlayer.FutureTechCount = _playerFutureTech;
 

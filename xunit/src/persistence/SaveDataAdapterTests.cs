@@ -47,6 +47,20 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
+		public void DiplomacyRoundtripsAtOffset1608()
+		{
+			using var testee = new SaveDataAdapter();
+			ushort[] expected = [.. Enumerable.Range(0, 64).Select(i => (ushort)(i * 3))];
+
+			testee.Diplomacy = expected;
+			byte[] bytes = testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			Assert.Equal(expected, actualAdapter.Diplomacy);
+			Assert.Equal(expected[9], BitConverter.ToUInt16(bytes, 1608 + (9 * 2)));
+		}
+
+		[Fact]
 		public void PalaceRoundtripsAtOffset37256AndBuildCountAt37816()
 		{
 			using var testee = new SaveDataAdapter();

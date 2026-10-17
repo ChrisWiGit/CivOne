@@ -32,6 +32,11 @@ namespace CivOne
 		ushort[] HumanContactTurns { get; set; }
 		ushort[] StartingPositionX { get; set; }
 		ushort[] Government { get; set; }
+
+		/// <summary>
+		/// Gets or sets the diplomacy block as 64 flag words: 8 rows (player) of 8 columns (other player).
+		/// </summary>
+		ushort[] Diplomacy { get; set; }
 		CityData[] Cities { get; set; }
 		UnitData[][] Units { get; set; }
 		ushort[] Wonders { get; set; }

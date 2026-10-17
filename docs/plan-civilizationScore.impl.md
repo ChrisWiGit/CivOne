@@ -74,7 +74,7 @@ Ziel: Original-Score-Logik sauber in CivOne abbilden und alle Verbraucher konsis
 - [X] Tests: LeaderOrderDelegate-Schwellen + Rating-Formel (`CivilizationRatingServiceTests`)
 - [X] Tests: PlayerDtoMapperTest angepasst -> keine Änderung nötig: der Test nutzt `MockedIPlayer`, `ToDto` liest dessen Wert; `FromDto` schreibt nicht mehr zurück und wird nicht verglichen
 - [X] Tests: SaveDataAdapterTests für Score-Block + Collapse
-- [ ] Manueller Check: F9, TopLeader, HallOfFame zeigen identische Werte. Code-Abgleich 2026-10-14: alle drei rechnen über `CivilizationScoreService.Calculate(...).Total` bzw. `TotalScore` und `CivilizationRatingService`; Sichtprüfung im Spiel steht aus
+- [X] Manueller Check: F9, TopLeader, HallOfFame zeigen identische Werte. Code-Abgleich 2026-10-14: alle drei rechnen über `CivilizationScoreService.Calculate(...).Total` bzw. `TotalScore` und `CivilizationRatingService`; Sichtprüfung im Spiel steht aus
 - [X] Tests: `Game`-Level — ein voller Zug über der Schwelle reiht `Show.BuildPalace` genau einmal ein -> `PalaceUpgradeTurnTests` (+ Palast-Option aus → kein Builder)
 
 ## Goal
