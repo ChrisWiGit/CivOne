@@ -492,6 +492,9 @@ namespace CivOne
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
 
+			// Keep barbarian spawn timing aligned with the selected game difficulty by default.
+			_players[0].Handicap = (byte)Math.Clamp(_difficulty, 0, MaxDifficulty);
+
 			// Checked rather than asserted: a Debug.Assert is removed in release builds, and a game without a
 			// human player looks like a running game while accepting no input at all.
 			if (HumanPlayer == null || PlayerNumber(HumanPlayer) != humanPlayerIndex || humanPlayerIndex == 0)

@@ -10,6 +10,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Screens;
 
 namespace CivOne.Tasks
@@ -64,11 +65,16 @@ namespace CivOne.Tasks
 				{
 					Enqueue(new TechSelect(_player));
 				}
-				else
+				else if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
 				{
-					Debug.Assert(_player.AI != null, "AI player has no AI implementation");
-					Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
-					_player.AI.ChooseResearch();
+					if (_player.AiController == null)
+					{
+						Log($"Warning: The player {_player.TribeName} is not human but has no AI controller. Skipping research selection.");
+					}
+					else
+					{
+						_player.AiController.ChooseResearch();
+					}
 				}
 				EndTask();
 				return;
@@ -88,8 +94,17 @@ namespace CivOne.Tasks
 			{
 				// This is an AI player, handle everything in the background.
 				_player.CurrentResearch = null;
-				Debug.Assert(_player.AI != null, "AI player has no AI implementation");
-				_player.AI.ChooseResearch();
+				if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
+				{
+					if (_player.AiController == null)
+					{
+						Log($"Warning: The player {_player.TribeName} is not human but has no AI controller. Skipping research selection.");
+					}
+					else
+					{
+						_player.AiController.ChooseResearch();
+					}
+				}
 				EndTask();
 				return;
 			}

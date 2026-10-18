@@ -1,0 +1,28 @@
+<!--
+	A minimal plugin assembly used by the plugin unit tests.
+
+	It is deliberately built as a stand-alone assembly that only references CivOne.API, exactly like
+	a third-party plugin would. The test project builds it but does not reference its types: loading
+	it into the default context would defeat the purpose of testing the isolated load context.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<AssemblyName>CivOne.TestPlugin</AssemblyName>
+		<RootNamespace>CivOne</RootNamespace>
+		<OutputType>Library</OutputType>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<EnableNETAnalyzers>false</EnableNETAnalyzers>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<IsPackable>false</IsPackable>
+		<!-- Not a test project: keep the test runner from trying to discover tests in it. -->
+		<IsTestProject>false</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\api\CivOne.API.csproj" Private="false" />
+	</ItemGroup>
+
+</Project>

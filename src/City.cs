@@ -17,6 +17,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Game;
+using CivOne.Agents;
 using CivOne.Screens.Services;
 using CivOne.Services.SpaceShip;
 using CivOne.Sound;
@@ -1458,7 +1459,10 @@ namespace CivOne
 			}
 			else
 			{
-				CityOwnerPlayer.AI?.CityProduction(this);
+				if (!TurnBasedAgentHost.ShouldHandlePlayer(CityOwnerPlayer))
+				{
+					CityOwnerPlayer.AiController?.CityProduction(this);
+				}
 			}
 		}
 

@@ -3,7 +3,8 @@
 **/bin/**
 **/capture/**
 **/data/**
-**/plugins/**
+**/plugins/bin/**
+**/plugins/obj/**
 **/saves/**
 **/settings/**
 **/sounds/**

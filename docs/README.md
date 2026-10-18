@@ -40,4 +40,5 @@ enhance the Unit Testing support. And there is a high-level list of stuff to wor
 For Pull Requests, I would appreciate it if you could stick to the existing coding style.
 
 ## More information
+- AI API developer onboarding: [AI/README.md](AI/README.md)
 - Discussion thread: https://forums.civfanatics.com/threads/civone-an-open-source-remake-of-civilization-1.535036/

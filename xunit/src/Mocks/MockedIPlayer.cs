@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using CivOne.Wonders;
 using System;
+using CivOne.Agents;
 using CivOne.Governments;
 using CivOne.Advances;
 using CivOne.Persistence.Model;
@@ -17,9 +18,12 @@ namespace CivOne.UnitTests
 		{
 			Civilization = new MockedICivilization(1);
 			PlayerGuid = Guid.NewGuid();
+			AiId = null;
+			AiDifficulty = AiDifficulty.Unspecified;
 			LeaderName = "Mock Leader";
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
+			Handicap = 0;
 			Explored = new bool[10, 10];
 			Visible = new bool[10, 10];
 			Advances = [];
@@ -60,11 +64,17 @@ namespace CivOne.UnitTests
 
 		public Guid PlayerGuid { get; set; }
 
+		public Guid? AiId { get; set; }
+
+		public AiDifficulty AiDifficulty { get; set; }
+
 		public string LeaderName { get; set; }
 
 		public string TribeName { get; set; }
 
 		public string TribeNamePlural { get; set; }
+
+		public byte Handicap { get; set; }
 
 		public bool[,] Explored { get; set; }
 

@@ -1,15 +1,9 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
+using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
+using CivOne.Persistence.Game;
+using CivOne.Tasks;
 
 namespace CivOne.Screens.Debug
 {
@@ -29,10 +23,17 @@ namespace CivOne.Screens.Debug
 
 		private void ChangePlayer_Accept(Player player)
 		{
+			if (player.Civilization.Id == 0)
+			{
+				GameTask.Enqueue(Message.General(Translate("Barbarians cannot be selected as the human player.")));
+				return;
+			}
+
 			_selectedPlayer = player;
 
 			if (_selectedPlayer != Game.HumanPlayer)
 			{
+				SwapHumanAndSelectedPlayerRuntimeAiState(Game.HumanPlayer, _selectedPlayer);
 				Game.HumanPlayer = _selectedPlayer;
 				Game.EndTurn(3);
 			}
@@ -40,6 +41,28 @@ namespace CivOne.Screens.Debug
 			Accept?.Invoke(this, EventArgs.Empty);
 			Destroy();
 		}
+
+		private static void SwapHumanAndSelectedPlayerRuntimeAiState(Player previousHumanPlayer, Player newHumanPlayer)
+		{
+			ArgumentNullException.ThrowIfNull(previousHumanPlayer);
+			ArgumentNullException.ThrowIfNull(newHumanPlayer);
+
+			Guid? previousHumanAiId = previousHumanPlayer.AiId;
+			Guid? newHumanAiId = newHumanPlayer.AiId;
+
+			((IPlayerRestorable)previousHumanPlayer).AiId = newHumanAiId;
+			((IPlayerRestorable)newHumanPlayer).AiId = previousHumanAiId;
+
+			byte previousHumanHandicap = previousHumanPlayer.Handicap;
+			previousHumanPlayer.Handicap = newHumanPlayer.Handicap;
+			newHumanPlayer.Handicap = previousHumanHandicap;
+		}
+
+		/// <summary>
+		/// The players the human may switch to.
+		/// Barbarians are left out, they cannot be played.
+		/// </summary>
+		private static Player[] SelectablePlayers() => [.. Game.Players.Where(player => player.Civilization.Id != 0)];
 
 		private void ChangePlayer_Cancel(object? sender, EventArgs args)
 		{
@@ -89,8 +112,8 @@ namespace CivOne.Screens.Debug
 
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate(Translate("Change Human Player..."));
+			Palette = Common.Screens[^1].OriginalColours;
+			_civSelectDelegate = new CivSelectMenuDelegate(SelectablePlayers(), Translate("Change Human Player..."));
 			_civSelectDelegate.PlayerSelected += ChangePlayer_Accept;
 			_civSelectDelegate.Cancelled += ChangePlayer_Cancel;
 

@@ -94,6 +94,12 @@ namespace CivOne.Services
 		public bool HasOutOfBoundsCityCoordinates { get; }
 
 		/// <summary>
+		/// Indicates whether at least one non-legacy AI assignment is present in player data.
+		/// Such games must be saved as YAML/COS to preserve AI identifiers.
+		/// </summary>
+		public bool HasUnsupportedAiSelection { get; }
+
+		/// <summary>
 		/// Indicates whether at least one unit has coordinates outside the SVE map bounds.
 		/// </summary>
 		public bool HasOutOfBoundsUnitCoordinates { get; }
@@ -144,6 +150,7 @@ namespace CivOne.Services
 			int replayDataLengthBytes,
 			bool hasInvalidTradeCityReferences,
 			bool hasInvalidUnitHomeCityReferences,
+			bool hasUnsupportedAiSelection,
 			bool hasOutOfBoundsCityCoordinates,
 			bool hasOutOfBoundsUnitCoordinates,
 			bool hasOutOfBoundsUnitGotoCoordinates,
@@ -163,6 +170,7 @@ namespace CivOne.Services
 			ReplayDataLengthBytes = replayDataLengthBytes;
 			HasInvalidTradeCityReferences = hasInvalidTradeCityReferences;
 			HasInvalidUnitHomeCityReferences = hasInvalidUnitHomeCityReferences;
+			HasUnsupportedAiSelection = hasUnsupportedAiSelection;
 			HasOutOfBoundsCityCoordinates = hasOutOfBoundsCityCoordinates;
 			HasOutOfBoundsUnitCoordinates = hasOutOfBoundsUnitCoordinates;
 			HasOutOfBoundsUnitGotoCoordinates = hasOutOfBoundsUnitGotoCoordinates;
@@ -191,6 +199,7 @@ namespace CivOne.Services
 		private int _replayDataLengthBytes;
 		private bool _hasInvalidTradeCityReferences;
 		private bool _hasInvalidUnitHomeCityReferences;
+		private bool _hasUnsupportedAiSelection;
 		private bool _hasOutOfBoundsCityCoordinates;
 		private bool _hasOutOfBoundsUnitCoordinates;
 		private bool _hasOutOfBoundsUnitGotoCoordinates;
@@ -247,6 +256,17 @@ namespace CivOne.Services
 		public SveSaveCompatibilitySnapshotBuilder WithInvalidUnitHomeCityReferences(bool hasInvalidUnitHomeCityReferences)
 		{
 			_hasInvalidUnitHomeCityReferences = hasInvalidUnitHomeCityReferences;
+			return this;
+		}
+
+		/// <summary>
+		/// Sets whether the snapshot contains AI selections that SVE cannot represent.
+		/// </summary>
+		/// <param name="hasUnsupportedAiSelection">True when at least one unsupported AI assignment exists.</param>
+		/// <returns>The current builder instance.</returns>
+		public SveSaveCompatibilitySnapshotBuilder WithUnsupportedAiSelection(bool hasUnsupportedAiSelection)
+		{
+			_hasUnsupportedAiSelection = hasUnsupportedAiSelection;
 			return this;
 		}
 
@@ -316,6 +336,7 @@ namespace CivOne.Services
 				_replayDataLengthBytes,
 				_hasInvalidTradeCityReferences,
 				_hasInvalidUnitHomeCityReferences,
+				_hasUnsupportedAiSelection,
 				_hasOutOfBoundsCityCoordinates,
 				_hasOutOfBoundsUnitCoordinates,
 				_hasOutOfBoundsUnitGotoCoordinates,
@@ -352,6 +373,11 @@ namespace CivOne.Services
 			if (snapshot.IsLoadedFromYaml)
 			{
 				return new SveSaveCompatibilityResult(false, "Game was loaded from YAML/COS or already saved as YAML/COS and is locked to YAML/COS saves.");
+			}
+
+			if (snapshot.HasUnsupportedAiSelection)
+			{
+				return new SveSaveCompatibilityResult(false, "Non-legacy AI assignments are present and require YAML/COS saves.");
 			}
 
 			if (snapshot.CivilizationIds.Any(id => id > SveMaxCivilizationId))

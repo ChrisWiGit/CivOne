@@ -7,26 +7,20 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-namespace CivOne.Enums
+namespace CivOne.Screens
 {
 	/// <summary>
-	/// Temperature presets used by world generation.
+	/// Creates AI catalog services for the new game selection screen.
 	/// </summary>
-	public enum Temperature
+	internal static class NewGameAiCatalogServiceFactory
 	{
 		/// <summary>
-		/// Cool temperature.
+		/// Creates the default AI catalog service.
 		/// </summary>
-		Cool = 0,
-
-		/// <summary>
-		/// Temperate temperature.
-		/// </summary>
-		Temperate = 1,
-
-		/// <summary>
-		/// Warm temperature.
-		/// </summary>
-		Warm = 2,
+		/// <returns>A new AI catalog service instance.</returns>
+		public static INewGameAiCatalogService Create()
+		{
+			return new DefaultNewGameAiCatalogService();
+		}
 	}
 }
