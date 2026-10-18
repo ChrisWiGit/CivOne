@@ -1,3 +1,12 @@
+// CivOne
+//
+// To the extent possible under law, the person who associated CC0 with
+// CivOne has waived all copyright and related or neighboring rights
+// to CivOne.
+//
+// You should have received a copy of the CC0 legalcode along with this
+// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -209,7 +218,9 @@ namespace CivOne.Screens
 		{
 			_injectedSelection = selection;
 
-			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
+			// The end-game flow opens the graph after clearing the screen stack, so there may be no top screen.
+			using Palette palette = ScreenServiceFactory.CreateQueryService().TopScreen?.Palette.Copy() ?? Common.DefaultPalette;
+			Palette = palette;
 
 			// Drops a selection that belongs to a previously played game; a new game with the same number of
 			// players would otherwise inherit it and apply it to different civilizations.

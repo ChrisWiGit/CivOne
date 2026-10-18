@@ -1,5 +1,6 @@
 using System;
 using CivOne.Screens.Reports;
+using CivOne.Services.Score;
 
 namespace CivOne.Services.HallOfFame
 {
@@ -12,20 +13,20 @@ namespace CivOne.Services.HallOfFame
 	internal sealed class HallOfFameEntryComposerService(
 		ICivilizationScoreService civilizationScoreService,
 		GameCalendarService gameCalendarService,
-		LeaderOrderDelegate leaderOrderDelegate,
+		ICivilizationRatingService civilizationRatingService,
 		ITranslationService translationService) : IHallOfFameEntryComposerService
 	{
 		private readonly ICivilizationScoreService _civilizationScoreService = civilizationScoreService;
 		private readonly GameCalendarService _gameCalendarService = gameCalendarService;
-		private readonly LeaderOrderDelegate _leaderOrderDelegate = leaderOrderDelegate;
+		private readonly ICivilizationRatingService _civilizationRatingService = civilizationRatingService;
 		private readonly ITranslationService _translationService = translationService;
 
 		public HallOfFameEntry ComposeForHuman()
 		{
 			int totalScore = _civilizationScoreService.TotalScore(Game.Instance.HumanPlayer);
-			int topLeaderThreshold = _leaderOrderDelegate.GetLeaderOrder()[0].RatingThreshold;
-			int ratingPercent = _civilizationScoreService.RatingPercent(totalScore, topLeaderThreshold);
-			LeaderOrderResult leaderOrderResult = _leaderOrderDelegate.Calculate(ratingPercent);
+			int difficulty = Game.Instance.Difficulty;
+			int ratingPercent = _civilizationRatingService.Rating(totalScore, difficulty);
+			LeaderOrderResult? leaderOrderResult = _civilizationRatingService.FamousPerson(totalScore, difficulty, Game.Instance.HumanPlayer.Palace.BuildCount);
 
 			return new HallOfFameEntry(
 				LeaderName: Game.Instance.HumanPlayer.LeaderName,
@@ -34,7 +35,7 @@ namespace CivOne.Services.HallOfFame
 				YearLabel: _gameCalendarService.FormatYear(Game.Instance.GameTurn),
 				Population: Game.Instance.HumanPlayer.Population,
 				Score: totalScore,
-				RatingRankLabel: leaderOrderResult.SelectedLeaderName,
+				RatingRankLabel: leaderOrderResult?.SelectedLeaderName ?? string.Empty,
 				RatingPercent: ratingPercent,
 				CreatedAtUtc: DateTimeOffset.UtcNow);
 		}

@@ -30,8 +30,11 @@ using CivOne.Services;
 using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
+using CivOne.Services.Peace;
 using CivOne.Services.Random;
+using CivOne.Services.Score;
 using CivOne.Services.SpaceShip;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -61,10 +64,11 @@ namespace CivOne
 		private int _activeUnit;
 
 		private ushort _anthologyTurn;
-		private ushort _peaceTurns;
 		private ushort _playerFutureTech;
 		private bool _disableBuddyCivilizationRespawn;
-		private bool _hostileActionOccurred;
+		private IPeaceTurnService? _peaceTurnService;
+		private readonly WorldConquestDelegate _worldConquest = new();
+		private ISpaceShipArrivalService? _spaceShipArrivalService;
 		private bool _loadedFromYamlSaveSource;
 		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
 
@@ -211,7 +215,7 @@ namespace CivOne
 			}
 		}
 
-		internal string GameYear => Common.YearString(GameTurn);
+		internal string GameYear => CalendarService.FormatYear(GameTurn);
 
 		internal bool IsYamlSaveSource => _loadedFromYamlSaveSource;
 
@@ -311,9 +315,29 @@ namespace CivOne
 			}
 		}
 
-		internal void RegisterHostileAction()
+		private IPeaceTurnService PeaceTurnService => _peaceTurnService ??= CivilizationScoreServiceFactory.CreatePeaceTurnService();
+
+		private ISpaceShipArrivalService SpaceShipArrivalService => _spaceShipArrivalService ??= SpaceShipServiceFactoryProvider.CreateArrivalService();
+
+		/// <summary>
+		/// Checks whether the human player has eliminated every other civilization, for the world-conquest score bonus.
+		/// </summary>
+		/// <returns><c>true</c> once only the human player and the barbarians remain.</returns>
+		internal bool IsWorldConquered() => _worldConquest.IsConquered(_players.Select(player => new PlayerConquestParticipant(player)));
+
+		/// <summary>
+		/// Gets the number of consecutive peaceful turns, read by the civilization score.
+		/// </summary>
+		public ushort PeaceTurns => PeaceTurnService.PeaceTurns;
+
+		/// <summary>
+		/// Records a hostile action that breaks the peace streak at the next turn wrap.
+		/// </summary>
+		/// <param name="attackerPlayer">Slot index of the attacking civilization.</param>
+		/// <param name="defenderPlayer">Slot index of the defending civilization, or <c>-1</c> if there is none.</param>
+		internal void RegisterHostileAction(int attackerPlayer, int defenderPlayer)
 		{
-			_hostileActionOccurred = true;
+			PeaceTurnService.RegisterCombat(attackerPlayer, defenderPlayer);
 		}
 
 		private void PlayerDestroyed(object? sender, EventArgs args)
@@ -351,7 +375,10 @@ namespace CivOne
 				return;
 			}
 
-			if (Common.TurnToYear(Game.GameTurn) < 0 &&
+			// Like the original, a destroyed civilization loses its spaceship program before it may respawn.
+			LoseSpaceShip(player);
+
+			if (CalendarService.TurnToYear(Game.GameTurn) < 0 &&
 				player.AllowedToRespawn(GetReplayData<ReplayData.CivilizationDestroyed>()))
 			{
 				Player newPlayer = player.Respawn();
@@ -373,6 +400,10 @@ namespace CivOne
 
 			GameTask.Insert(Message.Advisor(Advisor.Defense, false,
 				TranslateFormattedArray("{0}\ncivilization\ndestroyed\nby {1}!", destroyed.Name, destroyedBy.NamePlural)));
+
+			// Like the original, world conquest is latched the moment the last rival is destroyed without respawn.
+			// The game ends in the end-of-turn check.
+			_ = IsWorldConquered();
 		}
 
 		/// <summary>
@@ -431,13 +462,17 @@ namespace CivOne
 		internal readonly IPalaceUpgradeService _palaceUpgradeService;
 		internal readonly ICivilizationRankingTriggerService _civilizationRankingTriggerService;
 
-		private readonly struct PlayerGameStateAdapter(Player player) : IPlayerGameState
+		private readonly struct PlayerGameStateAdapter(Player player, int difficulty, bool palaceOption, bool scoringCompleted) : IPlayerGameState
 		{
 			private readonly Player _player = player;
 
 			public int CivilizationScore => ((Persistence.Game.IPlayer)_player).CivilizationScore;
 			public IPalaceData Palace => _player.Palace;
 			public bool IsHuman => _player.IsHuman;
+			public int Difficulty => difficulty;
+			public bool PalaceOptionEnabled => palaceOption;
+			public bool ScoringCompleted => scoringCompleted;
+			public bool HasPalaceCity => _player.Cities.Any(city => city.HasBuilding<Buildings.Palace>());
 		}
 
 		/// <summary>
@@ -455,11 +490,17 @@ namespace CivOne
 				player.HandleExtinction();
 			}
 
+			bool turnWrapped = false;
 			if (++_currentPlayer >= _players.Length)
 			{
+				turnWrapped = true;
 				_currentPlayer = 0;
 				GameTurn++;
-				AdvancePeaceTurns();
+				CalendarService.AdvanceTurn(GameTurn, AnySpaceShipInFlight);
+				DoubleResearchAtAnnoDomini();
+				PeaceTurnService.AdvanceTurn(CalendarService.TurnToYear(GameTurn));
+				// Evaluated every turn so the latched variant notices the moment the last rival is gone.
+				_ = IsWorldConquered();
 				if (AutoSave)
 				{
 					var sveCompatibility = GetSveSaveCompatibility();
@@ -491,41 +532,23 @@ namespace CivOne
 				SpawnBarbarians(BarbarianSpawn.GetSpawnKind());
 			}
 
-			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))
-			{
-				PlaySound("wintune");
-
-				GameTask conquest;
-				GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas conquered\nthe entire planet!")));
-				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-				conquest.Done += (_, __) => _ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
-			}
-
-			bool gameEnds = !CheckSpaceVitory();
-			if (gameEnds)
-			{
-				return;
-			}
-
 			if (origin == 0)
 			{
 				HandleGlobalWarming();
 			}
 
-			// Palace upgrade trigger check for all players (trigger evaluation is player-independent)
-			if (_palaceUpgradeService != null)
+			// As in the original, the palace upgrade is checked once per turn, for the human player only.
+			if (turnWrapped && _palaceUpgradeService != null && HumanPlayer != null
+				&& _palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(HumanPlayer, Difficulty, Palace, ScoringCompleted))
+				&& HumanPlayer.Palace.RecordEarnedUpgrade())
 			{
-				foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
-				{
-					if (_palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(player)))
-					{
-						// Enqueue show-palace action only for human player (AI palace upgrades handled separately in future)
-						if (player.IsHuman)
-						{
-							GameTask.Enqueue(Show.BuildPalace());
-						}
-					}
-				}
+				GameTask.Enqueue(Show.BuildPalace());
+			}
+
+			// As in the original, the end of the game is checked once per turn, after the palace upgrade.
+			if (turnWrapped)
+			{
+				EnqueueGameEndCheck();
 			}
 
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))
@@ -543,42 +566,10 @@ namespace CivOne
 				GameTask.Enqueue(Show.Screen(CivilizationRankingScreenFactory.Create()));
 			}
 
-			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
+			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (CalendarService.TurnToYear(Game.GameTurn) == -3600 || CalendarService.TurnToYear(Game.GameTurn) == -2800))
 				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP1")));
-			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
+			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (CalendarService.TurnToYear(Game.GameTurn) == -3200 || CalendarService.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP2")));
-		}
-
-		private bool CheckSpaceVitory()
-		{
-			int currentYear = Common.TurnToYear(GameTurn);
-			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian && x.SpaceShipLaunchYear != 0))
-			{
-				ISpaceShipService shipService = SpaceShipServiceFactoryProvider.GetInstance().Create(player);
-				SpaceShipScreenData screenData = shipService.GetScreenData();
-				int arrivalYear = player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
-				if (currentYear < arrivalYear)
-				{
-					continue;
-				}
-
-				if (player == HumanPlayer)
-				{
-					PlaySound("wintune");
-
-					GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas reached\nAlpha Centauri!")));
-					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
-				}
-				else
-				{
-					GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nhas reached\nAlpha Centauri!", player.TribeName)));
-					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
-				}
-
-				return false;
-			}
-
-			return true;
 		}
 
 		protected void HandleGlobalWarming()
@@ -592,21 +583,6 @@ namespace CivOne
 			_globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Global temperature\nrises! Icecaps melt.\nSevere Drought.")));
-		}
-
-		private void AdvancePeaceTurns()
-		{
-			if (_hostileActionOccurred)
-			{
-				_peaceTurns = 0;
-				_hostileActionOccurred = false;
-				return;
-			}
-
-			if (_peaceTurns < ushort.MaxValue)
-			{
-				_peaceTurns++;
-			}
 		}
 
 		private void SaveCosAutoSave()
@@ -968,6 +944,22 @@ namespace CivOne
 		 * </summary> */
 		public ReadOnlyCollection<ICity> CitiesInterface { get { 
 			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
+
+		/// <summary>
+		/// Gets the position of the given city in the city list.
+		/// The position is the equivalent of the original game's numeric city slot and is derived on every
+		/// call, so it always matches the list it came from.
+		/// </summary>
+		/// <param name="city">The city to look up.</param>
+		/// <returns>The zero based position, or -1 when the city is not part of this game.</returns>
+		public int GetCityIndex(ICityBasic city) => _cities.FindIndex(c => ReferenceEquals(c, city));
+
+		/// <summary>
+		/// Tells whether the given player is the human player of this game.
+		/// </summary>
+		/// <param name="playerIndex">The player to check.</param>
+		/// <returns><c>true</c> when the player is the human player.</returns>
+		public bool IsHumanPlayer(byte playerIndex) => playerIndex == HumanPlayerId;
 
 		public IWonder[] BuiltWonders => [.. _cities.SelectMany(c => c.Wonders)];
 

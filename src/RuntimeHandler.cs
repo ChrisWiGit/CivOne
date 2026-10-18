@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -8,8 +8,10 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,10 +25,13 @@ using CivOne.Graphics.ImageFormats;
 using CivOne.Mcp;
 using CivOne.Mcp.Contracts;
 using CivOne.Screens;
+using CivOne.Screens.Dialogs;
 using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Services;
+using CivOne.Sound.Engine;
+using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -61,6 +66,7 @@ namespace CivOne
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
+		private readonly SoundPackPickerDelegate _soundPackPicker = new();
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
@@ -113,23 +119,62 @@ namespace CivOne
 			_tickWatch.Restart();
 		}
 		private uint _gameTick;
+		private string? _notificationText;
+		private uint _notificationUntilTick;
+		private Picture? _notificationLayer;
+		private string? _notificationLayerText;
+		private Size _notificationLayerSize;
 		private readonly IMcpService _mcpService;
+		private readonly IQuitAutoSaveServiceFactory? _quitAutoSaveServiceFactory;
+		private IQuitAutoSaveServiceFactory QuitAutoSaveServiceFactory
+			=> _quitAutoSaveServiceFactory ?? new QuitAutoSaveServiceFactory();
 		private bool _disposed;
+
+		internal static bool RequestQuitConfirmationOnWindowClose()
+			=> _instance?.TryRequestQuitConfirmationOnWindowClose() ?? false;
+
+		private bool TryRequestQuitConfirmationOnWindowClose()
+		{
+			// The credits screen quits immediately, without asking for confirmation.
+			if (Common.GamePlay == null)
+			{
+				return false;
+			}
+
+			if (!Settings.Instance.ConfirmExit)
+			{
+				// This check does not apply to the main menu exit dialog, since it is a deliberate choice to quit the game.
+				return false;
+			}
+
+			// The confirmation was already asked for, so a second close request quits without asking again.
+			if (Common.HasScreenType<ConfirmQuit>())
+			{
+				return false;
+			}
+
+			Common.AddScreen(new ConfirmQuit(Common.TopScreen?.Palette));
+
+			return true;
+		}
 
 		private bool Update()
 		{
 			if (!GameTask.Update() && (!GameTask.Fast && (_gameTick % 4) > 0)) return false;
+
+			// A screen that was added or closed changes the drawn layers even when no remaining
+			// screen redraws itself, so the frame has to be drawn again in that case.
+			bool update = Common.ConsumeScreenStackChanged();
 
 			IScreen[] currentScreens = Common.Screens;
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				if (Common.HasAttribute<ModalAttribute>(currentScreens[i]))
 				{
-					return currentScreens[i].Update(_gameTick / 4);
+					return currentScreens[i].Update(_gameTick / 4) || update;
 				}
 			}
-			
-			bool update = false;
+
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				IScreen screen = currentScreens[i];
@@ -173,12 +218,25 @@ namespace CivOne
 		{
 			Runtime.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
+
+			// Render the selected sound pack while the startup screens are still going, so the
+			// first tune does not have to wait for it.
+			SoundPlaybackStrategyProvider.WarmUp();
+
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
 
 		private void OnUpdate(object? _, UpdateEventArgs args)
 		{
 			_mcpService.Process();
+
+			// Sound pack tunes are rendered off the game thread. This starts one whose render has
+			// finished since the last frame.
+			SoundPlaybackStrategyProvider.Process();
+
+			// The new sound system raises the events of sounds that have ended here: the mixer runs
+			// on the audio thread, where game code must not run.
+			SoundSystemProvider.Process();
 
 			// The tick budget bounds how much work a single frame may do. Without it, one slow screen
 			// update lets real time run ahead, which queues up further updates in the same frame, which
@@ -203,6 +261,13 @@ namespace CivOne
 				args.HasUpdate = true;
 
 			}
+
+			// The notification is drawn on top of the screens, so a screen that does not redraw
+			// itself would neither show it nor remove it after it timed out.
+			if (NotificationNeedsRedraw)
+			{
+				args.HasUpdate = true;
+			}
 		}
 
 		private void OnDraw(object? _, EventArgs args)
@@ -223,7 +288,14 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime.Palette = topScreen.Palette.Copy();
+					Palette copy = topScreen.Palette.Copy();
+					Palette palette = new PaletteExpansionDelegate().Expand(copy);
+					if (!ReferenceEquals(palette, copy))
+					{
+						// Expand returned a new palette, so the short copy is no longer needed.
+						copy.Dispose();
+					}
+					Runtime.Palette = palette;
 				}
 				catch (ObjectDisposedException)
 				{
@@ -243,6 +315,8 @@ namespace CivOne
 			{
 				Runtime.Layers = [.. Common.Screens.Select(x => x.Bitmap)];
 			}
+
+			AddNotificationLayer();
 
 			if (_currentCursor != Common.MouseCursor || _cursorType != Settings.Instance.CursorType)
 			{
@@ -265,6 +339,52 @@ namespace CivOne
 
 		}
 
+		[MemberNotNullWhen(true, nameof(_notificationText))]
+		private bool IsNotificationVisible => !string.IsNullOrEmpty(_notificationText) && _gameTick < _notificationUntilTick;
+
+		private bool NotificationNeedsRedraw => IsNotificationVisible
+			? _notificationLayerText != _notificationText
+			: _notificationLayer != null;
+
+		private void AddNotificationLayer()
+		{
+			if (!IsNotificationVisible || Runtime.Layers == null)
+			{
+				ClearNotificationLayer();
+				return;
+			}
+
+			Size layerSize = new(CanvasWidth, CanvasHeight);
+			if (_notificationLayer == null || _notificationLayerSize != layerSize || _notificationLayerText != _notificationText)
+			{
+				ClearNotificationLayer();
+				_notificationLayer = CreateNotificationLayer(_notificationText, layerSize);
+				_notificationLayerText = _notificationText;
+				_notificationLayerSize = layerSize;
+			}
+
+			Runtime.Layers = [.. Runtime.Layers, _notificationLayer.Bitmap];
+		}
+
+		private Picture CreateNotificationLayer(string text, Size layerSize)
+		{
+			Picture overlay = new(layerSize.Width, layerSize.Height);
+			Size textSize = Resources.Instance.GetTextSize(1, text);
+			int width = Math.Min(layerSize.Width, textSize.Width + 12);
+			int left = Math.Max(0, (layerSize.Width - width) / 2);
+			overlay.FillRectangle(left, 0, width, Math.Min(layerSize.Height, textSize.Height + 6), 4);
+			overlay.DrawText(text, 1, 15, layerSize.Width / 2, 3, TextAlign.Center);
+			return overlay;
+		}
+
+		private void ClearNotificationLayer()
+		{
+			_notificationLayer?.Dispose();
+			_notificationLayer = null;
+			_notificationLayerText = null;
+			_notificationLayerSize = Size.Empty;
+		}
+
 		private void OnKeyboardUp(object? _, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
@@ -275,6 +395,11 @@ namespace CivOne
 		{
 			Common.CapsLockActive = args.CapsLock;
 			Common.ShiftKeyHeld = args.Shift;
+			if (TryHandleSoundToggleHotkey(args))
+			{
+				return;
+			}
+
 			if (_quickSaveLoadHotkeyService.TryHandle(args))
 			{
 				return;
@@ -329,6 +454,63 @@ namespace CivOne
 			}
 
 			TopScreen?.KeyDown(args);
+		}
+
+		private bool TryHandleSoundToggleHotkey(KeyboardEventArgs args)
+		{
+			if (args.Control || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
+
+			if (args.Shift)
+			{
+				OpenSoundPackPicker(noSoundPack: false);
+				return true;
+			}
+
+			// Without a sound pack there is nothing to switch on, so offer to pick one instead.
+			if (string.Equals(SoundPlaybackStrategyProvider.SelectedPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase))
+			{
+				OpenSoundPackPicker(noSoundPack: true);
+				return true;
+			}
+
+			Settings.Sound = Settings.Sound == GameOption.Off ? GameOption.On : GameOption.Off;
+			
+			if (Game.Started)
+			{
+				Game.Instance.Sound = Settings.Sound == GameOption.On;
+			}
+			if (Settings.Sound == GameOption.Off)
+			{
+				SoundPlaybackStrategyProvider.Abort();
+				SoundSystemProvider.Abort();
+			}
+
+			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");
+			return true;
+		}
+
+		private void OpenSoundPackPicker(bool noSoundPack)
+		{
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+
+			if (!_soundPackPicker.CanOpenOver(TopScreen))
+			{
+				ShowNotification(noSoundPack
+					? translation.Translate("No sound pack selected. Choose one in Setup.")
+					: translation.Translate("Change the sound pack in Setup."));
+				return;
+			}
+
+			if (!_soundPackPicker.TryOpen())
+			{
+				ShowNotification(translation.Translate("No sound packs found."));
+			}
+		}
+
+		private void ShowNotification(string text)
+		{
+			_notificationText = text;
+			_notificationUntilTick = _gameTick + 180;
 		}
 
 		private void OnMouseUp(object? _, ScreenEventArgs args)
@@ -525,8 +707,13 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime, IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService, bool concurrent = true)
+		private RuntimeHandler(
+			IRuntime runtime,
+			IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService,
+			bool concurrent = true,
+			IQuitAutoSaveServiceFactory? quitAutoSaveServiceFactory = null)
 		{
+			_quitAutoSaveServiceFactory = quitAutoSaveServiceFactory;
 			Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_mcpService = McpServiceFactory.Create(runtime);
 			_quickSaveLoadHotkeyService = quickSaveLoadHotkeyService ?? throw new ArgumentNullException(nameof(quickSaveLoadHotkeyService));
@@ -568,8 +755,15 @@ namespace CivOne
 
 		public static void Shutdown()
 		{
+			_instance?.SaveGameOnQuit();
 			_instance?.Dispose();
 		}
+
+		/// <summary>
+		/// Writes the quit autosave, if a game with a loaded map is running.
+		/// </summary>
+		private void SaveGameOnQuit()
+			=> QuitAutoSaveServiceFactory.Create(Runtime, Settings.Instance).TrySaveOnQuit();
 
 		public void Dispose()
 		{
@@ -586,6 +780,7 @@ namespace CivOne
 
 			if (disposing)
 			{
+				ClearNotificationLayer();
 				_mcpService.StopService();
 				_mcpService.Dispose();
 			}

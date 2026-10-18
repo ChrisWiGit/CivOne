@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using CivOne.Enums;
@@ -24,6 +15,16 @@ namespace CivOne.Services.SpaceShip
 		bool TryAddPart(SpaceShipComponentType partType);
 		bool CanLaunch();
 		SpaceShipScreenData GetScreenData();
+
+		/// <summary>
+		/// Gets the live mission success rate of the player's spaceship.
+		/// <para>
+		/// A launched ship counts as complete, so a perfect ship in flight reports 100 instead of the 99
+		/// that <see cref="GetScreenData"/> shows once <see cref="CanLaunch"/> turns <c>false</c> after the launch.
+		/// </para>
+		/// </summary>
+		/// <returns>The success rate in percent (0-100).</returns>
+		int SuccessRate();
 	}
 
 	/// <summary>
@@ -34,6 +35,12 @@ namespace CivOne.Services.SpaceShip
 		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		ushort SpaceShipPopulation { get; set; }
 		short SpaceShipLaunchYear { get; set; }
+
+		/// <summary>
+		/// Gets or sets the year in which the launched spaceship arrives; <c>-1</c> if no ship is in flight.
+		/// </summary>
+		short SpaceShipEtaYear { get; set; }
+
 		bool HasSpaceFlightAdvance();
 		bool HasPlasticsAdvance();
 		bool HasRoboticsAdvance();
@@ -45,7 +52,7 @@ namespace CivOne.Services.SpaceShip
 	/// </summary>
 	public interface ISpaceShipServiceFactory
 	{
-		ISpaceShipService Create(Player player);
+		ISpaceShipService Create(IPlayerSpaceRace player);
 	}
 
 	/// <summary>

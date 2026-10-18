@@ -35,6 +35,19 @@ namespace CivOne.Enums
 		Lighthouse,
 		Oracle,
 		DarwinsVoyage,
+		GreatLibrary,
+		MagellansExpedition,
+		MichelangelosChapel,
+		CopernicusObservatory,
+		ShakespearesTheatre,
+		IsaacNewtonsCollege,
+		JSBachsCathedral,
+		WomensSuffrage,
+		ManhattanProject,
+		UnitedNations,
+		ApolloProgram,
+		SETIProgram,
+		CureForCancer,
 		Occupied = 255
 	}
 }

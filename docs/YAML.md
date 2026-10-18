@@ -192,6 +192,7 @@ Players:
         - EEEEEEEEEEEE
       Population: 32000
       LaunchYear: 2050
+      EtaYear: 2062
 ```
 
 ### `Grid` layout (12×12)
@@ -215,19 +216,39 @@ Legacy input compatibility:
 
 - `Population` is represented as `long` in DTO and clamped to `ushort` range on load (`0..65535`)
 - `LaunchYear` is represented as `long` in DTO and clamped to `short` range on load (`-32768..32767`)
+- `EtaYear` is the arrival year stored at launch (`-1` = no ship in flight), also clamped to `short`.
+  Older savegames without the field load with `-1`; a launched ship then never arrives and a warning is logged.
 
 ### Binary compatibility mapping (`SaveData`)
 
 The YAML model corresponds to legacy binary save data in [src/IO/SaveData.cs](src/IO/SaveData.cs):
 
-- `SpaceShips[1462]`
-  - Per player block: 180 bytes
-  - `36` bytes: legacy unused header data
-  - `144` bytes: 12×12 cell grid
+- `SpaceShipParts[1440]`: 8 player blocks of 180 bytes (not translated; CivOneX keeps its own grid)
+- `SpaceshipFlags`: bit `1 << p` = ship of player `p` in flight, bit `1 << (p + 8)` = player `p` has parts,
+  bit `0x100` = "scoring completed" (`GameState.ScoringCompleted`)
+- `SpaceshipEtaYear[8]` → `EtaYear` (only for ships marked in flight)
 - `SpaceShipPopulation[8]` → `Population`
 - `SpaceShipLaunchYear[8]` → `LaunchYear`
 
 `SpaceShip` may be omitted/null for players without any spaceship progress.
+
+---
+
+## Calendar and End of Game (GameState)
+
+```yaml
+AcceleratedTurns: [372, 373, 374]   # empty in most games
+ScoringCompleted: false
+```
+
+- `AcceleratedTurns`: turns in which the year advanced by 1 instead of 2 between 1750 and 1850, because a
+  spaceship was in flight. The year of every turn follows from `GameTurn` and this list; there is no year field.
+  Older savegames load with an empty list, so the year follows the plain formula.
+- `ScoringCompleted`: `true` once the final score was entered into the Hall of Fame and the player chose to keep
+  playing. No further score is recorded and the palace is no longer upgraded. In SVE files this is bit `0x100`
+  of `SpaceshipFlags`.
+- SVE files store only the current year (`GameYear`). On load the number of 1-year steps is rebuilt from turn and
+  year; the current year is exact, the years shown for past turns can differ.
 
 ---
 

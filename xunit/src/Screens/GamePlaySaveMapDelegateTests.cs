@@ -1,13 +1,4 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Enums;
@@ -228,7 +219,12 @@ namespace CivOne.Screens
 			public string DataDirectory => throw new NotImplementedException();
 			public string PluginsDirectory => throw new NotImplementedException();
 			public string SoundsDirectory => throw new NotImplementedException();
+			public GameOption Sound => throw new NotImplementedException();
 			public bool RevealWorld => throw new NotImplementedException();
+			public bool DebugMenu => throw new NotImplementedException();
+			public bool AutoSaveOnQuit => true;
+			public bool ConfirmExit => true;
+			public CivOne.Enums.HistorianAiPalace HistorianAiPalace => CivOne.Enums.HistorianAiPalace.Generated;
 		}
 
 		private sealed class FakeRuntime : IRuntime

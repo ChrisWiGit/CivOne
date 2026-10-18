@@ -9,6 +9,11 @@
 **/settings/**
 **/sounds/**
 **/obj/**
+xunit/TestData/Cvl/*.cvl
+xunit/TestData/Cvl/*.CVL
+xunit/src/Sound/Cvl/*.cvl
+xunit/src/Sound/Cvl/*.CVL
+!xunit/TestData/Cvl/.gitkeep
 **/TestResults/**
 **/CoverageReport/**
 **/*.cos
@@ -29,3 +34,12 @@ staged.*
 todo Warnings.md
 translation/obsoletekeys.txt
 warning*.*
+
+# Graphify generated outputs
+**/graphify-out/**
+!graphify-out/
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/src/
+!graphify-out/src/GRAPH_REPORT.md
+!graphify-out/api/
+!graphify-out/api/GRAPH_REPORT.md

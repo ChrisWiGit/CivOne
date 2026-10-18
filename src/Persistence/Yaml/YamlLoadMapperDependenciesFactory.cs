@@ -42,7 +42,7 @@ namespace CivOne.Persistence.Yaml
 				// Common.Civilizations: direct access is acceptable here; a CommonFactory
 				// abstraction may be introduced in the future if more Common calls accumulate.
 				new CivilizationDtoMapper(Common.Civilizations),
-				new PalaceDtoMapper(sanitizer),
+				new PalaceDtoMapper(sanitizer, new RuntimeLogger()),
 				cityMapper,
 				unitMapper,
 				new RuntimeAdvanceResolver(),

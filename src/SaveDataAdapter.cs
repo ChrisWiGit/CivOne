@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.Units;
 
 namespace CivOne
@@ -73,7 +74,7 @@ namespace CivOne
 			set
 			{
 				_saveData.GameTurn = value;
-				_saveData.GameYear = CVS.CheckedInt16(Common.TurnToYear(value), nameof(SaveDataAdapter), "GameYear");
+				_saveData.GameYear = CVS.CheckedInt16(GameCalendarServiceFactory.Current.TurnToYear(value), nameof(SaveDataAdapter), "GameYear");
 			}
 		}
 
@@ -193,6 +194,16 @@ namespace CivOne
 		{
 			get => GetTaxRate();
 			set => SetTaxRate(value);
+		}
+
+		/// <summary>
+		/// Gets or sets the score block, 8 slots at offset 1864.
+		/// The original uses it as scratch space; CivOneX writes the human score to slot 0 on save and never reads it back.
+		/// </summary>
+		public ushort[] CivilizationScore
+		{
+			get => GetCivilizationScore();
+			set => SetCivilizationScore(value);
 		}
 
 		public ushort[] ScienceRate
@@ -315,10 +326,79 @@ namespace CivOne
 			set => _saveData.PollutionEffect = value;
 		}
 
+		/// <summary>
+		/// Gets or sets the diplomacy block, 8 rows of 8 flag words at offset 1608.
+		/// </summary>
+		public ushort[] Diplomacy
+		{
+			get => GetArray<ushort>(nameof(SaveData.Diplomacy), 8 * 8);
+			set => SetArray(nameof(SaveData.Diplomacy), value);
+		}
+
 		public ushort PeaceTurns
 		{
 			get => _saveData.PeaceTurns;
 			set => _saveData.PeaceTurns = value;
+		}
+
+		public short GameYear
+		{
+			get => _saveData.GameYear;
+			set => _saveData.GameYear = value;
+		}
+
+		public ushort SpaceshipFlags
+		{
+			get => _saveData.SpaceshipFlags;
+			set => _saveData.SpaceshipFlags = value;
+		}
+
+		public short SpaceshipSuccessRateHuman
+		{
+			get => _saveData.SpaceshipSuccessRateHuman;
+			set => _saveData.SpaceshipSuccessRateHuman = value;
+		}
+
+		public short SpaceshipSuccessRateAi
+		{
+			get => _saveData.SpaceshipSuccessRateAi;
+			set => _saveData.SpaceshipSuccessRateAi = value;
+		}
+
+		public short[] SpaceshipEtaYear
+		{
+			get => GetArray<short>(nameof(SaveData.SpaceshipEtaYear), 8);
+			set => SetArray(nameof(SaveData.SpaceshipEtaYear), value);
+		}
+
+		public short[] SpaceShipLaunchYear
+		{
+			get => GetArray<short>(nameof(SaveData.SpaceShipLaunchYear), 8);
+			set => SetArray(nameof(SaveData.SpaceShipLaunchYear), value);
+		}
+
+		public ushort[] SpaceShipPopulation
+		{
+			get => GetArray<ushort>(nameof(SaveData.SpaceShipPopulation), 8);
+			set => SetArray(nameof(SaveData.SpaceShipPopulation), value);
+		}
+
+		/// <summary>
+		/// Gets or sets the human player's palace block at offset 37256: 12 levels, then 12 styles.
+		/// </summary>
+		public short[] Palace
+		{
+			get => GetArray<short>(nameof(SaveData.Palace), 24);
+			set => SetArray(nameof(SaveData.Palace), value);
+		}
+
+		/// <summary>
+		/// Gets or sets the human player's palace build counter at offset 37816.
+		/// </summary>
+		public ushort PalaceBuildCount
+		{
+			get => _saveData.PalaceLevel;
+			set => _saveData.PalaceLevel = value;
 		}
 
 		public ushort PlayerFutureTech

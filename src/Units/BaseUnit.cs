@@ -19,6 +19,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Screens;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
@@ -290,9 +291,9 @@ namespace CivOne.Units
 			return defendStrength;
 		}
 
-		private bool AttackOutcome(BaseUnit attackUnit, ITile defendTile)
+		private bool AttackOutcome(BaseUnit attackUnit, ITile defendTile, out IUnit defendUnit)
 		{
-			IUnit defendUnit = defendTile.Units.OrderByDescending(x => x.Attack * (x.Veteran ? 1.5 : 1)).ThenBy(x => (int)x.Type).First();
+			defendUnit = defendTile.Units.OrderByDescending(x => x.Attack * (x.Veteran ? 1.5 : 1)).ThenBy(x => (int)x.Type).First();
 
 			int attackStrength = AttackStrength(defendUnit);
 			int defenseStrength = DefendStrength(defendUnit, attackUnit);
@@ -357,9 +358,14 @@ namespace CivOne.Units
 			return HandleConfront(moveTarget, relX, relY, Movement);
 		}
 
-		internal virtual void RegisterHostileAction()
+		/// <summary>
+		/// Reports an attack on <paramref name="target"/> to the peace counter.
+		/// </summary>
+		/// <param name="target">The attacked tile; its units, or else its city, name the defender.</param>
+		internal virtual void RegisterHostileAction(ITile target)
 		{
-			Game.RegisterHostileAction();
+			int defender = target.Units.Length > 0 ? target.Units[0].Owner : target.City?.CityOwnerPlayerIndex ?? -1;
+			Game.RegisterHostileAction(Owner, defender);
 		}
 
 		/// <summary>
@@ -388,7 +394,7 @@ namespace CivOne.Units
 		/// </remarks>
 		internal virtual bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
 		{
-			RegisterHostileAction();
+			RegisterHostileAction(moveTarget);
 			if (IsCapturingEnemyCity(moveTarget))
 			{
 				if (!TryHandleCityCapture(moveTarget))
@@ -396,13 +402,13 @@ namespace CivOne.Units
 					return false;
 				}
 			}
-			else if (AttackOutcome(this, moveTarget))
+			else if (AttackOutcome(this, moveTarget, out IUnit defendUnit))
 			{
-				HandleAttackWin(moveTarget);
+				HandleAttackWin(moveTarget, defendUnit);
 			}
 			else
 			{
-				HandleAttackLoss();
+				HandleAttackLoss(moveTarget, defendUnit);
 			}
 
 			return PostConfront(moveTarget, relX, relY, movement);
@@ -510,6 +516,12 @@ namespace CivOne.Units
 				return;
 			}
 
+			if (capturedCity.HasBuilding<Palace>())
+			{
+				// Like the original, losing the capital loses the spaceship program.
+				Game.LoseSpaceShip(previousOwner);
+			}
+
 			RemovePalaceFromCapturedCity(capturedCity);
 			ResetCapturedCityProduction(capturedCity);
 			DisbandCapturedCityUnits(capturedCity);
@@ -567,6 +579,14 @@ namespace CivOne.Units
 
 		private void HandleHumanCityCapture(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
 		{
+			// Short jingle of the capturing side's leader theme - the human either captured this
+			// city or had one of their own taken, so it is always relevant to them.
+			string? tune = Player.Civilization.Tune;
+			if (tune != null)
+			{
+				PlaySound($"{tune}{SoundNames.ShortSuffix}");
+			}
+
 			int captureGold = PlunderCapturedCityGold(capturedCity);
 			string[] lines = CreateCityCaptureNewsLines(capturedCity, captureGold);
 			EventHandler doneCapture = CreateCityCaptureDoneHandler(capturedCity, advancesToSteal, changeOwner);
@@ -640,7 +660,7 @@ namespace CivOne.Units
 			Common.AddScreen(captureNews);
 		}
 
-		private void HandleAttackWin(ITile moveTarget)
+		private void HandleAttackWin(ITile moveTarget, IUnit defendUnit)
 		{
 			if (Movement == null)
 			{
@@ -649,7 +669,7 @@ namespace CivOne.Units
 			}
 			Movement.Done += (_, __) =>
 			{
-				PlayAttackSound(attackerWon: true);
+				PlayAttackSound(moveTarget, attackerWon: true, defendUnit);
 				IUnit[] attackedUnits = moveTarget.Units;
 
 				CaptureBarbarianLeader(attackedUnits);
@@ -660,7 +680,7 @@ namespace CivOne.Units
 			};
 		}
 
-		private void HandleAttackLoss()
+		private void HandleAttackLoss(ITile moveTarget, IUnit defendUnit)
 		{
 			if (Movement == null)
 			{
@@ -668,25 +688,48 @@ namespace CivOne.Units
 			}
 			Movement.Done += (_, __) =>
 			{
-				PlayAttackSound(attackerWon: false);
+				PlayAttackSound(moveTarget, attackerWon: false, defendUnit);
 				GameTask.Insert(Show.DestroyUnit(this, false));
 				Movement = null;
 			};
 		}
 
-		private void PlayAttackSound(bool attackerWon)
+		/// <summary>
+		/// Plays the combat-outcome sting for a fight this unit (the attacker) just had against
+		/// <paramref name="defendUnit"/>.
+		/// </summary>
+		/// <param name="combatTile">Tile the fight happened on; the sound only plays when this is visible to the human player.</param>
+		/// <param name="attackerWon">Whether this unit (the attacker) won the fight.</param>
+		/// <param name="defendUnit">The defending unit that took part in the fight.</param>
+		/// <remarks>
+		/// A winning Bomber always gets its own air-strike sting (<c>airnuke</c>), regardless of who
+		/// is human or how strong the unit is. Otherwise, which of the four combat stings plays
+		/// depends on whether the human player won the fight (as attacker or defender) and whether
+		/// the winning unit counts as "strong" (attack &gt; 4, or defense &lt;= 2 - most units clear
+		/// one of these, "weak" is the handful of well-rounded early-mid units such as Musketeers or
+		/// Riflemen). A fight the human cannot see plays no sound at all.
+		/// </remarks>
+		private void PlayAttackSound(ITile combatTile, bool attackerWon, IUnit defendUnit)
 		{
-			if (this is Cannon)
+			if (attackerWon && Type == UnitType.Bomber)
 			{
-				PlaySound("cannon");
+				PlaySound(SoundNames.CombatAirStrike);
+				return;
 			}
-			else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
+
+			if (!Human.Visible(combatTile)) return;
+
+			IUnit winner = attackerWon ? this : defendUnit;
+			bool humanWon = attackerWon ? Human == Owner : Human == defendUnit.Owner;
+			bool strongWinner = winner.Attack > 4 || winner.Defense <= 2;
+
+			if (humanWon)
 			{
-				PlaySound("s_land");
+				PlaySound(strongWinner ? SoundNames.CombatWinStrong : SoundNames.CombatWinWeak);
 			}
 			else
 			{
-				PlaySound(attackerWon ? "they_die" : "we_die");
+				PlaySound(strongWinner ? SoundNames.CombatLossStrong : SoundNames.CombatLossWeak);
 			}
 		}
 

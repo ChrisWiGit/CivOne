@@ -80,7 +80,9 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawPreviewPalace(IBitmap targetLayer)
 		{
-			IBitmap palacePreview = _palaceRenderer.RenderPalace(Human.Palace);
+			// Like the original, a player without cities has no mini palace.
+			MiniPalaceLayout palace = Human.Cities.Length == 0 ? MiniPalaceLayout.Empty : MiniPalaceLayout.FromPalace(Human.Palace);
+			IBitmap palacePreview = _palaceRenderer.RenderPalace(palace);
 			int palacePreviewX = (SideBarWidth - palacePreview.Width()) / 2;
 			targetLayer.AddLayer(palacePreview, palacePreviewX, 1);
 		}
@@ -242,6 +244,11 @@ namespace CivOne.Screens.GamePlayPanels
 				_gameInfo.DrawText(GamePlay.TerrainEditorCityOwnerText, fontId, colorId, 2, yStart + 3 * fontHeight, TextAlign.Left);
 			}
 			_gameInfo.DrawText($"{GamePlay.HoveredTileX},{GamePlay.HoveredTileY}", fontId, colorId, 2, yStart + 5 * fontHeight, TextAlign.Left);
+			if (hoveredTile != null)
+			{
+				_gameInfo.DrawText(TranslateFormatted("Continent {0}", hoveredTile.ContinentId), fontId, colorId, 2, yStart + 6 * fontHeight, TextAlign.Left);
+				_gameInfo.DrawText(TranslateFormatted("Land value {0}", hoveredTile.LandValue), fontId, colorId, 2, yStart + 7 * fontHeight, TextAlign.Left);
+			}
 			
 			return true;
 		}
@@ -263,6 +270,8 @@ namespace CivOne.Screens.GamePlayPanels
 			byte hoveredOwner = hoveredUnits.Length > 0 ? hoveredUnits[0].Owner : byte.MaxValue;
 			UnitType hoveredType = hoveredUnits.Length > 0 ? hoveredUnits[0].Type : (UnitType)(-1);
 			int hoveredCount = hoveredUnits.Length;
+			int hoveredContinentId = hoveredTile?.ContinentId ?? -1;
+			int hoveredLandValue = hoveredTile?.LandValue ?? -1;
 			bool zoomActive = GamePlay?.IsMapZoomActive == true;
 			int bitmapScalerMode = (int)Settings.BitmapScalerMode;
 
@@ -278,7 +287,7 @@ namespace CivOne.Screens.GamePlayPanels
 					_statusInfoFrames),
 				HashCode.Combine(
 					HashCode.Combine(editorEnabled, spawnMode, editorMode, editorBrush, editorOwner, zoomActive, bitmapScalerMode),
-					HashCode.Combine(hoveredTileX, hoveredTileY, hoveredOwner, hoveredType, hoveredCount)));
+					HashCode.Combine(hoveredTileX, hoveredTileY, hoveredOwner, hoveredType, hoveredCount, hoveredContinentId, hoveredLandValue)));
 		}
 
 		private bool IsZoomButtonsVisible() => GamePlay?.IsMapZoomActive == true;

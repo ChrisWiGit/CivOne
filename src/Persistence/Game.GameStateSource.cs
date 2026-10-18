@@ -16,7 +16,9 @@ namespace CivOne
 
 		ushort IGameSnapshotSource.AnthologyTurn => _anthologyTurn;
 
-		ushort IGameSnapshotSource.PeaceTurns => _peaceTurns;
+		IReadOnlyCollection<ushort> IGameSnapshotSource.AcceleratedTurns => _calendarState.AcceleratedTurns;
+
+		bool IGameSnapshotSource.ScoringCompleted => ScoringCompleted;
 
 		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 

@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -25,7 +25,7 @@ using CivOne.Tiles;
 namespace CivOne.Graphics
 {
 	[SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Resources is the main class for accessing game resources, and it is appropriate to have the same name as the namespace.")]
-	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider
+	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider, IResourceTextSizeProvider
 	{
 		private static Settings Settings => Settings.Instance;
 
@@ -124,6 +124,12 @@ namespace CivOne.Graphics
 			}
 		}
 		
+		/// <summary>
+		/// Gets the fonts loaded from <c>FONTS.CV</c>, in file order.
+		/// The list is empty when no font file was found.
+		/// </summary>
+		public IReadOnlyList<IFont> Fonts => _fonts;
+
 		public bool ValidCharacter(int fontId, char c)
 		{
 			byte asciiChar = (byte)c;
@@ -355,8 +361,8 @@ namespace CivOne.Graphics
 			get { return this[filename]; }
 		}
 
-		public Picture GetPalace(PalaceStyle style, PalacePart part, int level)
-			=> _palaceResources.GetPalacePart(style, part, level);
+		internal Picture GetPalacePiece(int level, PalaceStyle style, PalacePieceKind kind)
+			=> _palaceResources.GetPalacePiece(level, style, kind);
 		
 		private static Resources? _instance;
 		public static Resources Instance

@@ -13,6 +13,8 @@ namespace CivOne.UnitTests
         public int MaxDifficulty { get; set; }
 
         public Func<byte, Player>? OnGetPlayer { get; set; }
+        public Func<ICityBasic, int>? OnGetCityIndex { get; set; }
+        public Func<byte, bool>? OnIsHumanPlayer { get; set; }
         public Func<int, int, IUnit[]>? OnGetUnits { get; set; }
         public Func<Type, bool>? OnWonderObsoleteByType { get; set; }
         public Func<IWonder, bool>? OnWonderObsolete { get; set; }
@@ -20,6 +22,12 @@ namespace CivOne.UnitTests
         public Player GetPlayer(byte playerId)
             => OnGetPlayer?.Invoke(playerId)
                 ?? throw new NotImplementedException("GetPlayer not implemented by delegate.");
+
+        public int GetCityIndex(ICityBasic city)
+            => OnGetCityIndex?.Invoke(city) ?? 0;
+
+        public bool IsHumanPlayer(byte playerIndex)
+            => OnIsHumanPlayer?.Invoke(playerIndex) ?? true;
 
         public IUnit[] GetUnits()
             => OnGetUnits?.Invoke(int.MinValue, int.MinValue)

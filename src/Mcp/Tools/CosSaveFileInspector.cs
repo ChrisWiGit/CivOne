@@ -40,6 +40,7 @@ namespace CivOne.Mcp.Tools
 					.OfString(yaml)
 					.WithStandard()
 					.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+					.WithIgnoreUnmatchedProperties()
 					.As<SaveGame1FileRootDto>();
 
 				if (root?.GameState == null)
@@ -65,6 +66,7 @@ namespace CivOne.Mcp.Tools
 					.OfString(yaml)
 					.WithStandard()
 					.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+					.WithIgnoreUnmatchedProperties()
 					.As<GameStateDto>();
 
 				if (legacy == null)

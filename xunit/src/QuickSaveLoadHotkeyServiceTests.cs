@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Enums;
@@ -15,12 +15,15 @@ namespace CivOne.UnitTests
 		private readonly string _storageDirectory;
 		private readonly string _fastSavesDirectory;
 		private readonly FakeRuntime _runtime;
+		private readonly string _autoSavePath;
 
 		public QuickSaveLoadHotkeyServiceTests()
 		{
 			_storageDirectory = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			_fastSavesDirectory = Path.Combine(_storageDirectory, "saves");
 			_runtime = new FakeRuntime(_storageDirectory);
+			_autoSavePath = Path.Combine(_storageDirectory, "autosave.cos");
+			Directory.CreateDirectory(_storageDirectory);
 		}
 
 		[Fact]
@@ -106,6 +109,27 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void TryHandleAltF4IsNotHandled()
+		{
+			int loadCalls = 0;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ =>
+				{
+					loadCalls++;
+					return true;
+				},
+				rebuild: () => { },
+				onError: _ => { });
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F4, KeyModifier.Alt));
+
+			Assert.False(handled);
+			Assert.Equal(0, loadCalls);
+		}
+
+		[Fact]
 		public void TryHandleAltF11OpensQuickLoadMenuWithExistingSlots()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);
@@ -175,6 +199,74 @@ namespace CivOne.UnitTests
 			Assert.Empty(listedSlots);
 		}
 
+		[Fact]
+		public void TryHandleAltF11ListsAutosaveFirst()
+		{
+			Directory.CreateDirectory(_fastSavesDirectory);
+			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f2.cos"), "test");
+			File.WriteAllText(_autoSavePath, "test");
+
+			IReadOnlyList<int>? listedSlots = null;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ => true,
+				rebuild: () => { },
+				onError: _ => { },
+				showQuickLoadMenu: (slots, _) => listedSlots = slots);
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.Equal([0, 2], listedSlots);
+		}
+
+		[Fact]
+		public void TryHandleAltF11OmitsMissingAutosave()
+		{
+			IReadOnlyList<int>? listedSlots = null;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ => true,
+				rebuild: () => { },
+				onError: _ => { },
+				showQuickLoadMenu: (slots, _) => listedSlots = slots);
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.NotNull(listedSlots);
+			Assert.DoesNotContain(0, listedSlots);
+		}
+
+		[Fact]
+		public void QuickLoadMenuSelectionOfAutosaveLoadsAutosaveFile()
+		{
+			Directory.CreateDirectory(_storageDirectory);
+			File.WriteAllText(_autoSavePath, "test");
+
+			string? loadedPath = null;
+			int rebuildCalls = 0;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: path =>
+				{
+					loadedPath = path;
+					return true;
+				},
+				rebuild: () => rebuildCalls++,
+				onError: _ => { },
+				showQuickLoadMenu: (_, onSelect) => onSelect(0));
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.Equal(_autoSavePath, loadedPath);
+			Assert.Equal(1, rebuildCalls);
+		}
+
 		public void Dispose()
 		{
 			try
@@ -211,7 +303,8 @@ namespace CivOne.UnitTests
 				rebuild,
 				canQuickSave,
 				onError,
-				showQuickLoadMenu);
+				showQuickLoadMenu,
+				() => _autoSavePath);
 
 		private sealed class FakeRuntime(string storageDirectory) : IRuntime
 		{

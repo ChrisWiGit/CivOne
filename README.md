@@ -1,15 +1,34 @@
-<!-- Please use a single sentence each line.
+﻿<!-- Please use a single sentence each line.
 use sh or cmd blocks for commands.
 Do not use en-dash or em-dash, use simple sentences only.
  -->
-# CivOne# (Civ One Sharp or just CivOne)
+# CivOneX (Civ One neXt or just CivOneEx)
 
 ## Introduction
 
-A civilization game clone of Civilization (1991) written in C#.
-It was originally developed several years ago by other authors, and then abandoned.
-This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that
-make it more enjoyable for modern players.
+CivOneX: A civilization game remake & reimagination of Civilization (1991) but written in C#.
+CivOne was originally developed several years ago by other authors, and then abandoned.
+This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that make it more enjoyable for modern players.
+
+The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or "CivOneEx", which emphasizes the idea of taking the original game to the next level.
+
+## License
+
+This repository is dual-licensed by file origin. Which license applies to a given file is
+recorded in `.cc0-baseline.csv`, the manifest in the repository root:
+
+- **Files listed in the manifest** come from the original CivOne project and are licensed
+  under **CC0 1.0 Universal**, meaning they are in the public domain and can be used,
+  modified, and distributed without restriction. They stay under CC0 even after being
+  modified here.
+- **All other files** were added by CivOneX and are licensed under the **MIT License**, a
+  permissive license that requires the copyright notice and permission notice to be
+  preserved in copies or substantial portions of the software.
+
+The manifest also stores the SHA-256 hash of each file's unmodified upstream content, so
+its origin can be verified. Most CC0 files still carry the historical CC0 header comment,
+but the manifest -- not the header -- decides the license. MIT files carry no header; the
+full text of both licenses is in `LICENSE.md`.
 
 ## Original Sources
 
@@ -22,6 +41,53 @@ Many issues have been fixed and features have been added since the original code
 ## Contact
 
 You can reach out to the project maintainers via [Discord](https://discord.gg/kfaFcTnCX)
+
+## Using LLMs
+
+Large language models (LLMs) are used as tools during development of this project.
+They help with writing code, tests, and documentation.
+
+Every part of the project is planned by humans.
+The architecture is designed by humans.
+All generated code is reviewed by humans.
+All changes are tested before they are accepted.
+Nothing enters the project without human approval.
+
+### Why use LLMs at all?
+
+The author of CivOneX has programmed for over 30 years and has followed the craft since the 1990s.
+The slowest part of the work was always writing the code itself: thinking through the logic and the connections between parts, and learning the quirks of each language.
+Writing code feels like the most productive part of the job, so large areas of many codebases were never really planned.
+Work started right away just to get something done, tests were rare or missing, and refactoring happened only now and then.
+Features kept being bolted on, and the technical debt kept growing.
+
+For the author, the fun is not in writing code.
+It is in everything else that software development involves: design, architecture, quality, and keeping the project understandable.
+Reading code is nobody's favourite task, and writing code is the highlight for many developers, but for the author it is the most tedious part.
+Handing the typing work to LLMs is therefore a natural step, because it frees time for the parts that matter more.
+
+**Software engineering is about designing and building systems—not just writing code.**
+
+CivOneX is meant as an example of how this can work in practice, when the focus stays on quality, tests, and documentation.
+
+### Writing code
+
+"Any fool can write code that a computer can understand. Good programmers write code that humans can understand."
+
+― Martin Fowler
+
+This is the hard part.
+When humans write code, consistency and quality change from day to day, from file to file.
+LLMs can write code in a consistent style that spans the entire codebase.
+They can also write tests and documentation in a consistent style.
+
+To achieve this, the project provides instructions in the form of Markdown files that serve as context for the LLMs.
+Clean Code and other quality standards are described in the instructions, and LLMs are instructed to follow these standards.
+Low coupling is achieved through dependency injection and interfaces, and separation of concerns through delegates or services with small interfaces.
+Short method lengths and clear naming of entities and variables are also described in detail.
+
+**CivOneX extensively uses instructions, skills, and other guidelines to steer the LLMs.**
+However, not all instructions are made publicly available for reasons of copyright and licensing.
 
 ## Forum
 
@@ -63,8 +129,150 @@ If you do not have the original game files, you can use a free package of graphi
 
 The data files will be copied to
 
-* on Linux/macOS: `~/CivOne/data`
-* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\data` (also `%LOCALAPPDATA%\CivOne\data`)
+* on Linux: `~/.local/share/CivOneX/data`
+* on macOS: `~/Library/Application Support/CivOneX/data`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\data` (also `%LOCALAPPDATA%\CivOneX\data`)
+
+### Sound
+
+You pick one sound source in the settings, and that source is the only one that plays.
+A sound it does not carry stays silent; nothing is taken from anywhere else.
+
+The choices are:
+
+* **A converted sound pack.** If the original game's `.CVL` sound drivers were present when you
+  installed the graphics, they were converted into sound packs (`sounds/pc-speaker/`,
+  `sounds/adlib/`). These cover every sound the game knows and need no further work.
+* **Wave files.** Your own `.wav` files in the sounds folder, played by name. This is the option to
+  choose if you want the sounds described below.
+* **None.** No sound at all.
+
+Pick one under **Settings → In-game sound → Sound pack**, or in the startup wizard.
+
+#### Switching sound on and off
+
+Press `Alt+V` at any time to switch sound on or off.
+A short notice at the top of the screen shows the new state.
+The **Sound** entry of the in-game options (**Game → Options**) does the same for the running game.
+
+Sound needs a sound pack.
+If **None** is selected, switching sound on opens a small **Sound pack:** popup instead:
+
+* It lists **Wave files** (only if the sounds folder holds playable wave files) and every converted sound pack.
+  **None** is not listed.
+* Picking an entry selects that sound pack and switches sound on.
+  A message confirms the new sound pack.
+* `Esc` closes the popup and changes nothing.
+
+Press `Shift+Alt+V` to open the same popup at any time, also when a sound pack is already selected.
+This is the quickest way to switch between sound packs.
+
+The popup opens only on the game map (when no dialog or animation is running) and in the main menu of the title screen.
+Anywhere else, `Alt+V` shows `No sound pack selected. Choose one in Setup.` and `Shift+Alt+V` shows `Change the sound pack in Setup.`
+If there is neither a converted sound pack nor a wave file, no popup opens and `No sound packs found.` is shown.
+
+#### Sounds directory
+
+Wave files go directly into
+
+* on Linux: `~/.local/share/CivOneX/sounds`
+* on macOS: `~/Library/Application Support/CivOneX/sounds`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\sounds` (also `%LOCALAPPDATA%\CivOneX\sounds`)
+
+Subfolders belong to converted packs; your own files go into the folder itself. A file has to be a
+RIFF/WAVE file SDL can load - uncompressed PCM is the safe choice.
+
+#### File naming
+
+These names apply when **Wave files** is the selected source.
+A file is named after the **situation** it plays in, plus `.wav`: `music_title.wav`,
+`combat_win_strong.wav`. Upper and lower case do not matter, so `MUSIC_TITLE.WAV` works too.
+
+You do not need a file for every sound. A sound without one is simply silent, and everything else
+keeps working.
+
+##### Music
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `music_title.wav` | Title screen and credits. Repeats. | `opening.wav` |
+| `music_evolution.wav` | Evolution intro. Repeats. | `evolution.wav` |
+| `music_win.wav` | The game is won, a city celebrates "We love the President", the civilization is founded, or the Hall of Fame is opened. | `wintune.wav`, `win.wav` |
+| `music_lose.wav` | The game is lost. | `lose2.wav` |
+
+> The evolution music is not available for PC Speaker.
+
+##### Leader themes
+
+Played when a game starts and when your civilization discovers an advance.
+
+| File name | Civilization | Older name also accepted |
+| --------- | ------------ | ------------------------ |
+| `leader_lincoln.wav` | Americans | `linc.wav` |
+| `leader_montezuma.wav` | Aztecs | `mont.wav` |
+| `leader_ramesses.wav` | Egyptians | `rams.wav` |
+| `leader_shaka.wav` | Zulus | `shak.wav` |
+| `leader_napoleon.wav` | French | `napo.wav` |
+| `leader_caesar.wav` | Romans | `ceas.wav` |
+| `leader_stalin.wav` | Russians | `stal.wav` |
+| `leader_alexander.wav` | Greeks | `alex.wav` |
+| `leader_elizabeth.wav` | English | `eliz.wav` |
+| `leader_hammurabi.wav` | Babylonians | `hama.wav` |
+| `leader_mao.wav` | Chinese | `mao.wav` |
+| `leader_genghis.wav` | Mongols | `geng.wav` |
+| `leader_gandhi.wav` | Indians | `gand.wav` |
+| `leader_frederick.wav` | Germans | `fred.wav` |
+
+Each theme also has a short jingle, named by appending `_short`: `leader_lincoln_short.wav`,
+`leader_gandhi_short.wav`, and so on for all fourteen. These play on a wonder being completed, a
+city being captured and similar single events. The original game shipped no wave file for them.
+
+##### Events and interface
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `event_ultimatum.wav` | A foreign leader turns hostile during an audience - tribute or technology demanded, a provocation, a rejection, units ordered out, mobilisation. | `event_audience.wav`, `audience.wav` |
+| `event_alarm.wav` | Famine, civil disorder, a government is overthrown - and as the barbarians' theme. | `alarm.wav` |
+| `event_building_complete.wav` | A building is finished and the city view opens to show it. | `event_city_view_opened.wav`, `cityview.wav` |
+| `event_nuclear_blast.wav` | A nuclear device goes off outside a city. | `s_nuke.wav` |
+| `ui_beep.wav` | An error message appears. | `s_beep.wav` |
+
+> The ultimatum sting has no trigger in the game yet: diplomacy does not have the hostile
+> exchanges the original played it for. A file for it is converted and can be listened to in
+> the sound test, but it will not come up in a game until that trigger exists.
+
+##### Combat
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `combat_win_strong.wav` | You win, decided by a strong unit. | `they_die.wav` |
+| `combat_win_weak.wav` | You win, decided by a middling unit. | `s_land.wav`, `they_die.wav` |
+| `combat_loss_strong.wav` | You lose, decided by a strong unit. | `we_die.wav` |
+| `combat_loss_weak.wav` | You lose, decided by a middling unit. | `s_land.wav`, `we_die.wav` |
+| `combat_air_strike.wav` | A bomber wins an attack, or a nuclear device hits a city. | `airnuke.wav` |
+
+"Strong" means the deciding unit has an attack above 4 or a defence of 2 or less; "middling" is the
+handful of well-rounded units such as Musketeers and Riflemen that fit neither.
+
+#### Older file names
+
+The right-hand column lists the file names an older CivOne used, taken from the Windows release of
+the original game or [Downloadable fan version](https://www.moddb.com/mods/civwin-complete-soundtrack-overhaul-mod). They still work, so an existing collection of those files needs no renaming. A
+file under the new name always wins, which is how you replace a single sound without renaming the
+rest.
+
+Two of those old names do not map cleanly. `cannon.wav` was picked by unit type rather than by
+outcome and has no counterpart at all, so it is never played. `s_land.wav` is offered for both
+middling outcomes, so with only that file a win and a loss sound the same.
+
+In settings screen only available sounds are shown for custom wave files, so you have to provide a file for each sound you want to test.
+See the the tables above for the names of the sounds you can provide.
+
+#### Checking what works
+
+Open the settings screen (`Shift + F1`), then **In-game sound → Test tunes...**. The list shows
+exactly what the current selection can play and lets you listen to each entry. If you selected
+**Wave files**, sounds you have no file for do not appear at all.
 
 ### Program parameters
 
@@ -138,6 +346,43 @@ Use `copy-translations.ps1` or `copy-translations.sh` to copy final language fil
 For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
 For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
 
+### Graphify code graph workflow
+
+Graphify builds a structural knowledge graph of the code base.
+Use it to navigate dependencies, communities, and hot spots before refactors or larger feature work.
+It is useful for both human exploration and AI-assisted code understanding.
+
+Primary outputs are written to `graphify-out/<scope>`.
+For VS Code Graphify viewer compatibility, `src` runs also mirror report files to `graphify-out`.
+
+Run with PowerShell:
+
+```powershell
+.\graphify-fast.ps1 -Scope src
+.\graphify-fast.ps1 -Scope api
+.\graphify-fast.ps1 -Scope both
+.\graphify-fast.ps1 -Scope combined
+```
+
+Run with Bash:
+
+```sh
+./graphify-fast.sh src
+./graphify-fast.sh api
+./graphify-fast.sh both
+./graphify-fast.sh combined
+```
+
+Scope meanings:
+
+* `src` analyzes only `src`.
+* `api` analyzes only `api`.
+* `both` runs separate analyses for `src` and `api`.
+* `combined` analyzes the whole repository in one graph.
+
+Use `both` for day-to-day focused analysis.
+Use `combined` for cross-project architecture views.
+
 Examples:
 
 ```powershell
@@ -155,18 +400,41 @@ You can select the language in the setup menu with `Shift + F1`.
 Open `Game Options`, then select `Language`.
 Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
 
-Language files must be placed in your CivOne profile translation folder.
-On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
-On Linux and macOS this is `~/.local/share/CivOne/translations`.
+Language files must be placed in your CivOneX profile translation folder.
+On Windows this is `%LOCALAPPDATA%\CivOneX\translations`.
+On Linux this is `~/.local/share/CivOneX/translations`, on macOS `~/Library/Application Support/CivOneX/translations`.
 
-The CivOne profile root is the parent folder of those files.
-On Windows this is `%LOCALAPPDATA%\CivOne`.
-On Linux and macOS this is `~/.local/share/CivOne`.
+The CivOneX profile root is the parent folder of those files.
+On Windows this is `%LOCALAPPDATA%\CivOneX`.
+On Linux this is `~/.local/share/CivOneX`, on macOS `~/Library/Application Support/CivOneX`.
 
 Other common folders are:
 
-* Windows: `%LOCALAPPDATA%\CivOne\data`, `%LOCALAPPDATA%\CivOne\saves`, `%LOCALAPPDATA%\CivOne\sounds`
-* Linux and macOS: `~/.local/share/CivOne/data`, `~/.local/share/CivOne/saves`, `~/.local/share/CivOne/sounds`
+* Windows: `%LOCALAPPDATA%\CivOneX\data`, `%LOCALAPPDATA%\CivOneX\saves`, `%LOCALAPPDATA%\CivOneX\sounds`
+* Linux: `~/.local/share/CivOneX/data`, `~/.local/share/CivOneX/saves`, `~/.local/share/CivOneX/sounds`
+* macOS: `~/Library/Application Support/CivOneX/data`, `~/Library/Application Support/CivOneX/saves`, `~/Library/Application Support/CivOneX/sounds`
+
+#### Profile folder of older versions
+
+The game was renamed from CivOne to CivOneX, and the profile folder carries the name of the game.
+Versions released as CivOne stored everything in a folder named `CivOne` next to the one listed above.
+Those files are not read any more, so an existing installation starts with empty settings, no saved games and no data files.
+
+To keep them, rename the old folder before starting the game:
+
+```sh
+# Linux
+mv ~/.local/share/CivOne ~/.local/share/CivOneX
+# macOS
+mv ~/Library/Application\ Support/CivOne ~/Library/Application\ Support/CivOneX
+```
+
+```cmd
+move "%LOCALAPPDATA%\CivOne" "%LOCALAPPDATA%\CivOneX"
+```
+
+Renaming is enough; nothing inside the folder has to be changed.
+If both folders exist, the game uses `CivOneX` and leaves the old one untouched, so it can also be merged by hand.
 
 To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
 
@@ -175,6 +443,34 @@ Example:
 ```sh
 dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
 ```
+
+### Keyboard shortcuts
+
+Overview of the keyboard shortcuts CivOneX adds to the original game.
+Follow the links for details.
+
+| Hotkey | Where | Action |
+| ------ | ----- | ------ |
+| `Alt+V` | Everywhere | Switch sound on or off. See [Switching sound on and off](#switching-sound-on-and-off). |
+| `Shift+Alt+V` | Game map, main menu | Open the sound pack popup. |
+| `Alt+Enter` | Everywhere | Toggle fullscreen mode. |
+| `Alt+F4` | Everywhere | Quit the game. Asks first if **Confirm Quit** is on. |
+| `Shift+F1` | Title screen, startup wizard | Open the settings screen. See [Settings screen](#settings-screen-civone-setup). |
+| `Ctrl+F5` | Everywhere | Save a screenshot of the screen as a GIF file. |
+| `Ctrl+F6` | In game | Save an image of the whole world map as a GIF file. |
+| `Ctrl+F1` to `Ctrl+F10` | In game | Quick save to slot 1 to 10. See [Quick save and quick load hotkeys](#quick-save-and-quick-load-hotkeys). |
+| `Alt+F1` to `Alt+F10` | In game, title and end screens | Quick load slot 1 to 10. |
+| `Alt+F11` | In game, title and end screens | Open the quick load slot menu. |
+| `F1` to `F12` | In game | Open the report screens, like the original game. |
+| `Alt+<letter>` | In game | Open a menu of the top menu bar. See [Game menu hotkeys](#game-menu-hotkeys). |
+| `Tab` | In game | Toggle map pan mode. See [Map panning and camera control](#map-panning-and-camera-control). |
+| `c` | In game | Center the map on the selected unit or city. |
+| `Ctrl+1` to `Ctrl+9` | In game | Save the current map position to slot 1 to 9. See [Map position hotkeys in gameplay](#map-position-hotkeys-in-gameplay). |
+| `Alt+1` to `Alt+9` | In game | Jump to saved map position slot 1 to 9. |
+| `Alt+0` | In game | Open the list of saved map positions. |
+| `Ctrl+PageUp` / `Ctrl+PageDown` | In game | Zoom the map in or out. `Ctrl+Wheel` works as well. See [Map zoom and bitmap filtering](#map-zoom-and-bitmap-filtering). |
+
+The terrain editor has its own shortcuts; see [Main terrain editor hotkeys](#main-terrain-editor-hotkeys).
 
 ### Game menu hotkeys
 
@@ -212,7 +508,7 @@ On success, the response includes both the new `fileName` and a newly generated 
 
 To load a saved game immediately when starting the program, you can use the `--load-slot` option followed by a drive letter and a slot number.
 The drive letter should be between 'a' and 'z', and the slot number should be between 0 and 15 (inclusive).
-These correspond to the saved game files that are stored in the `SaveGames` directory (`~/CivOne/saves/c`)
+These correspond to the saved game files that are stored in the `SaveGames` directory (`~/.local/share/CivOneX/saves/c` on Linux)
 
 If you want to load the saved game from drive 'c' and slot 0, you would use:
 
@@ -224,8 +520,9 @@ If you omit the slot number, a loading screen will be shown, allowing you to sel
 
 You can find your saves in the following locations:
 
-* on Linux/macOS: `~/CivOne/saves/`
-* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\saves\` (also `%LOCALAPPDATA%\CivOne\saves\`)
+* on Linux: `~/.local/share/CivOneX/saves/`
+* on macOS: `~/Library/Application Support/CivOneX/saves/`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\saves\` (also `%LOCALAPPDATA%\CivOneX\saves\`)
 
 ### Loading a savegame from a file (new file format - YAML)
 
@@ -241,7 +538,7 @@ civone --load-cos ./SaveGames/c/auto-save.cos
 On Windows you can also use:
 
 ```cmd
-CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOne\\saves\\c\\auto-save.cos"
+CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOneX\\saves\\c\\auto-save.cos"
 ```
 
 ### Quick save and quick load hotkeys
@@ -256,8 +553,9 @@ You can use fast in-game hotkeys for ten quick save slots.
 
 Quick slot files are stored in the `saves` subfolder of the profile storage directory.
 
-* Windows: `%LOCALAPPDATA%\CivOne\saves`.
-* Linux/macOS: `~/CivOne/saves`.
+* Windows: `%LOCALAPPDATA%\CivOneX\saves`.
+* Linux: `~/.local/share/CivOneX/saves`.
+* macOS: `~/Library/Application Support/CivOneX/saves`.
 
 File names are:
 
@@ -353,12 +651,12 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Option | Description |
 | ------ | ----------- |
 | Window Title | Set the window title text shown by the game window. |
-| Graphics Mode | Choose the graphics rendering mode (e.g. 256-colour or 16-colour). |
+| Graphics Mode | Choose the graphics rendering mode (256-colour or 16-colour). Changing this setting requires a restart; until then the game keeps the mode it was started with. |
 | Aspect Ratio | Select how the game handles aspect ratio (Auto, Fixed, Scaled, ScaledFixed, Expand). |
 | Full Screen | Toggle fullscreen mode on or off (`Alt+Enter`). |
 | VSync | Synchronize rendering to the display refresh rate. This is enabled by default. It helps prevent the GPU from running at full load. Changing this setting requires a restart. |
 | Window Scale | Set the UI scale multiplier (1x to 8x) for window size. |
-| In-game sound | Browse for and enable in-game sound files. |
+| In-game sound | Browse for and enable in-game sound files, choose a sound pack, and test single tunes. See [Sound](#sound) for how to add your own wave files. |
 
 ### Patches
 
@@ -377,6 +675,8 @@ This screen allows to change additional modification options for the game.
 | FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of all values. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
+| AutoSave on quit | Save the running game when the game is closed. The existing autosave (`autosave.cos`) is overwritten. Default is `Yes`. |
+| Confirm quit | Ask for confirmation before a running game is closed. Default is `Yes`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
 | (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
@@ -487,9 +787,11 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | ------ | ----------- |
 | Instant Advice | Configure whether the game shows instant advice prompts to the player. |
 | AutoSave | Enable or disable automatic saving during play. |
+| AutoSave on Quit | Save the running game when the game is closed, overwriting the existing autosave. Also available in the settings screen under **Patches**. Default is on. |
+| Confirm Quit | Ask for confirmation before a running game is closed (window close button or `Alt+F4`). Also available in the settings screen under **Patches**. Default is on. |
 | End of Turn | Configure end-of-turn behavior (e.g. immediate end or prompts). |
 | Animations | Toggle in-game animations (on/off) to improve performance or visuals. |
-| Sound | Toggle sound effects and music for the game. |
+| Sound | Toggle sound effects and music for the game. If no sound pack is selected, a popup lets you pick one first (see [Switching sound on and off](#switching-sound-on-and-off)). |
 | Enemy Moves | Show or hide enemy move animations while processing turns. |
 | Civilopedia Text | Select Civilopedia text display mode (affects in-game encyclopedia text). |
 | Palace | Toggle palace-related behaviour or display options in cities. |
@@ -656,10 +958,11 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
-The test suite uses two integration trait categories.
+The test suite uses these trait categories.
 
 * `IntegrationEarthYaml` is for integration tests that rely only on bundled Earth YAML test data.
 * `IntegrationLocalData` is for integration tests that require local proprietary game data files.
+* `Slow` is for tests that take minutes rather than seconds, currently the AdLib rendering tests.
 
 CI workflows run `IntegrationEarthYaml` tests.
 CI workflows skip `IntegrationLocalData` tests.
@@ -681,6 +984,63 @@ Run only local-data integration tests.
 ```sh
 dotnet test --filter "Category=IntegrationLocalData|TestCategory=IntegrationLocalData"
 ```
+
+Skip the slow rendering tests.
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj --filter "Category!=Slow" -p:SuppressConsoleLogs=true
+```
+
+### Sound tests and the original CVL files
+
+The sound tests read the two original sound drivers of Civilization I.
+
+* `ISOUND.CVL` drives the PC speaker.
+* `ASOUND.CVL` drives the AdLib / OPL2 chip.
+
+Both files belong to the original game and are therefore **not** part of this repository.
+The tests that read them carry the `IntegrationLocalData` trait, so the CI filter shown above leaves them out.
+
+#### Why the files are not bundled
+
+Shipping them would redistribute copyrighted game data.
+The tests are opt-in instead: everyone who owns the original game can point the suite at their own copy, and everyone else still gets a complete test run.
+
+#### Where to put the files
+
+The tests look in these places, in this order, and accept both upper and lower case file names.
+
+1. The path in the environment variable `CIVONE_ISOUND_CVL` or `CIVONE_ASOUND_CVL`.
+2. `xunit/src/Sound/Cvl/`
+3. `xunit/TestData/Cvl/`
+4. `temp/Sound/` in the repository root.
+5. `temp/` in the repository root.
+
+Copying the files into `xunit/TestData/Cvl/` is the simplest option.
+All five locations are excluded from version control, so the files cannot be committed by accident.
+
+Using the environment variable instead:
+
+```sh
+export CIVONE_ASOUND_CVL=/path/to/civ1/ASOUND.CVL
+export CIVONE_ISOUND_CVL=/path/to/civ1/ISOUND.CVL
+```
+
+#### What happens without the files
+
+Nothing fails.
+Each affected test writes a short hint to its test output and returns without asserting anything.
+This is deliberate: a missing original game file is not a defect in CivOne, so it must never turn the build red.
+
+The consequence is that these tests pass without having verified anything, in CI as well as on a machine without the files.
+Real coverage of the sound code on such a machine comes from `FakeIsoundModule` and `FakeAsoundModule`, which are bundled and always run.
+
+Whoever changes the CVL parser, the score format, or the OPL renderer should therefore run the sound tests once **with** the original files present.
+
+#### Runtime
+
+With the files present, a full sound test run takes several minutes because whole tunes are rendered through the OPL emulation.
+The longest tests carry the `Slow` trait and can be excluded with `--filter "Category!=Slow"`.
 
 ### Test coverage
 

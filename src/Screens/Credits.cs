@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -24,6 +24,8 @@ using CivOne.Screens.Reports;
 using CivOne.Services;
 using CivOne.Services.Maps;
 using CivOne.Services.Random;
+using CivOne.Sound;
+using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -70,6 +72,8 @@ namespace CivOne.Screens
 		private IScreen? _nextScreen;
 
 		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
+		private readonly TitleMusicDelegate _titleMusic = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -313,7 +317,9 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 		public bool SkipIntro()
 		{
 			if (_introSkipped || _noiseCounter < NOISE_COUNT) return false;
-			
+
+			// The title theme keeps playing underneath the credits menu; it is only stopped once
+			// the player actually leaves this screen (e.g. StartNewGame, LoadSavedGame).
 			_showIntroLine = false;
 			_introLeft = -320;
 			_logoSwipe = 320;
@@ -364,8 +370,6 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 				FontId = 0,
 				OnShiftF1 = () =>
 				{
-					if (!_allowEnterSetup) return;
-					
 					GameTask.Enqueue(Show.Screens(typeof(Setup), typeof(Credits)));
 					Destroy();
 				}
@@ -399,13 +403,13 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			foreach (IMenu menu in Menus)
 				this.AddLayer(menu);
 			CloseMenus();
-			if (!Runtime.Settings.ShowIntro)
+			if (Runtime.Settings.ShowIntro)
 			{
-				_nextScreen = new NewGame();
+				_nextScreen = new Intro();
 			}
 			else
 			{
-				_nextScreen = new Intro();
+				_nextScreen = new NewGame();
 			}
 		}
 		
@@ -414,6 +418,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			Log("Main Menu: Start a New Game");
 			Map.UseDefaultMapSize();
 			Map.Generate();
+			_generationMusic.Start();
 			StartIntro();
 		}
 		
@@ -435,7 +440,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 				if (!Game.LoadYamlGame(Runtime.Settings.LoadCosFile))
 				{
 					Log("Failed to load YAML game");
-					Common.AddScreen(new Credits());
+					Common.AddScreen(new Credits(playTitleMusic: false));
 
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
@@ -443,6 +448,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
 					return;
 				}
+				_titleMusic.Stop();
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 				Common.AddScreen(new GamePlay());
 				return;
@@ -552,7 +558,26 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			}
 		}
 
-		public Credits()
+		/// <summary>
+		/// Creates the main menu screen with its title music.
+		/// </summary>
+		/// <remarks>
+		/// Kept as a real parameterless constructor: <see cref="Tasks.Show.Screen(System.Type)"/>
+		/// creates screens through <c>Activator.CreateInstance</c>, which does not accept a
+		/// constructor whose only parameter is optional.
+		/// </remarks>
+		public Credits() : this(true)
+		{
+		}
+
+		/// <summary>
+		/// Creates the main menu screen.
+		/// </summary>
+		/// <param name="playTitleMusic">
+		/// <c>false</c> when the screen is only shown again after a submenu was left, so the title
+		/// music that is already running is neither restarted nor layered on top of itself.
+		/// </param>
+		public Credits(bool playTitleMusic = true)
 		{
 			Runtime.SetWindowTitle($"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)");
 
@@ -594,14 +619,10 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 
 			Palette = _pictures[2].Palette;
 
-			if (Settings.Sound != GameOption.Off)
+			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
+			if (playTitleMusic)
 			{
-				var opening = Extensions.GetSoundFile("OPENING");
-				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				if (opening != null)
-				{
-					Runtime.PlaySound(opening);
-				}
+				_titleMusic.Start();
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();

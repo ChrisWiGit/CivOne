@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Mongol : BaseCivilization<Genghis>
 	{
-		public Mongol() : base(Civilization.Mongols, TranslationServiceFactory.GetCurrent().Translate("Mongol"), TranslationServiceFactory.GetCurrent().Translate("Mongols"), "geng")
+		public Mongol() : base(Civilization.Mongols, TranslationServiceFactory.GetCurrent().Translate("Mongol"), TranslationServiceFactory.GetCurrent().Translate("Mongols"), SoundNames.LeaderGenghis)
 		{
 			StartX = 49;
 			StartY = 19;

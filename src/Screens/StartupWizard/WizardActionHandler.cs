@@ -1,42 +1,48 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Services;
 using CivOne.Services.Browser;
-using CivOne.Services.Translation;
+using CivOne.Sound;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens.StartupWizard
 {
 	internal sealed class WizardActionHandler(
 		Func<ITranslationService> translationServiceAccessor,
 		IBrowserService browserService,
+		IOriginalTextLanguageValidationService originalTextLanguageValidationService,
 		string storageDirectory,
 		Func<string, string?> browseFolder,
 		Action<string> log,
 		Action showSetupScreen,
 		Action<Action> dispatchToMainThread,
-		Action requestRefresh) : IWizardActionHandler
+		Action requestRefresh,
+		Action<string[]>? showWarningDialog = null,
+		Func<string, bool>? copyDataFiles = null,
+		Func<bool>? dataFilesExist = null,
+		Func<Task>? copyDelayAsync = null) : IWizardActionHandler
 	{
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IBrowserService _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
+		private readonly IOriginalTextLanguageValidationService _originalTextLanguageValidationService = originalTextLanguageValidationService ?? throw new ArgumentNullException(nameof(originalTextLanguageValidationService));
 		private readonly string _storageDirectory = storageDirectory ?? string.Empty;
 		private readonly Func<string, string?> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
 		private readonly Action _showSetupScreen = showSetupScreen ?? (() => { });
 		private readonly Action<Action> _dispatchToMainThread = dispatchToMainThread ?? throw new ArgumentNullException(nameof(dispatchToMainThread));
 		private readonly Action _requestRefresh = requestRefresh ?? (() => { });
+		private readonly Action<string[]> _showWarningDialog = showWarningDialog ?? (_ => { });
+		private readonly Func<string, bool> _copyDataFiles = copyDataFiles ?? FileSystem.CopyDataFiles;
+		private readonly Func<bool> _dataFilesExist = dataFilesExist ?? (() => FileSystem.DataFilesExist());
+		private readonly Func<Task> _copyDelayAsync = copyDelayAsync ?? (() => Task.Delay(TimeSpan.FromSeconds(1)));
 
 		public WizardActionResult Execute(WizardEntry entry, WizardState engine)
 		{
@@ -80,19 +86,40 @@ namespace CivOne.Screens.StartupWizard
 				case WizardEntryAction.BrowseSoundFolder:
 						HandleBrowseSoundFolder(engine);
 					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.OpenSoundPackScreen:
+						// Opening the page is the earliest point at which the wizard knows a pack is
+						// of interest. Preparing it here means the test sound, and the music right
+						// after the wizard, do not have to wait for it.
+						SoundPlaybackStrategyProvider.WarmUp();
+						engine.OpenSoundPackPage();
+					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.SelectSoundPack:
+						SelectSoundPack(entry.Value, engine);
+					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleTestSound:
+						ToggleTestSound(engine);
+					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
 						if (engine.PageIndex == 3)
 						{
 							Settings.Instance.AspectRatio = engine.ScreenAspectRatio;
 						}
+						if (engine.PageIndex == 4)
+						{
+							StopTestSound(engine);
+						}
 						engine.MoveNext();
 						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Back:
-						if (engine.CloseGamePatchesPage())
+						if (engine.CloseGamePatchesPage() || engine.CloseSoundPackPage())
 						{
 							engine.StatusMessage = string.Empty;
 							return new WizardActionResult(ShouldRefresh: true);
+						}
+						if (engine.PageIndex == 4)
+						{
+							StopTestSound(engine);
 						}
 						engine.MoveBack();
 						engine.StatusMessage = string.Empty;
@@ -216,9 +243,9 @@ namespace CivOne.Screens.StartupWizard
 			try
 			{
 				// Show output even if copying is done in an instant.
-				await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+				await _copyDelayAsync().ConfigureAwait(false);
 
-				if (!FileSystem.CopyDataFiles(path) || !FileSystem.DataFilesExist())
+				if (!_copyDataFiles(path) || !_dataFilesExist())
 				{
 					_dispatchToMainThread(() =>
 					{
@@ -228,14 +255,31 @@ namespace CivOne.Screens.StartupWizard
 					return;
 				}
 
+				OriginalTextLanguageValidationResult languageValidationResult = _originalTextLanguageValidationService.Validate(_storageDirectory);
+				string warningSummary = FormatValidationSummary(languageValidationResult.FilesWithMismatches, maxFileCount: int.MaxValue);
+				string[] warningLines =
+				[
+					T("One or more original text files were not recognized as English."),
+					T("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOneX language.")
+				];
+				if (!languageValidationResult.IsVerified)
+				{
+					string filesForLog = string.Join(", ", languageValidationResult.FilesWithMismatches.Select(result => result.FileName));
+					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If Original language is used, some texts may stay in the imported original language while other texts stay in CivOneX language.");
+				}
+
 				_dispatchToMainThread(() =>
 				{
 					Resources.ClearInstance();
 					engine.StatusMessage = copySucceededMessage;
+					if (!languageValidationResult.IsVerified)
+					{
+						_showWarningDialog(warningLines);
+					}
 					_requestRefresh();
 				});
 			}
-			catch (IOException exception)
+			catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
 			{
 				_log($"Copying data files failed for '{path}': {exception.Message}");
 				_dispatchToMainThread(() =>
@@ -290,6 +334,104 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
+		private void SelectSoundPack(string? value, WizardState state)
+		{
+			StopTestSound(state);
+
+			Settings.Instance.SoundPack = value ?? string.Empty;
+			state.SoundPackId = Settings.Instance.SoundPack;
+			state.SoundEnabled = Settings.Instance.Sound != GameOption.Off;
+
+			// Also covers picking the pack that was already selected, which changes no setting and
+			// would therefore not be noticed anywhere else.
+			SoundPlaybackStrategyProvider.WarmUp();
+
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
+			state.StatusMessage = TF("Sound pack set to {0}.", SoundPackDisplayName(state.SoundPackId, packs));
+
+			state.CloseSoundPackPage();
+		}
+
+		private void ToggleTestSound(WizardState state)
+		{
+			if (state.IsTestSoundPlaying)
+			{
+				StopTestSound(state);
+				state.StatusMessage = T("Test sound stopped.");
+				return;
+			}
+
+			string soundPackId = state.SoundPackId;
+			bool isWave = string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+
+			SoundPlaybackStrategyProvider.Abort();
+
+			if (isWave)
+			{
+				bool playedWave = SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
+				state.IsTestSoundPlaying = playedWave;
+				state.StatusMessage = playedWave
+					? T("Playing test sound.")
+					: T("Test sound could not be played.");
+				return;
+			}
+
+			string packId = soundPackId;
+			SoundPackIndexEntry? tune = LoadSoundPackIndex(packId)?.Tunes.FirstOrDefault();
+			if (tune == null)
+			{
+				state.StatusMessage = T("No test tune available for this sound pack.");
+				return;
+			}
+
+			bool playedTune = SoundPlaybackStrategyProvider.PlayTune(packId, tune);
+			state.IsTestSoundPlaying = playedTune;
+			state.StatusMessage = playedTune
+				? TF("Playing test tune: {0}", tune.Title)
+				: TF("Test tune could not be played: {0}", tune.Title);
+		}
+
+		private static void StopTestSound(WizardState state)
+		{
+			if (!state.IsTestSoundPlaying)
+			{
+				return;
+			}
+
+			SoundPlaybackStrategyProvider.Abort();
+			state.IsTestSoundPlaying = false;
+		}
+
+		private SoundPackIndex? LoadSoundPackIndex(string packId)
+		{
+			string indexPath = Path.Combine(Settings.Instance.SoundsDirectory, packId, SoundPackIndex.FileName);
+			if (!File.Exists(indexPath))
+			{
+				return null;
+			}
+
+			try
+			{
+				return SoundPackIndexJson.Load(indexPath);
+			}
+			catch (InvalidOperationException ex)
+			{
+				_log($"Could not load sound pack index '{indexPath}': {ex.Message}");
+				return null;
+			}
+		}
+
+		private string SoundPackDisplayName(string soundPackId, IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase)) return T("None");
+			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)) return T("Wave files");
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, soundPackId, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+			}
+			return soundPackId;
+		}
+
 		private void HandleOpenProfileFolder(WizardState state)
 		{
 			if (string.IsNullOrWhiteSpace(_storageDirectory))
@@ -300,7 +442,7 @@ namespace CivOne.Screens.StartupWizard
 
 			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string? errorMessage))
 			{
-				state.StatusMessage = T("Opened CivOne profile folder.");
+				state.StatusMessage = T("Opened CivOneX profile folder.");
 				return;
 			}
 
@@ -354,6 +496,27 @@ namespace CivOne.Screens.StartupWizard
 			return remainingCount > 0
 				? $"{shownFiles} (+{remainingCount})"
 				: shownFiles;
+		}
+
+		private static string FormatValidationSummary(IReadOnlyList<OriginalTextLanguageValidationFileResult> fileResults, int maxFileCount)
+		{
+			if (fileResults.Count == 0)
+			{
+				return string.Empty;
+			}
+
+			int shownCount = Math.Min(maxFileCount, fileResults.Count);
+			string shown = string.Join(", ", fileResults
+				.Take(shownCount)
+				.Select(result => $"{result.FileName} ({result.MatchedSegments}/{result.TotalSegments})"));
+
+			int remainingCount = fileResults.Count - shownCount;
+			if (remainingCount > 0)
+			{
+				return $"{shown} (+{remainingCount})";
+			}
+
+			return shown;
 		}
 
 		private void ApplyAspectRatio(string? value, WizardState state)

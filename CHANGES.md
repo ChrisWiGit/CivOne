@@ -5,10 +5,6 @@ If you want to add a change, do not add technical details, but describe the chan
 -->
 # Changes
 
-## Comment
-
-I did not browse all issues on github at first, so I did not recognize that some of my fixes have an issue.
-
 ## History
 
 * Feature: Introduced an AI selection screen. When creating a new game a new menu item ("Use AI selections") is shown in the NewGame screen. 
@@ -26,6 +22,73 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Barbarian AI: Runs barbarian turns through the turn-based framework via `BarbarianTurnBasedBridgeAgentRegistration`, but delegates the actual movement decisions to the existing legacy barbarian logic in `AI.Barbarians.cs`. Can also be configured as disabled (`BarbarianDisabled`), in which case barbarians do not spawn or take actions on the map.
   * AI implementation, the difficulty and calculated handicap are stored in the new COS savegame format, so the original savegame format cannot be used when AI difficulty is enabled.
     * Handicap is an original game concept that measures how favorable a civilization's starting position is. It is calculated purely from map factors: isolation from other civs (+4/+2/+1), adjacent terrain quality (river +2, grassland +1), and continent size (+2/+1). A higher handicap means a better starting position. Civs with a lower handicap than the maximum receive a compensating bonus (extra Settlers or free technologies) to balance the game.
+* Feature: The game now ends like the original game.
+  * The game ends in a fixed year that depends on the difficulty (2100 on Chieftain, 20 years earlier per level, 2000 on Deity).
+  * 20 years before the end, a newspaper warns that your leader plans retirement.
+  * After a spaceship arrives at Alpha Centauri, or after the final year, you can choose to keep playing.
+  * If you keep playing, no further score is recorded: there is no second Hall of Fame entry, the palace is no longer upgraded, and the score screen shows "SCORING COMPLETED".
+  * The space victory screen is now also shown when a rival's spaceship arrives.
+  * The space victory screen tells the story of the flight with the original text, first during the flight and then after the landing.
+  * The flight to Alpha Centauri lasts as long as its music, so your ship lands when the music ends. Before your space station appears, the screen fades to black like in the original.
+  * A civilization loses its spaceship when its capital is captured or the civilization is destroyed: a ship in flight returns to Earth, one under construction is cancelled.
+  * Like the original, the research progress of all civilizations doubles once when the calendar reaches 1 AD.
+  * The leader title follows the government, for example "Mr." under Anarchy.
+  * The lights in the spaceship view blink and glow at the speed of the original game, including the engine glow.
+* Feature: The calendar works like the original game while a spaceship is in flight.
+  * Between 1750 and 1850 the year advances by 1 instead of 2, so the spaceship arrives exactly in the year shown at launch.
+  * The arrival year is fixed at launch and saved with the game.
+  * SVE saves now keep the spaceship launch, arrival year and population.
+* Feature: The civilization score now follows the original game's formula and is always up to date.
+  * The score screen (F9) uses the original layout.
+  * Top Leader, Hall of Fame, palace upgrades and the historian all use the same score.
+  * AI civilizations get mini palaces in the historian screen, based on their score.
+  * The end-game screens appear in the same order as in the original game.
+* Fix: Reset peace counter to 0 when a nuclear strike occurs.
+  * This differs from the original game, where the peace counter is only reset during combat and not by nuclear strikes.
+* Rename to CivOneX.
+  * The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or "CivOneEx", which emphasizes the idea of taking the original game to the next level.
+  * The folder that holds your settings, saved games and data files is named after the game, so it is now called `CivOneX`.
+  * If you played an earlier version, rename your old `CivOne` folder to `CivOneX` to keep everything. See [README.md](README.md) for where that folder is on your system.
+* New icon for the game's window.
+  * Implemented a PNG reader to allow the use of PNG images for the game's window icon and potential later use.
+* **License**: New files are licensed under MIT, and the original files (even when changed) are still under CC0-1.0. See [License](LICENSE.md) for details.
+* Feature: Font Viewer screen.
+  * The Font Viewer screen shows all fonts in the game and lets you select a font to view its characters.
+  * The Font Viewer screen can be opened from the debug menu by selecting "Font Viewer".
+  * There are multiple options to change the font, zoom level, input characters, and copy the font to the clipboard.
+* Feature: The game now autosaves on exit. This can be disabled in the setup menu under "Patches → Auto save on exit".
+* Feature: Ask for confirmation when quitting the game. This can be disabled in the setup menu under "Patches → Confirm quit".
+* Feature: Added red shirt unhappy citizens.
+* Dev-Feature: Use graphify to generate project graphs. Use the `graphify-fast` scripts to generate these graphs. These can be used, for example, with LLM tooling.
+* Fix: Fixed drawing of buildings and wonders on the city screen.
+* Feature: The game now supports all original Civilization wonders on the city view screen.
+* Feature: Major overhaul of the citizen happiness calculation to match the original game.
+  * Adds additional city information to the YAML (COS) save format for debugging and testing (only available when the debug menu is enabled).
+* Feature: Sound conversion now supports playback transitions between tracks. This is used on the leader screen, where the leader theme is playing and the leader mood turns unhappy. In this case, the current music is paused, the sting is played, and the previous music is resumed afterwards.
+  * Also applied sound playback to all possible screens.
+* Fix: Original imported text files now preserve Western European special letters from classic DOS data, so German umlauts and similar characters are no longer lost when those files are used as fallback text.
+  * If imported original text files are not recognized as English, the startup wizard warning now explains the real effect: in `Original language` mode, some texts can stay in the imported original language while other texts stay in CivOne language.
+* Feature: Added civtext-hashgen to generate reference hashes for original Civilization text files.
+  * These hashes are used as a safety check so the game can detect whether the source text files look like the expected English originals.
+  * This helps ensure the translation engine works from a reliable base text and does not produce broken or partial translations from unexpected input files.
+  * If the source files do not match, the player gets a warning before starting the game.
+* Feature: The AdLib / Sound Blaster music of the original game can now be played.
+  * Copying the original DOS game data converts `ASOUND.CVL` into an `AdLib / Sound Blaster` sound pack, next to the `PC Speaker` one. Pick it in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`.
+  * This is the FM music the game played on an AdLib card or a Sound Blaster: the title theme, the evolution sequence, all fourteen leader themes, the win and lose music, and the sound effects.
+  * The music is synthesized the way the sound card did it, so it sounds like the original rather than like beeps.
+  * Each leader has four versions of their theme in the original, and one of them is picked at random every time the leader appears, just as the original does.
+  * A tune is synthesized once and kept in your profile afterwards, so it is instant every time after that.
+  * The PC Speaker pack has been improved at the same time: it now follows the pitch bends and vibrato the original driver applied inside a note, and it is filtered the way a real speaker would sound instead of playing bare square waves.
+* Feature: Play sound and music through a converted PC Speaker / AdLib / Tandy / Roland sound pack instead of the original `.WAV` files.
+  * Copying the original DOS Civilization game data (`Startup Wizard` or `Browse data folder...` in the setup menu) automatically converts and stores a matching sound pack per detected sound device in your CivOne profile.
+  * Choose the sound source in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`, or on the sound page of the startup wizard: `Auto` (uses the sound pack automatically when exactly one is available, otherwise falls back to Wave files), `Wave files` (the original `.WAV` sound effects), `None`, or a specific converted sound pack, e.g. `PC Speaker`.
+  * `Test tunes...` (setup menu) or `Test sound` (startup wizard) plays a short sample from the selected pack, so you can check it before starting the game.
+  * In settings you can play each tune individually to hear all the converted sound effects and music from the selected pack. This is not available in the startup wizard, because the wizard does not have enough space to show all tunes.
+  * The selected sound source is saved in the profile and used for both sound effects and in-game music.
+* Feature: `Alt+v` (like in original) toggles sound on and off from anywhere in the game.
+  * A short on-screen notification (`Sound on` / `Sound off`) confirms the new state.
+  * Turning sound off immediately stops whatever is currently playing.
+  * This is the same setting shown as `Sound: On/Off` in the setup menu and the startup wizard, so all three always stay in sync.
 * Feature: Where barbarians come from is now configurable.
   * Barbarians reach the map on three ways, and each one can be switched on and off on its own: tribal villages that release a horde when one of your units enters them, raiding parties that appear inland, and raiding parties that arrive by ship and land on the coast.
   * The eight resulting combinations are offered as ready-made choices, from `None` over `Villages Only`, `Land Raids Only`, `Sea Raids Only` and `Raids Only` up to `Villages + Raids`, which is the default and matches the original game.

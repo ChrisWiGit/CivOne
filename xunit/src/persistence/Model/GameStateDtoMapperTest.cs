@@ -21,16 +21,20 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Factories;
 
-	public class GameStateDtoMapperTest : IDisposable
+	public sealed class GameStateDtoMapperTest : IDisposable
 	{
+		private readonly MockRuntime _runtime;
 		private readonly GameStateDtoMapper _testee;
 		private readonly List<MockedIPlayer> _players;
 		private readonly IPlayerGame _gameInstance;
 		private readonly GameStateDto _dto;
-		private readonly MockRuntime _runtime;
 
 		public GameStateDtoMapperTest()
 		{
+			// Mapping a DTO back into a game builds real cities, and a city builds a unit that loads
+			// its icon through Resources, which needs a runtime. Without one of its own this test
+			// only passed when some other test class happened to register one first, which depends
+			// on the order the test classes run in.
 			_runtime = new MockRuntime(new RuntimeSettings());
 
 			var civsInGame = MockedICivilization.Mock(3);
@@ -233,6 +237,8 @@ namespace CivOne.Persistence.Model
 				CurrentPlayer = 0,
 				GameRandomSeed = 99999,
 				PeaceTurns = 11,
+				AcceleratedTurns = [372, 373, 374],
+				ScoringCompleted = true,
 				PlayerFutureTech = 4,
 				DisableBuddyCivilizationRespawn = true,
 				BarbarianActivity = BarbarianActivity.Villages | BarbarianActivity.SeaRaids,
@@ -378,6 +384,8 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.RandomSeed)] = () => Assert.Equal(expected.RandomSeed, actual.RandomSeed),
 				[nameof(GameStateDto.AnthologyTurn)] = () => Assert.Equal(expected.AnthologyTurn, actual.AnthologyTurn),
 				[nameof(GameStateDto.PeaceTurns)] = () => Assert.Equal(expected.PeaceTurns, actual.PeaceTurns),
+				[nameof(GameStateDto.AcceleratedTurns)] = () => Assert.Equal(expected.AcceleratedTurns, actual.AcceleratedTurns),
+				[nameof(GameStateDto.ScoringCompleted)] = () => Assert.Equal(expected.ScoringCompleted, actual.ScoringCompleted),
 				[nameof(GameStateDto.PlayerFutureTech)] = () => Assert.Equal(expected.PlayerFutureTech, actual.PlayerFutureTech),
 				[nameof(GameStateDto.DisableBuddyCivilizationRespawn)] = () => Assert.Equal(expected.DisableBuddyCivilizationRespawn, actual.DisableBuddyCivilizationRespawn),
 				[nameof(GameStateDto.BarbarianActivity)] = () => Assert.Equal(expected.BarbarianActivity, actual.BarbarianActivity),
@@ -438,21 +446,6 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposing)
-			{
-				return;
-			}
-			_runtime.Dispose();
-			RuntimeHandler.Wipe();
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
 
 		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
@@ -557,5 +550,14 @@ namespace CivOne.Persistence.Model
 		{
 			public IEnumerable<string> GetAllCityNames() => [];
 		}
+
+		/// <summary>
+		/// Releases the runtime this test registered.
+		/// </summary>
+		/// <remarks>
+		/// The registration itself is left in place on purpose: clearing it would take the runtime
+		/// away from any later test class that does not bring its own.
+		/// </remarks>
+		public void Dispose() => _runtime.Dispose();
 	}
 }

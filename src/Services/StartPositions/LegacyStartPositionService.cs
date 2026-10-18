@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +12,14 @@ namespace CivOne.Services.StartPositions
 	/// Reproduces the original starting-position algorithm: a bounded random search with progressively relaxed
 	/// constraints, falling back to an exhaustive map scan if the search doesn't find a tile in time.
 	/// </summary>
-	internal sealed class LegacyStartPositionService : IStartPositionService
+	/// <param name="calendarService">Converts turns to years; <c>null</c> uses the current calendar.</param>
+	internal sealed class LegacyStartPositionService(IGameCalendarService? calendarService = null) : IStartPositionService
 	{
 		private const int MaxRandomAttempts = 2000;
+
+		private readonly IGameCalendarService? _calendarService = calendarService;
+
+		private IGameCalendarService CalendarService => _calendarService ?? GameCalendarServiceFactory.Current;
 
 		public IReadOnlyList<StartPositionResult> FindStartPositions(IReadOnlyList<StartPositionCandidate> candidates, StartPositionContext context)
 		{
@@ -35,14 +31,14 @@ namespace CivOne.Services.StartPositions
 			List<MapLocation> occupiedTiles = [.. context.OccupiedTiles];
 			List<MapLocation> settlerLocations = [.. context.SettlerLocations];
 
-			ushort gameTurn = ClampGameTurn(context);
+			bool isAd = CalendarService.TurnToYear(ClampGameTurn(context)) >= 0;
 			var fixedPositionResolver = new FixedStartPositionResolverDelegate(context);
 			var fallbackTileScan = new FallbackTileScanDelegate(context);
 
 			var results = new List<StartPositionResult>(candidates.Count);
 			foreach (StartPositionCandidate candidate in candidates)
 			{
-				StartPositionResult result = FindStartPosition(candidate, context, occupiedTiles, settlerLocations, gameTurn, fixedPositionResolver, fallbackTileScan);
+				StartPositionResult result = FindStartPosition(candidate, context, occupiedTiles, settlerLocations, isAd, fixedPositionResolver, fallbackTileScan);
 				if (result.Success)
 				{
 					occupiedTiles.Add(result.Position);
@@ -81,7 +77,7 @@ namespace CivOne.Services.StartPositions
 			StartPositionContext context,
 			List<MapLocation> occupiedTiles,
 			List<MapLocation> settlerLocations,
-			ushort gameTurn,
+			bool isAd,
 			FixedStartPositionResolverDelegate fixedPositionResolver,
 			FallbackTileScanDelegate fallbackTileScan)
 		{
@@ -97,7 +93,7 @@ namespace CivOne.Services.StartPositions
 				int x = context.RandomService.NextInt(0, context.Map.Width);
 				int y = context.RandomService.NextInt(2, context.Map.Height - 2);
 
-				if (!IsValidRandomTile(x, y, loopCounter, context, occupiedTiles, settlerLocations, gameTurn))
+				if (!IsValidRandomTile(x, y, loopCounter, context, occupiedTiles, settlerLocations, isAd))
 				{
 					continue;
 				}
@@ -118,7 +114,7 @@ namespace CivOne.Services.StartPositions
 			return new StartPositionResult { Civilization = candidate.Civilization, Success = false };
 		}
 
-		private static bool IsValidRandomTile(int x, int y, int loopCounter, StartPositionContext context, List<MapLocation> occupiedTiles, List<MapLocation> settlerLocations, ushort gameTurn)
+		private static bool IsValidRandomTile(int x, int y, int loopCounter, StartPositionContext context, List<MapLocation> occupiedTiles, List<MapLocation> settlerLocations, bool isAd)
 		{
 			ITile tile = context.Map[x, y];
 			if (tile == null) return false; // Outside the generated map.
@@ -135,7 +131,7 @@ namespace CivOne.Services.StartPositions
 
 			// CW: Civs are only spawned until 0 AD. So what is the point of this?
 			// After 0 AD, don't spawn a Civilization on a continent that already contains cities.
-			if (Common.TurnToYear(gameTurn) >= 0 && context.Map.ContinentTiles(tile.ContinentId).Any(t => t.City != null)) return false;
+			if (isAd && context.Map.ContinentTiles(tile.ContinentId).Any(t => t.City != null)) return false;
 
 			return true;
 		}

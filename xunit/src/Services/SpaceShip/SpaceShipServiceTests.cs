@@ -185,6 +185,27 @@ namespace CivOne.UnitTests.Services.SpaceShip
 			Assert.Equal(expected.SuccessProbabilityPercent, data.SuccessProbabilityPercent);
 		}
 
+		[Theory]
+		[InlineData(0, true, true)]
+		[InlineData(0, false, false)]
+		[InlineData(1990, false, true)]
+		public void SuccessRatePassesCompletenessToScreenDataFactory(short launchYear, bool canLaunch, bool expectedComplete)
+		{
+			// Arrange
+			var player = CreatePlayer();
+			player.SpaceShipLaunchYear = launchYear;
+			var placementRules = new StubPlacementRules(_ => false, (_, _) => false);
+			var launchRules = new StubLaunchRules(_ => canLaunch);
+			var screenDataFactory = new StubScreenDataFactory((_, complete) => EmptyData(complete) with { SuccessProbabilityPercent = complete ? 100 : 99 });
+			var service = new SpaceShipService(player, placementRules, launchRules, screenDataFactory);
+
+			// Act
+			int rate = service.SuccessRate();
+
+			// Assert
+			Assert.Equal(expectedComplete ? 100 : 99, rate);
+		}
+
 		private static FakePlayerSpaceRace CreatePlayer()
 		{
 			return new FakePlayerSpaceRace
@@ -233,6 +254,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 			public ushort SpaceShipPopulation { get; set; }
 
 			public short SpaceShipLaunchYear { get; set; }
+			public short SpaceShipEtaYear { get; set; } = -1;
 
 			public bool HasSpaceFlightAdvance() => false;
 

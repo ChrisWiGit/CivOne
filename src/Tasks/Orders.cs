@@ -133,7 +133,9 @@ namespace CivOne.Tasks
 				return;
 			}
 
-			CityView cityScreen = CityView.FoundCityWithAnimation(_city);
+			// The first city is what founds the civilization, which the original marks with its win
+			// music. The screen plays and stops it, so it does not outlive the animation.
+			CityView cityScreen = CityView.FoundCityWithAnimation(_city, playFoundingMusic: player.Cities.Length == 1);
 			cityScreen.Closed += CityFounded;
 			cityScreen.Skipped += CityViewed;
 			Common.AddScreen(cityScreen);

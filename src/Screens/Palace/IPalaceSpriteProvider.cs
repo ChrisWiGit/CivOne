@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using CivOne.Enums;
 using CivOne.Graphics;
 
@@ -17,6 +8,13 @@ namespace CivOne.Screens.PalaceAssets
 		Picture GetBackground();
 		Picture? GetGardenBackdrop(byte gardenLevel);
 		Picture? GetGardenBrush(int gardenIndex, byte gardenLevel);
-		Picture GetPalacePart(PalaceStyle style, PalacePart part, int level);
+		/// <summary>
+		/// Gets one single palace sprite as cut by the original game.
+		/// </summary>
+		/// <param name="level">The picture level, 0..4.</param>
+		/// <param name="style">The style.</param>
+		/// <param name="kind">The sprite.</param>
+		/// <returns>The sprite, owned by the cache.</returns>
+		Picture GetPalacePiece(int level, PalaceStyle style, PalacePieceKind kind);
 	}
 }

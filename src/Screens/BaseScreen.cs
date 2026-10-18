@@ -107,7 +107,7 @@ namespace CivOne.Screens
 		public virtual bool MouseDrag(ScreenEventArgs args) => false;
 		public virtual bool MouseMove(ScreenEventArgs args) => false;
 
-		protected void Destroy()
+		protected virtual void Destroy()
 		{
 			CloseMenus();
 			CloseInputs();

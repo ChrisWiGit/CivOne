@@ -1,17 +1,9 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Graphics.ImageFormats;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -60,9 +52,13 @@ namespace CivOne.Screens.Debug
 
 			string resourceName = _paletteNames[selectedIndex];
 
+			// This viewer always displays the full 256-colour palette, so it must bypass the
+			// player's GraphicsMode setting: Resources[...] and Common.DefaultPalette both
+			// follow that setting and would hand back a 16-entry palette in 16-colour mode,
+			// which breaks the 16-column grid (e.g. every column-0 cell would alias index 0).
 			if (resourceName == "Standard Palette")
 			{
-				_selectedPalette = Common.DefaultPalette.Copy();
+				_selectedPalette = Common.GetPalette256.Copy();
 			}
 			else
 			{
@@ -71,9 +67,11 @@ namespace CivOne.Screens.Debug
 					GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Palette Viewer --"), TranslateFormattedArray("Resource '{0}' not found.\nPlease choose another resource.", resourceName)));
 					return;
 				}
+
+				using PicFile picFile = new(resourceName);
+				_selectedPalette = picFile.GetPalette256;
 			}
 
-			_selectedPalette = Resources[resourceName].Palette.Copy();
 			_selectedPaletteName = resourceName;
 			Palette = _selectedPalette;
 			_viewerMode = true;

@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -23,6 +23,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Persistence.Game;
 using CivOne.Screens.NewGamePanels;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
@@ -38,6 +39,7 @@ namespace CivOne.Screens
 		private readonly NewGameBarbarianMenuDelegate _barbarianMenu;
 		private readonly NewGameTribeMenuDelegate _tribeMenu;
 		private readonly NewGameDifficultyPictureDelegate _difficultyPictures = new();
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
@@ -314,7 +316,9 @@ namespace CivOne.Screens
 
 		private void BackToCredits()
 		{
-			var credits = new Credits();
+			_generationMusic.Stop();
+			// don't play the intro music if intro is skipped.
+			var credits = new Credits(playTitleMusic: false);
 			credits.SkipIntro();
 			credits.SkipLogo();
 			Common.AddScreen(credits);

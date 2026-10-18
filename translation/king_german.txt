@@ -225,12 +225,12 @@ von Stadt zu Stadt. Im ganzen^
 Reich kehren Soldaten in ihre Heimat zurück.^
 
 *INIT
-$RPLC1, du bist aufgestiegen^
-und zum Anführer der^
-$US geworden. Möge deine Regierungszeit^
-lang und erfolgreich sein.^
-Die $US verfügen über Kenntnisse^
-in den Bereichen Bewässerung, Bergbau,^
+$RPLC1, du bist nun aufgestiegen^
+zum Anführer des Volkes $US.^
+Möge deine Regentschaft^
+lang, weise und erfolgreich sein.^
+Die $US besitzen Kenntnisse^
+in Bewässerung, Bergbau^
 
 *TAXES
 Warnung: Die Mittel gehen zur Neige.^

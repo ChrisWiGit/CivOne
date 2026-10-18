@@ -25,6 +25,7 @@ namespace CivOne
 		public static bool Is<T>() where T : GameTask => _currentTask != null && _currentTask is T;
 		public static bool Fast => Common.HasAttribute<FastAttribute>(_currentTask);
 		public static int Count<T>() where T : GameTask => _tasks.Count(t => t is T);
+		internal static int Count(Func<GameTask, bool> predicate) => _tasks.Count(predicate);
 		
 		internal static void ClearAll()
 		{

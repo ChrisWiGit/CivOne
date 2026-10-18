@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.IO;
 using CivOne.Events;
@@ -95,7 +86,7 @@ namespace CivOne.Screens
 			/// <returns>The filter string passed to <see cref="IRuntime.FileChooser"/>.</returns>
 			private string BuildFileChooserFilter(bool includeLegacyMap)
 			{
-				string comapFilter = $"{Translate("CivOne Map")} (*.comap)|*.comap";
+				string comapFilter = $"{Translate("CivOneX Map")} (*.comap)|*.comap";
 				if (!includeLegacyMap)
 				{
 					return comapFilter;

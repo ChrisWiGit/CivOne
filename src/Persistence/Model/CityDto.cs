@@ -91,5 +91,8 @@ namespace CivOne.Persistence.Model
 
         [Doc("Continent ID the city is located on.")]
         public int ContinentId { get; set; }
+
+        [Doc("Optional debug snapshot for save-file inspection. Not used by load logic. Only if the debug is enabled.")]
+        public CityDebugSnapshotDto? DebugSnapshot { get; set; }
     }
 }

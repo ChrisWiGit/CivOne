@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -118,7 +118,12 @@ namespace CivOne.Services.Maps
 			public string DataDirectory => throw new NotImplementedException();
 			public string PluginsDirectory => throw new NotImplementedException();
 			public string SoundsDirectory => throw new NotImplementedException();
+			public CivOne.Enums.GameOption Sound => throw new NotImplementedException();
 			public bool RevealWorld => throw new NotImplementedException();
+			public bool DebugMenu => throw new NotImplementedException();
+			public bool AutoSaveOnQuit => true;
+			public bool ConfirmExit => true;
+			public CivOne.Enums.HistorianAiPalace HistorianAiPalace => CivOne.Enums.HistorianAiPalace.Generated;
 		}
 	}
 }

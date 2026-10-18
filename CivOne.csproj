@@ -42,6 +42,9 @@
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
 	</ItemGroup>
 	<ItemGroup>
+		<EmbeddedResource Include="resources/WizardIcon.png" LogicalName="CivOne.Resources.WizardIcon.png" />
+	</ItemGroup>
+	<ItemGroup>
 		<Compile Remove="**" />
 		<Compile Include="shared/**" />
 		<Compile Include="src/**" />

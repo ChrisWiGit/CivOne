@@ -11,6 +11,7 @@ using System;
 using CivOne.Enums;
 using CivOne.Screens;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound;
 using CivOne.Units;
 
 namespace CivOne.Tasks
@@ -66,7 +67,7 @@ namespace CivOne.Tasks
 
 		public static Message Error(string title, params string[] message)
 		{
-			PlaySound("s_beep");
+			PlaySound(SoundNames.UiBeep);
 			return new Message(new PopupMessage(4, title, message));
 		}
 

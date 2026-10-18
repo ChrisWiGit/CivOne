@@ -22,6 +22,7 @@ namespace CivOne.Screens
 	{
 		private readonly ISpaceShipResourceService _resources;
 		private readonly IGameCalendarService _calendarService;
+		private readonly ISpaceShipArrivalService _arrivalService;
 
 		private readonly Player _player;
 		private readonly bool _debug;
@@ -39,7 +40,8 @@ namespace CivOne.Screens
 		private bool _update = true;
 
 		private readonly StarfieldDelegate _starfield;
-		private readonly SpaceShipPaletteAnimationDelegate _paletteAnimation;
+		private readonly PaletteCycleDelegate _paletteAnimation;
+		private uint? _paletteStartTick;
 
 		private const byte StartFieldBackgroundColorIndex = 96;
 
@@ -84,12 +86,6 @@ namespace CivOne.Screens
 
 		private byte PlayerColor => Common.PlayerColourDark(Game.PlayerNumber(_player));
 
-		private string FormatYearLabel(int year)
-		{
-			ushort turn = _calendarService.YearToTurn(year);
-			return _calendarService.FormatYear(turn);
-		}
-
 		private void RefreshData()
 		{
 			_data = _service.GetScreenData();
@@ -119,7 +115,7 @@ namespace CivOne.Screens
 
 			int[] parallaxOffsets = HasLaunched ? _starfield.GetParallaxOffsets(gameTick, StarfieldWidth) : StarfieldDelegate.ZeroOffsets;
 			bool needsScroll = _starfield.HasParallaxMoved(parallaxOffsets);
-			bool paletteChanged = _paletteAnimation.Update(gameTick);
+			bool paletteChanged = _paletteAnimation.Update(gameTick - (_paletteStartTick ??= gameTick));
 
 			if (!_update && !RefreshNeeded() && !needsScroll && !paletteChanged)
 			{
@@ -183,12 +179,12 @@ namespace CivOne.Screens
 			if (HasLaunched)
 			{
 				int launchYear = _player.SpaceShipLaunchYear;
-				int arrivalYear = launchYear + (int)Math.Ceiling(_data.FlightTimeYears);
+				int arrivalYear = _arrivalService.ArrivalYear(_player) ?? launchYear;
 
 				DrawLocalizedText("Launched:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText(FormatYearLabel(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
+				.DrawText(_calendarService.FormatCalendarYear(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
 				DrawLocalizedText("Est. Arrival:", 0, textColour, ox + 236, oy + 166, TextAlign.Left)
-				.DrawText(FormatYearLabel(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
+				.DrawText(_calendarService.FormatCalendarYear(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
 
 			}
 			else
@@ -350,7 +346,7 @@ namespace CivOne.Screens
 			{
 				if (HasLaunched)
 				{
-					_player.SpaceShipLaunchYear = 0;
+					_arrivalService.CancelLaunch(_player);
 					_debugLaunch = false;
 				}
 				else
@@ -358,7 +354,7 @@ namespace CivOne.Screens
 					_debugLaunch = true;
 					if (_player.SpaceShipLaunchYear == 0)
 					{
-						_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
+						_arrivalService.Launch(_player, _calendarService.TurnToYear(Game.GameTurn));
 					}
 				}
 
@@ -435,7 +431,9 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			GameTask.Enqueue(Show.Screen(new SpaceVictory(_player)));
+			// Close the spaceship view first, otherwise it stays on top of the space-victory screen.
+			Destroy();
+			GameTask.Enqueue(Game.CreateSpaceArrivalEndTask(_player));
 			return true;
 		}
 
@@ -501,7 +499,7 @@ namespace CivOne.Screens
 					return true;
 				}
 
-				_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
+				_arrivalService.Launch(_player, _calendarService.TurnToYear(Game.GameTurn));
 				RefreshData();
 				GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nlaunches for\nAlpha Centauri!", _player.TribeName)));
 				return true;
@@ -562,6 +560,7 @@ namespace CivOne.Screens
 			_slotBlueprint = services.SlotBlueprint;
 			_resources = services.Resources;
 			_calendarService = services.CalendarService;
+			_arrivalService = services.ArrivalService;
 
 			_standardService = services.SpaceShipServiceFactory.Create(_player);
 			_debugService = services.DebugSpaceShipServiceFactory.Create(_player);
@@ -570,9 +569,20 @@ namespace CivOne.Screens
 			_sprites = services.SpaceShipSpriteProvider;
 			_data = _service.GetScreenData();
 
-			SpaceShipPalette = _resources["DOCKER"].Palette.Copy();
+			// DOCKER has no real 16-colour picture, so Resources[] normally always hands back its
+			// 256-colour palette regardless of GraphicsMode. If DOCKER.PIC cannot be found at all
+			// (missing data files, or --free), the placeholder picture PicFile synthesizes instead
+			// reports a 16-colour version as available too, and Resources[] then picks that 16-entry
+			// palette whenever GraphicsMode isn't 256. The background colour and the palette
+			// animation address entries far above 16, so a short palette is expanded to 256 entries.
+			Palette dockerPalette = _resources["DOCKER"].Palette.Copy();
+			SpaceShipPalette = new PaletteExpansionDelegate().Expand(dockerPalette);
+			if (!ReferenceEquals(SpaceShipPalette, dockerPalette))
+			{
+				dockerPalette.Dispose();
+			}
 			SpaceShipPalette[StartFieldBackgroundColorIndex] = new Colour(0, 0, 48);
-			_paletteAnimation = new SpaceShipPaletteAnimationDelegate(SpaceShipPalette);
+			_paletteAnimation = new PaletteCycleDelegate(SpaceShipPalette, PaletteCycleDelegate.SpaceShipCycles);
 
 			Palette = SpaceShipPalette;
 

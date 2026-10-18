@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -52,8 +52,10 @@ namespace CivOne
 		public const int AutoExpandMaxHeight = 720;
 
 		// Set default settings
-		private string _windowTitle = "CivOne";
+		private const string NoSoundPack = global::CivOne.Sound.Playback.SoundPlaybackStrategyConstants.NoSoundPack;
+		private string _windowTitle = ProductInfo.Name;
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
+		private GraphicsMode _configuredGraphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen;
 		private int _windowWidth = -1, _windowHeight = -1;
 		private Point _windowPosition = new Point(-1, -1);
@@ -68,6 +70,7 @@ namespace CivOne
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
 		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
+		private HistorianAiPalace _historianAiPalace = HistorianAiPalace.Generated;
 		private bool _arrowHelper;
 		private bool _pathFinding;
 		private bool _computerPlayerPathFinding = true;
@@ -75,10 +78,13 @@ namespace CivOne
 		private bool _canalCity;
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
+		private bool _autoSaveOnQuit = true;
+		private bool _confirmExit = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
 		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
 		private string _languagePostfix = string.Empty;
+		private string _soundPack = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
@@ -93,8 +99,9 @@ namespace CivOne
 		/// Gets the CivOne storage root. This is the root folder where all CivOne data is stored
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX</c>
+		/// Linux: <c>~/.local/share/CivOneX</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX</c>
 		/// </remarks>
 		public string StorageDirectory => Runtime.StorageDirectory;
 
@@ -102,8 +109,9 @@ namespace CivOne
 		/// Gets the directory used for captured screenshots and recordings.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\capture</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/capture</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\capture</c>
+		/// Linux: <c>~/.local/share/CivOneX/capture</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/capture</c>
 		/// </remarks>
 		public string CaptureDirectory => Path.Combine(StorageDirectory, "capture");
 
@@ -111,8 +119,9 @@ namespace CivOne
 		/// Gets the directory that contains the game data files.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\data</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/data</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\data</c>
+		/// Linux: <c>~/.local/share/CivOneX/data</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/data</c>
 		/// </remarks>
 		public string DataDirectory => Path.Combine(StorageDirectory, "data");
 
@@ -120,8 +129,9 @@ namespace CivOne
 		/// Gets the directory used for plugins.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\plugins</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/plugins</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\plugins</c>
+		/// Linux: <c>~/.local/share/CivOneX/plugins</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/plugins</c>
 		/// </remarks>
 		public string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
 
@@ -129,8 +139,9 @@ namespace CivOne
 		/// Gets the directory used for savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves</c>
+		/// Linux: <c>~/.local/share/CivOneX/saves</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/saves</c>
 		/// </remarks>
 		public string SavesDirectory => Path.Combine(StorageDirectory, "saves");
 
@@ -138,8 +149,9 @@ namespace CivOne
 		/// Gets the directory used for classic .cos savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves\cos</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves/cos</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves\cos</c>
+		/// Linux: <c>~/.local/share/CivOneX/saves/cos</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/saves/cos</c>
 		/// </remarks>
 		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 
@@ -153,8 +165,9 @@ namespace CivOne
 		/// Gets the directory used for sound assets.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\sounds</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/sounds</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\sounds</c>
+		/// Linux: <c>~/.local/share/CivOneX/sounds</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/sounds</c>
 		/// </remarks>
 		public string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
 
@@ -169,17 +182,31 @@ namespace CivOne
 			}
 		}
 		
-		internal GraphicsMode GraphicsMode
+		/// <summary>
+		/// Gets the graphics mode the game renders with during this session.
+		/// <br/>
+		/// The value is read once at startup and does not change while the program runs, because many
+		/// bitmaps derived from the game resources are cached for the whole session.
+		/// Use <see cref="ConfiguredGraphicsMode"/> to change the mode for the next start.
+		/// See docs/plan-assetCache.prompt.md.
+		/// </summary>
+		internal GraphicsMode GraphicsMode => _graphicsMode;
+
+		/// <summary>
+		/// Gets or sets the graphics mode that is saved in the settings.
+		/// <br/>
+		/// A new value only takes effect after the game was restarted; until then
+		/// <see cref="GraphicsMode"/> keeps the mode the session started with.
+		/// </summary>
+		internal GraphicsMode ConfiguredGraphicsMode
 		{
-			get => _graphicsMode;
+			get => _configuredGraphicsMode;
 			set
 			{
-				_graphicsMode = value;
-				string saveValue = _graphicsMode == GraphicsMode.Graphics256 ? "1" : "2";
+				_configuredGraphicsMode = value;
+				string saveValue = _configuredGraphicsMode == GraphicsMode.Graphics256 ? "1" : "2";
 				SetSetting("GraphicsMode", saveValue);
 				Common.ReloadSettings = true;
-				
-				Resources.ClearInstance();
 			}
 		}
 		
@@ -318,10 +345,10 @@ namespace CivOne
 			}
 		}
 		
-		internal bool DebugMenu
+		public bool DebugMenu
 		{
 			get => _debugMenu;
-			set
+			internal set
 			{
 				_debugMenu = value;
 				SetSetting("DebugMenu", _debugMenu ? "1" : "0");
@@ -422,6 +449,19 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets which palace the Historian shows for AI players.
+		/// </summary>
+		public HistorianAiPalace HistorianAiPalace
+		{
+			get => _historianAiPalace;
+			set
+			{
+				_historianAiPalace = value;
+				SetSetting("HistorianAiPalace", ((int)_historianAiPalace).ToString(CultureInfo.InvariantCulture));
+			}
+		}
+
 		internal bool RemoveObsoleteBuildings
 		{
 			get => _removeObsoleteBuildings;
@@ -440,6 +480,34 @@ namespace CivOne
 			{
 				_preferSveSaveFormat = value;
 				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Saves the running game automatically when the game is closed.
+		/// </summary>
+		public bool AutoSaveOnQuit
+		{
+			get => _autoSaveOnQuit;
+			set
+			{
+				_autoSaveOnQuit = value;
+				SetSetting("AutoSaveOnQuit", _autoSaveOnQuit ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Asks for confirmation before the running game is closed.
+		/// </summary>
+		public bool ConfirmExit
+		{
+			get => _confirmExit;
+			set
+			{
+				_confirmExit = value;
+				SetSetting("ConfirmExit", _confirmExit ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -721,6 +789,25 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Id of the chosen sound source: a converted pack (see sounds/&lt;packId&gt;/index.json),
+		/// <c>__wave__</c> for the profile's wave files, or <c>__none__</c> for silence.
+		///
+		/// Empty means nothing has been chosen yet. <c>SoundPackSelectionDelegate</c> turns that into
+		/// a real choice the first time anything asks, so nothing else has to deal with the empty
+		/// case.
+		/// </summary>
+		public string SoundPack
+		{
+			get => _soundPack;
+			set
+			{
+				_soundPack = value ?? string.Empty;
+				SetSetting("SoundPack", _soundPack);
+				Sound = string.Equals(_soundPack, NoSoundPack, StringComparison.OrdinalIgnoreCase) ? GameOption.Off : GameOption.On;
+			}
+		}
+
 		internal SimulateInternationalFont SimulateInternationalFont
 		{
 			get => _simulateInternationalFont;
@@ -751,6 +838,26 @@ namespace CivOne
 		private void GetSetting(string settingName, ref string output) => output = GetSetting(settingName) ?? output;
 
 		private void GetSetting(string settingName, ref bool output) => output = GetSetting(settingName) == "1";
+
+		/// <summary>
+		/// Reads a stored flag and keeps the current value when the profile has no entry for it.
+		/// </summary>
+		/// <param name="settingName">Name of the stored setting.</param>
+		/// <param name="output">Value to update, left untouched when the setting is missing.</param>
+		/// <remarks>
+		/// Needed for flags that default to <c>true</c>.
+		/// The plain bool overload turns a missing entry into <c>false</c>.
+		/// </remarks>
+		private void GetBoolSetting(string settingName, ref bool output)
+		{
+			string? value = GetSetting(settingName);
+			if (string.IsNullOrEmpty(value))
+			{
+				return;
+			}
+
+			output = value == "1";
+		}
 		
 		private bool GetSetting(string settingName, ref int output, int minValue = int.MinValue, int maxValue = int.MaxValue)
 		{
@@ -791,7 +898,9 @@ namespace CivOne
 
 			// Read settings
 			GetSetting("WindowTitle", ref _windowTitle);
+			_windowTitle = new WindowTitleDelegate().Resolve(_windowTitle);
 			GetSetting("GraphicsMode", ref _graphicsMode);
+			_configuredGraphicsMode = _graphicsMode;
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
 			GetSetting("Scale", ref _scale, 1, 8);
@@ -845,11 +954,15 @@ namespace CivOne
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
+			GetSetting("HistorianAiPalace", ref _historianAiPalace);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetBoolSetting("AutoSaveOnQuit", ref _autoSaveOnQuit);
+			GetBoolSetting("ConfirmExit", ref _confirmExit);
 			GetSetting("LzwCodecMode", ref _lzwCodecMode);
 			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
 			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
+			GetSetting("SoundPack", ref _soundPack);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting("CursorType", ref _cursorType);

@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
@@ -34,5 +25,8 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The game year the spaceship was launched. 0 = not launched. Clamped to [-32768, 32767] (short) during load.")]
 		public long LaunchYear { get; set; }
+
+		[Doc("The year in which the launched spaceship arrives at Alpha Centauri, stored at launch. -1 = no ship in flight. Missing in older savegames, which then default to -1. Clamped to [-32768, 32767] (short) during load.")]
+		public long EtaYear { get; set; } = -1;
 	}
 }

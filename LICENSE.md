@@ -1,6 +1,52 @@
+# License
+
+This repository uses two licenses, depending on the origin of each file.
+
+## Which license applies to a file
+
+The authoritative record of origin is the manifest file `.cc0-baseline.csv` in the
+repository root. It lists every file that came from the original CivOne project,
+together with the SHA-256 hash of that file's unmodified upstream content.
+
+- **Listed in `.cc0-baseline.csv`** — the file is licensed under CC0 1.0 Universal.
+- **Not listed** — the file was added in this repository and is licensed under the MIT License.
+
+The manifest is derived from upstream commit `c8f4a31b8c0e635cf65969d08adc6d47691e8650`
+and can be regenerated from it at any time. It is the single source of truth: it does
+not depend on the presence of a license header comment inside a file.
+
+Most CC0 files still carry the historical CC0 header comment. That header is a
+convenience marker only. Its absence does not change a file's license, and new files
+never receive one.
+
+### Modified CivOne files
+
+A file listed in the manifest stays under CC0 1.0 Universal even after it has been
+changed in this repository. Changes made here to those files are contributed under CC0
+as well. This keeps the license of every file unambiguous and avoids mixed licensing
+within a single file.
+
+To keep new work under the MIT License, prefer adding it in a new file — for example as
+a delegate, wrapper, or service class — instead of extending an existing CC0 file.
+
+## MIT License
+
+This license applies to all files **not** listed in `.cc0-baseline.csv`.
+MIT-licensed files do not carry a header comment; this notice covers them.
+
+Copyright (c) 2025-2026 Christian Wimmer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 ## Creative Commons Legal Code
 
-# CC0 1.0 Universal
+This license applies to all files listed in `.cc0-baseline.csv`.
+
+## CC0 1.0 Universal
 
 CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED HEREUNDER.
 

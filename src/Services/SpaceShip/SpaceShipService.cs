@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
@@ -93,5 +84,11 @@ namespace CivOne.Services.SpaceShip
 		public bool CanLaunch() => _launchRules.CanLaunch(_player);
 
 		public SpaceShipScreenData GetScreenData() => _screenDataFactory.Create(_player, CanLaunch());
+
+		public int SuccessRate()
+		{
+			bool complete = _player.SpaceShipLaunchYear != 0 || CanLaunch();
+			return _screenDataFactory.Create(_player, complete).SuccessProbabilityPercent;
+		}
 	}
 }

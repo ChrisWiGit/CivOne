@@ -136,6 +136,7 @@ namespace CivOne
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 
 		private static List<IScreen> _screens = new List<IScreen>();
+		private static bool _screenStackChanged;
 		private static readonly Lock _attributeCacheSync = new();
 		private static readonly Dictionary<(Type ObjectType, Type AttributeType), bool> _attributeCache = [];
 		/// <summary>
@@ -269,6 +270,27 @@ namespace CivOne
 			}
 
 			_screens.Add(screen);
+			_screenStackChanged = true;
+		}
+
+		/// <summary>
+		/// Reports whether the screen stack changed since the last call, and resets that state.
+		/// </summary>
+		/// <returns><c>true</c> when a screen was added or removed since the last call.</returns>
+		/// <remarks>
+		/// Adding or removing a screen changes what is drawn even when no remaining screen redraws
+		/// itself. Without this signal the window keeps showing a closed screen until something else
+		/// happens to request a redraw.
+		/// </remarks>
+		internal static bool ConsumeScreenStackChanged()
+		{
+			if (!_screenStackChanged)
+			{
+				return false;
+			}
+
+			_screenStackChanged = false;
+			return true;
 		}
 		
 		/// <summary>
@@ -290,6 +312,7 @@ namespace CivOne
 			// This avoids disposed instances remaining in the stack when a screen was added more than once.
 			while (_screens.Remove(screen))
 			{
+				_screenStackChanged = true;
 			}
 
 			screen.Dispose();
@@ -344,36 +367,6 @@ namespace CivOne
 			return sb.ToString().TrimStart('0', ',');
 		}
 
-		public static ushort YearToTurn(int year)
-		{
-			if (year < -4000) return 0;
-			if (year < 1000) return (ushort)Math.Floor(((double)year + 4000) / 20);
-			if (year < 1500) return (ushort)Math.Floor(((double)year + 1500) / 10);
-			if (year < 1750) return (ushort)Math.Floor(((double)year) / 5);
-			if (year < 1850) return (ushort)Math.Floor(((double)year - 1050) / 2);
-			return (ushort)(year - 1450);
-		}
-		
-		public static int TurnToYear(ushort turn)
-		{
-			if (turn < 200) return -(200 - turn) * 20;
-			else if (turn == 200) return 1;
-			else if (turn < 250) return (turn - 200) * 20;
-			else if (turn < 300) return ((turn - 250) * 10) + 1000;
-			else if (turn < 350) return ((turn - 300) * 5) + 1500;
-			else if (turn < 400) return ((turn - 350) * 2) + 1750;
-			return turn - 400 + 1850;
-		}
-		
-		public static string YearString(ushort turn, bool zeroAd = false)
-		{
-			int year = TurnToYear(turn);
-			if (zeroAd && year == 1) year = 0;
-			if (year < 0)
-				return $"{-year} " + TranslationServiceFactory.GetCurrent().Translate("BC");
-			return $"{year} " + TranslationServiceFactory.GetCurrent().Translate("AD");
-		}
-
 		public static string DifficultyName(int difficuly)
 		{
 			ITranslationService translation = TranslationServiceFactory.GetCurrent();
@@ -398,6 +391,8 @@ namespace CivOne
 				Citizen.ContentFemale => 1,
 				Citizen.UnhappyMale => 2,
 				Citizen.UnhappyFemale => 2,
+				Citizen.RedShirtMale => 2,
+				Citizen.RedShirtFemale => 2,
 				Citizen.Taxman => 3,
 				Citizen.Scientist => 3,
 				Citizen.Entertainer => 3,

@@ -22,6 +22,12 @@ namespace CivOne
 		byte GetPalaceLevel(int index);
 		byte GetGardenLevel(int index);
 		int UpgradeCount { get; }
+
+		/// <summary>
+		/// Gets how often a palace upgrade was earned, like the original's palace build counter.
+		/// It drives the upgrade threshold and keeps counting once the palace is complete.
+		/// </summary>
+		int BuildCount { get; }
 		bool CanUpgrade { get; }
 		bool IsSlotUnlocked(int index);
 	}
@@ -75,6 +81,29 @@ namespace CivOne
 		}
 
 		public int UpgradeCount => PalaceLevel.Sum(x => x) + GardenLevel.Sum(x => x);
+
+		/// <summary>
+		/// The original opens the upgrade dialog only while the build counter is at most this value.
+		/// </summary>
+		public const int MaxUpgradeDialogs = 37;
+
+		public int BuildCount { get; private set; }
+
+		/// <summary>
+		/// Sets the build counter, e.g. when loading a saved game.
+		/// </summary>
+		/// <param name="count">The counter; negative values become 0.</param>
+		public void SetBuildCount(int count) => BuildCount = Math.Max(0, count);
+
+		/// <summary>
+		/// Counts an earned palace upgrade, as the original does before it opens the dialog.
+		/// </summary>
+		/// <returns><c>true</c> when the upgrade dialog should open.</returns>
+		public bool RecordEarnedUpgrade()
+		{
+			BuildCount++;
+			return BuildCount <= MaxUpgradeDialogs && CanUpgrade;
+		}
 
 		public bool CanUpgrade
 		{

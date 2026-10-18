@@ -150,6 +150,7 @@ namespace CivOne.IO
 
 		protected unsafe BaseUnmanaged(BaseUnmanaged source)
 		{
+			source.EnsureHandle();
 			Size = source.Size;
 			_handle = Marshal.AllocHGlobal(Size);
 			Buffer.MemoryCopy((byte*)source._handle, (byte*)_handle, source.Size, Size);

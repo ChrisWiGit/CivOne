@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +6,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services.Maps;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -53,6 +45,7 @@ namespace CivOne.Screens
 		private readonly ICustomMapLoaderService _mapLoader;
 		private readonly IMapDialogPathProvider? _pathProvider;
 		private readonly List<MapEntry> _entries = [];
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 
 		private int _selectedIndex;
 		private int _scrollOffset;
@@ -288,7 +281,7 @@ namespace CivOne.Screens
 		{
 			// Built from a translated description plus literal patterns so a translation can
 			// never break the glob part of the filter.
-			string filter = $"{Translate("CivOne Map")} (*.comap, *.map)|*.comap;*.map";
+			string filter = $"{Translate("CivOneX Map")} (*.comap, *.map)|*.comap;*.map";
 
 			string? filePath = Runtime.FileChooser(
 				false,
@@ -332,13 +325,16 @@ namespace CivOne.Screens
 			}
 			else
 			{
+				// The loaded map needs no generation, but the intro that follows is the same one a
+				// generated world gets, and it comes with the same music.
+				_generationMusic.Start();
 				Common.AddScreen(new Intro());
 			}
 		}
 
 		private void BackToCredits()
 		{
-			var credits = new Credits();
+			var credits = new Credits(playTitleMusic: false);
 			credits.SkipIntro();
 			credits.SkipLogo();
 			Common.AddScreen(credits);

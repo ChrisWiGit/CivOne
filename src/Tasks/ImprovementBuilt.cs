@@ -10,6 +10,7 @@
 using System;
 using CivOne.Buildings;
 using CivOne.Screens;
+using CivOne.Sound;
 using CivOne.Wonders;
 
 namespace CivOne.Tasks
@@ -51,6 +52,11 @@ namespace CivOne.Tasks
 			}
 			else if (_improvement is IWonder wonder)
 			{
+				string? tune = Human.Civilization.Tune;
+				if (tune != null)
+				{
+					PlaySound($"{tune}{SoundNames.ShortSuffix}");
+				}
 				cityView = new CityView(_city, production: wonder);
 			}
 			else

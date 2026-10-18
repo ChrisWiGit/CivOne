@@ -142,6 +142,7 @@ namespace CivOne.UnitTests
 		public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		public ushort SpaceShipPopulation { get; set; }
 		public short SpaceShipLaunchYear { get; set; }
+		public short SpaceShipEtaYear { get; set; } = -1;
 
 		public ICity[] CitiesInterface => Cities?.ToArray() ?? [];
 

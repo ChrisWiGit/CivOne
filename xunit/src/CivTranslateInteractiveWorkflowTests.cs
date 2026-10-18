@@ -4,7 +4,7 @@ using System.IO;
 using CivTranslateInteractive;
 using Xunit;
 
-#nullable enable
+
 
 namespace CivOne.UnitTests
 {

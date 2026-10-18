@@ -143,8 +143,17 @@ namespace CivOne.Graphics
 			return bitmap;
 		}
 		
-		public static IBitmap AddLayer(this IBitmap bitmap, ISprite sprite, Point point) => AddLayer(bitmap, sprite?.Bitmap, point.X, point.Y, false);
-		public static IBitmap AddLayer(this IBitmap bitmap, ISprite sprite, int left = 0, int top = 0) => AddLayer(bitmap, sprite?.Bitmap, left, top, false);
+		public static IBitmap AddLayer(this IBitmap bitmap, ISprite sprite, Point point) => AddLayer(bitmap, sprite, point.X, point.Y);
+		public static IBitmap AddLayer(this IBitmap bitmap, ISprite sprite, int left = 0, int top = 0)
+		{
+			// A sprite's Bitmap is allowed to be null when it has no graphic for the current
+			// graphics mode (e.g. MapTile.OceanBase in 16-colour mode). That is not the same as
+			// passing a null Bytemap directly, which the overload below treats as a bug, so skip
+			// it here instead of falling through to that assert.
+			Bytemap? spriteBitmap = sprite?.Bitmap;
+			if (spriteBitmap == null) return bitmap;
+			return AddLayer(bitmap, spriteBitmap, left, top, false);
+		}
 		public static IBitmap AddLayer(this IBitmap bitmap, IBitmap layer, Point point, bool dispose = false) => AddLayer(bitmap, layer, point.X, point.Y, dispose);
 		public static IBitmap AddLayer(this IBitmap bitmap, IBitmap layer, int left = 0, int top = 0, bool dispose = false)
 		{

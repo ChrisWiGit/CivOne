@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 
 namespace CivOne.Services.SpaceShip
@@ -23,7 +14,7 @@ namespace CivOne.Services.SpaceShip
 		private readonly ISpaceShipLaunchRules _launchRules = launchRules ?? throw new ArgumentNullException(nameof(launchRules));
 		private readonly ISpaceShipScreenDataFactory _screenDataFactory = screenDataFactory ?? throw new ArgumentNullException(nameof(screenDataFactory));
 
-		public ISpaceShipService Create(Player player)
+		public ISpaceShipService Create(IPlayerSpaceRace player)
 		{
 			ArgumentNullException.ThrowIfNull(player);
 			return new SpaceShipService(player, _placementRules, _launchRules, _screenDataFactory);
@@ -59,5 +50,11 @@ namespace CivOne.Services.SpaceShip
 
 			return _debugInstance;
 		}
+
+		/// <summary>
+		/// Creates the service that decides when a launched spaceship arrives and how likely it succeeds.
+		/// </summary>
+		/// <returns>A new <see cref="ISpaceShipArrivalService"/> using the production spaceship rules.</returns>
+		public static ISpaceShipArrivalService CreateArrivalService() => new SpaceShipArrivalService();
 	}
 }

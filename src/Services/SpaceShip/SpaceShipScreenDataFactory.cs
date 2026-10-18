@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 
 namespace CivOne.Services.SpaceShip
@@ -18,16 +9,7 @@ namespace CivOne.Services.SpaceShip
 	{
 		private readonly ISpaceShipSlotBlueprint _slotBlueprint = slotBlueprint;
 
-		private readonly record struct MissionStatus(
-			int CommandCount,
-			int HabitationCount,
-			int LifeSupportCount,
-			int PropulsionCount,
-			int FuelCount,
-			int Structural,
-			int Support,
-			int Energy,
-			int FuelPercent);
+		private readonly SpaceShipSuccessRateDelegate _successRate = new();
 
 		private static int LegacyOrDetailed(bool useDetailed, int detailedValue, int legacyValue)
 		{
@@ -53,29 +35,6 @@ namespace CivOne.Services.SpaceShip
 				+ (solarCount * 1_600)
 				+ (propulsionCount * 1_800)
 				+ (fuelCount * 1_200);
-		}
-
-		private static int CalculateSuccessProbability(bool canLaunch, MissionStatus status)
-		{
-			int successProbability = 100;
-			if (status.CommandCount == 0) successProbability -= 45;
-			if (status.HabitationCount == 0) successProbability -= 25;
-			if (status.LifeSupportCount == 0) successProbability -= 25;
-			if (status.PropulsionCount < 2) successProbability -= 25;
-			if (status.FuelCount < 2) successProbability -= 25;
-			if (status.Structural == 0) successProbability -= 15;
-
-			successProbability -= (100 - status.Support) / 3;
-			successProbability -= (100 - status.Energy) / 3;
-			successProbability -= (100 - status.FuelPercent) / 4;
-
-			successProbability = Math.Max(0, Math.Min(100, successProbability));
-			if (!canLaunch && successProbability == 100)
-			{
-				successProbability = 99;
-			}
-
-			return successProbability;
 		}
 
 		public SpaceShipScreenData Create(IPlayerSpaceRace player, bool canLaunch)
@@ -110,7 +69,7 @@ namespace CivOne.Services.SpaceShip
 			double flightTime = propulsionCount == 0
 				? 0.0
 				: Math.Max(3.0, 22.0 - (propulsionCount * 2.1) - (fuelCount * 0.6));
-			MissionStatus missionStatus = new(
+			SpaceShipMissionStatus missionStatus = new(
 				commandCount,
 				habitationCount,
 				lifeSupportCount,
@@ -120,7 +79,7 @@ namespace CivOne.Services.SpaceShip
 				support,
 				energy,
 				fuel);
-			int successProbability = CalculateSuccessProbability(canLaunch, missionStatus);
+			int successProbability = _successRate.Calculate(canLaunch, missionStatus);
 
 			return new SpaceShipScreenData(
 				population,

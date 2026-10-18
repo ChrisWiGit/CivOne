@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -10,12 +10,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services;
+using CivOne.Sound;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Engine;
+using CivOne.Sound.Playback;
 using CivOne.Services.Translation;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -32,6 +37,32 @@ namespace CivOne.Screens
 	internal class Setup : BaseScreen
 	{
 		private const int MenuFont = 6;
+		private const int MaxMenuItems = 19;
+
+		/// <summary>
+		/// Menu lines the sound test keeps free on every page for its status message: a blank
+		/// separator and the message itself.
+		/// </summary>
+		private const int SoundTestStatusLines = 2;
+		private const string NoSoundPack = "__none__";
+		private const string WaveSoundPack = "__wave__";
+		private string? _soundTestMessage;
+		private string? _playingTestPackId;
+		private string? _playingTestSoundName;
+
+		private readonly MusicStingDelegate _sting = new();
+		private readonly SequentialArrangementPickerDelegate _arrangementPicker = new();
+
+		/// <summary>How long a test tune fades out when it is stopped, so the cut is not a click.</summary>
+		private static readonly TimeSpan TestFadeOut = TimeSpan.FromMilliseconds(120);
+
+		/// <summary>What the sound system is playing for the tune test, if anything.</summary>
+		private ISoundHandle? _testTune;
+
+		/// <summary>The sting playing over the test tune, if any.</summary>
+		private ISoundHandle? _testSting;
+		private readonly SoundTitleTranslationDelegate _soundTitles = new();
+		private readonly SoundPackSwitchDelegate _soundPackSwitch = new();
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
 		[
@@ -105,12 +136,17 @@ namespace CivOne.Screens
 
 		private bool _update = true;
 
+		// True while a child screen opened via GotoScreen (e.g. WindowTitle) is on top of Setup.
+		// HasMenu is legitimately false during that window, so HasUpdate must not reopen the main
+		// menu underneath the child screen just because a resize set _update.
+		private bool _awaitingChildScreen;
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update) return false;
 			_update = false;
 
-			if (!HasMenu)
+			if (!HasMenu && !_awaitingChildScreen)
 			{
 				MainMenu();
 			}
@@ -132,7 +168,7 @@ namespace CivOne.Screens
 
 		private void BrowseForPlugins(object sender, MenuItemEventArgs<int> args)
 		{
-			string? path = Runtime.BrowseFolder(Translate("Location of CivOne plugin(s)"));
+			string? path = Runtime.BrowseFolder(Translate("Location of CivOneX plugin(s)"));
 			if (path == null)
 			{
 				// User pressed cancel
@@ -231,8 +267,13 @@ namespace CivOne.Screens
 		private MenuItemEventAction<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
 		{
 			CloseMenus();
+			_awaitingChildScreen = true;
 			T screen = new T();
-			screen.Closed += (sender, args) => doneAction();
+			screen.Closed += (sender, args) =>
+			{
+				_awaitingChildScreen = false;
+				doneAction();
+			};
 			Common.AddScreen(screen);
 		};
 
@@ -260,8 +301,8 @@ namespace CivOne.Screens
 					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feature is not really implemented.")).SetEnabled(!Game.Started),
 				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
 					.WithDescription(Translate("Configure game rules and difficulty settings.")),
-				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)
-					.WithDescription(TranslateArray("Open the folder where CivOne\nstores profiles, save games, and settings.")),
+				MenuItem.Create(Translate("Open CivOneX Profile folder...")).OnSelect(OpenProfileFolder)
+					.WithDescription(TranslateArray("Open the folder where CivOneX\nstores profiles, save games, and settings.")),
 				MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen())
 			];
 
@@ -270,7 +311,7 @@ namespace CivOne.Screens
 				items.Add(MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)));
 			}
 
-			CreateMenu(Translate("CivOne Setup"), activeItem, [.. items]);
+			CreateMenu(Translate("CivOneX Setup"), activeItem, [.. items]);
 		}
 
 		private string GetReturnTargetString()
@@ -296,7 +337,11 @@ namespace CivOne.Screens
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create(TranslateFormatted("Window Title: {0}", Settings.WindowTitle)).OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
-			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.GraphicsMode.ToText())).OnSelect(GotoMenu(GraphicsModeMenu)),
+			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.ConfiguredGraphicsMode.ToText()))
+				.WithDescription(
+					Translate("Choose between 256 and 16 colours."),
+					Translate("Restart the game after changing this setting."))
+				.OnSelect(GotoMenu(GraphicsModeMenu)),
 			MenuItem.Create(TranslateFormatted("Simulate intl font: {0}", Settings.SimulateInternationalFont.ToText()))
 				.WithDescription(
 					Translate("Override international font simulation behavior."),
@@ -321,8 +366,12 @@ namespace CivOne.Screens
 		);
 
 		private void GraphicsModeMenu() => CreateMenu("Graphics Mode", GotoMenu(SettingsMenu, 1),
-			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText())).OnSelect((s, a) => Settings.GraphicsMode = Graphics256).SetActive(() => Settings.GraphicsMode == Graphics256),
-			MenuItem.Create(Graphics16.ToText()).OnSelect((s, a) => Settings.GraphicsMode = Graphics16).SetActive(() => Settings.GraphicsMode == Graphics16),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText()))
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics256).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics256),
+			MenuItem.Create(Graphics16.ToText())
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics16).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics16),
 			MenuItem.Create(Translate("Back"))
 		);
 
@@ -445,10 +494,436 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 9),
-			MenuItem.Create(Translate("Browse for files...")).OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
-			MenuItem.Create(Translate("Back"))
+		private void SoundMenu() => CreateMenu(Translate("In-game sound"),
+			MenuItem.Create(Translate("Browse for Wave files..."))
+				.WithDescription(Translate("Copy original .WAV sound effects into your profile."))
+				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.HasAnySoundFiles()).SetEnabled(!Game.Started),
+			MenuItem.Create(TranslateFormatted("Sound pack: {0}", CurrentSoundPackText()))
+				.WithDescription(Translate("Choose a converted CVL sound pack (e.g. PC Speaker)."))
+				.OnSelect(GotoMenu(SoundPackMenu)),
+			MenuItem.Create(Translate("Tests tunes..."))
+				.WithDescription(Translate("Play tunes from the selected sound pack."))
+				.OnSelect(GotoMenu(TestTunesMenu)),
+			CreateSoundTestStatusItem(),
+			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(SettingsMenu, 9))
 		);
+
+		private void TestTunesMenu(int page = 0) => TestTunesMenu(page, 0);
+
+		private void TestTunesMenu(int page, int activeItem)
+		{
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("Back")).OnSelect(StopTestSoundAndReturn)
+			];
+
+			string? packId = CurrentTestSoundPackId();
+			IReadOnlyList<SoundTestEntry> entries = CollectTestEntries(packId);
+
+			if (IsNoSoundPackSelected())
+			{
+				menuItems.Add(MenuItem.Create(Translate("Sound is switched off.")).Disable());
+			}
+			else if (entries.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No tunes found.")).Disable());
+			}
+			else
+			{
+				int playingItem = AddPagedTuneItems(menuItems, packId, entries, page);
+				if (activeItem < 0 && playingItem >= 0)
+				{
+					activeItem = playingItem;
+				}
+			}
+
+			AddSoundTestStatus(menuItems);
+
+			CreateMenu(Translate("Test tunes"), activeItem, [.. menuItems]);
+		}
+
+		private int AddPagedTuneItems(List<MenuItem<int>> menuItems, string? packId, IReadOnlyList<SoundTestEntry> tunes, int page)
+		{
+			int playingItem = -1;
+			bool hasPreviousPage = page > 0;
+			int navigationCount = hasPreviousPage ? 1 : 0;
+			int tuneSlots = MaxMenuItems - 1 - navigationCount - SoundTestStatusLines;
+			int firstTune = hasPreviousPage ? page * (tuneSlots - 1) + 1 : 0;
+			bool hasNextPage = tunes.Count - firstTune > tuneSlots;
+
+			if (hasNextPage)
+			{
+				tuneSlots--;
+			}
+
+			if (hasPreviousPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Previous page")).OnSelect(GotoMenu(() => TestTunesMenu(page - 1))));
+			}
+
+			foreach (SoundTestEntry tune in tunes.Skip(firstTune).Take(tuneSlots))
+			{
+				int selectedItem = menuItems.Count;
+				if (IsPlayingTestTune(packId, tune))
+				{
+					playingItem = selectedItem;
+				}
+
+				menuItems.Add(MenuItem.Create(tune.Title)
+					.OnSelect((s, a) => TestTune(packId, tune, page, selectedItem))
+					.SetActive(() => IsPlayingTestTune(packId, tune)));
+			}
+
+			if (hasNextPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Next page")).OnSelect(GotoMenu(() => TestTunesMenu(page + 1))));
+			}
+
+			// Only worth offering while something is running that the sting can duck.
+			if (packId != null && _testTune != null && _testTune.IsPlaying)
+			{
+				int selectedItem = menuItems.Count;
+				menuItems.Add(MenuItem.Create(Translate("Play ultimatum sting over it"))
+					.OnSelect((s, a) => PlayStingOverTestTune(packId, page, selectedItem)));
+			}
+
+			return playingItem;
+		}
+
+		private void StopTestSoundAndReturn(object sender, MenuItemEventArgs<int> args)
+		{
+			SoundPlaybackStrategyProvider.Abort();
+			StopTestTune();
+			ClearPlayingTestTune();
+			_soundTestMessage = Translate("Test sound stopped.");
+			Log(_soundTestMessage);
+			CloseMenus();
+			SoundMenu();
+		}
+
+		private void TestTune(string? packId, SoundTestEntry tune, int page, int selectedItem)
+		{
+			if (IsPlayingTestTune(packId, tune))
+			{
+				SoundPlaybackStrategyProvider.Abort();
+				StopTestTune();
+				ClearPlayingTestTune();
+				_soundTestMessage = TranslateFormatted("Test tune stopped: {0}", tune.Title);
+				Log(_soundTestMessage);
+				CloseMenus();
+				TestTunesMenu(page, selectedItem);
+				return;
+			}
+
+			SoundPlaybackStrategyProvider.Abort();
+			StopTestTune();
+
+			// A pack tune goes through the sound system: only there can it loop and be ducked by the
+			// sting. A plain collection of wave files has no rendered file to hand over, so it keeps
+			// the ordinary path - which also keeps that path covered by the sound test.
+			int arrangement = 0;
+			bool rendering = false;
+			bool played = packId != null && tune.PackEntry != null
+				? TryPlayTuneThroughSoundSystem(packId, tune, out arrangement, out rendering)
+				: SoundPlaybackStrategyProvider.Current.PlaySound(tune.Name);
+
+			if (played)
+			{
+				_playingTestPackId = packId ?? WaveSoundPack;
+				_playingTestSoundName = tune.Name;
+			}
+			else
+			{
+				ClearPlayingTestTune();
+			}
+
+			_soundTestMessage = played
+				? DescribeTestTuneStarted(tune, arrangement)
+				: rendering
+					? TranslateFormatted("Still rendering: {0}. Try again in a moment.", tune.Title)
+					: TranslateFormatted("Test tune could not be played: {0}", tune.Title);
+			Log(_soundTestMessage);
+			CloseMenus();
+			TestTunesMenu(page, selectedItem);
+		}
+
+		/// <summary>
+		/// Describes which tune, and which of its arrangements, just started playing.
+		/// </summary>
+		/// <param name="tune">The tune that was started.</param>
+		/// <param name="arrangement">The arrangement index that was picked.</param>
+		/// <returns>The translated status message.</returns>
+		private string DescribeTestTuneStarted(SoundTestEntry tune, int arrangement)
+		{
+			if (tune.PackEntry == null || tune.PackEntry.ArrangementCount <= 1)
+			{
+				return TranslateFormatted("Test tune started: {0}", tune.Title);
+			}
+
+			return TranslateFormatted("Test tune started: {0} (arrangement {1})", tune.Title, arrangement + 1);
+		}
+
+		/// <summary>
+		/// Starts a pack tune through the sound system.
+		/// </summary>
+		/// <remarks>
+		/// A tune repeats only when its rendered file carries a loop point. The renderer writes one
+		/// exactly when a voice rewound while it was rendering, which is the evidence that the
+		/// original driver looped the tune - so the three long leader themes that end instead of
+		/// looping play once, as they should.
+		/// </remarks>
+		/// <param name="packId">Id of the pack the tune belongs to.</param>
+		/// <param name="tune">The tune to play.</param>
+		/// <param name="arrangement">The arrangement that was picked to play.</param>
+		/// <param name="rendering">
+		/// <c>true</c> when the tune is still being rendered rather than truly unplayable.
+		/// </param>
+		/// <returns><c>true</c> when it was started.</returns>
+		private bool TryPlayTuneThroughSoundSystem(string packId, SoundTestEntry tune, out int arrangement, out bool rendering)
+		{
+			arrangement = _arrangementPicker.Pick(tune.Name, tune.PackEntry?.ArrangementCount ?? 1);
+			if (!SoundPlaybackStrategyProvider.TryGetWaveFile(tune.Name, packId, arrangement, out string? file, out rendering)
+				|| file == null)
+			{
+				// Not an error: the render has just been queued and the next attempt will find it.
+				return false;
+			}
+
+			_testTune = SoundSystemProvider.Play(new SoundRequest(
+				file,
+				SoundBus.Music,
+				Loop: SoundLoop.WhenMarked,
+				FadeIn: TimeSpan.FromMilliseconds(200),
+				LoopCrossFade: TimeSpan.FromMilliseconds(300)));
+
+			bool started = _testTune != null;
+			if (started)
+			{
+				_arrangementPicker.Advance(tune.Name, tune.PackEntry?.ArrangementCount ?? 1);
+			}
+
+			return started;
+		}
+
+		/// <summary>
+		/// Drops the ultimatum sting over whatever the tune test is playing.
+		/// </summary>
+		/// <remarks>
+		/// This is the acceptance test for the sound system, and it can be fired as often as wanted
+		/// and at any point of a tune: if the music comes back on the note it stopped on, pausing
+		/// works; if it comes back further along, something silenced it instead of freezing it.
+		/// <para>
+		/// The game has no trigger for the sting yet - diplomacy has none of the hostile exchanges
+		/// the original played it for - so this is also the only way to hear it at all.
+		/// </para>
+		/// </remarks>
+		/// <param name="packId">Id of the pack to take the sting from.</param>
+		/// <param name="page">Page of the tune list to return to.</param>
+		/// <param name="selectedItem">Menu item to keep selected.</param>
+		private void PlayStingOverTestTune(string packId, int page, int selectedItem)
+		{
+			bool ready = SoundPlaybackStrategyProvider.TryGetWaveFile(SoundNames.EventUltimatum, packId, 0,
+				out string? stingFile, out bool _);
+
+			ISoundHandle? sting = ready && stingFile != null ? _sting.Play(_testTune, stingFile) : null;
+			if (sting != null) _testSting = sting;
+
+			_soundTestMessage = sting != null
+				? Translate("Ultimatum sting played.")
+				: Translate("Still rendering, or this pack has no ultimatum sting. Try again.");
+
+			Log(_soundTestMessage);
+			CloseMenus();
+			TestTunesMenu(page, selectedItem);
+		}
+
+		/// <summary>
+		/// Stops what the tune test started, and only that.
+		/// </summary>
+		/// <remarks>
+		/// Deliberately stops the two handles this screen owns rather than silencing the whole sound
+		/// system: a screen must not reach past what it started itself.
+		/// </remarks>
+		private void StopTestTune()
+		{
+			_testSting?.Stop();
+			_testSting = null;
+
+			_testTune?.Stop(TestFadeOut);
+			_testTune = null;
+		}
+
+		/// <summary>
+		/// Stops the test sounds when the screen goes away.
+		/// </summary>
+		/// <remarks>
+		/// Without this a test tune keeps looping after the screen is closed: it plays through the
+		/// sound system, which outlives the screen, and a tune with a loop point never ends on its
+		/// own.
+		/// </remarks>
+		protected override void Destroy()
+		{
+			StopTestTune();
+			base.Destroy();
+		}
+
+		private bool IsPlayingTestTune(string? packId, SoundTestEntry tune)
+		{
+			return string.Equals(_playingTestSoundName, tune.Name, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(_playingTestPackId, packId ?? WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void ClearPlayingTestTune()
+		{
+			_playingTestPackId = null;
+			_playingTestSoundName = null;
+		}
+
+		/// <summary>
+		/// Lists what the sound test can play right now.
+		/// </summary>
+		/// <remarks>
+		/// A converted pack is described by its own index, so its tunes are taken from there,
+		/// including the ones we have no name for. Wave files have no index; there the list is
+		/// whichever sounds the profile happens to hold a file for.
+		/// </remarks>
+		/// <param name="packId">Id of the pack to test, or <c>null</c> for wave files.</param>
+		/// <returns>The entries, in the order they should be offered.</returns>
+		private IReadOnlyList<SoundTestEntry> CollectTestEntries(string? packId)
+		{
+			if (IsNoSoundPackSelected()) return [];
+
+			if (packId != null)
+			{
+				SoundPackIndex? index = LoadSoundPackIndex(packId);
+				if (index == null) return [];
+
+				return [.. index.Tunes.Select(tune => new SoundTestEntry(
+					tune.Name, _soundTitles.Translate(tune.Name, tune.Title), tune))];
+			}
+
+			return [.. new WaveSoundFileDelegate().Available().Select(wave => new SoundTestEntry(
+				wave.Name,
+				_soundTitles.Translate(wave.Name, CvlTuneCatalog.Find(wave.Name)?.Title ?? wave.Name),
+				null))];
+		}
+
+		private static string? CurrentTestSoundPackId()
+		{
+			if (IsNoSoundPackSelected() || IsWaveSoundPackSelected()) return null;
+
+			return SoundPlaybackStrategyProvider.SelectedPack;
+		}
+
+		private SoundPackIndex? LoadSoundPackIndex(string packId)
+		{
+			string indexPath = Path.Combine(Settings.SoundsDirectory, packId, SoundPackIndex.FileName);
+			if (!File.Exists(indexPath)) return null;
+
+			try
+			{
+				return SoundPackIndexJson.Load(indexPath);
+			}
+			catch (InvalidOperationException ex)
+			{
+				Log("Could not load sound pack index '{0}': {1}", indexPath, ex.Message);
+				return null;
+			}
+		}
+
+		private MenuItem<int> CreateSoundTestStatusItem()
+		{
+			return string.IsNullOrEmpty(_soundTestMessage)
+				? MenuItem.CreateSeparator()
+				: MenuItem.Create(_soundTestMessage).Disable();
+		}
+
+		/// <summary>
+		/// Appends the sound test status line, separated from the entries above it.
+		/// </summary>
+		/// <remarks>
+		/// The status always belongs to the page the user is looking at, so the paged tune list
+		/// reserves <see cref="SoundTestStatusLines"/> slots for it on every page. Without that
+		/// reservation a full page pushed the message onto a later page, where it stayed unseen
+		/// until the user scrolled there.
+		/// </remarks>
+		/// <param name="menuItems">Items of the menu being built.</param>
+		private void AddSoundTestStatus(List<MenuItem<int>> menuItems)
+		{
+			menuItems.Add(MenuItem.CreateSeparator());
+			menuItems.Add(CreateSoundTestStatusItem());
+		}
+
+		private string CurrentSoundPackText()
+			=> SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory));
+
+		private static bool IsNoSoundPackSelected()
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, NoSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static bool IsWaveSoundPackSelected()
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static bool IsSoundPackActive(SoundPackSummary pack)
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, pack.PackId, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void SoundPackMenu()
+		{
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("Wave files"))
+					.WithDescription(Translate("Use original .WAV sound effects from your profile."))
+					.OnSelect((s, a) => SelectSoundPack(WaveSoundPack)).SetActive(IsWaveSoundPackSelected),
+				MenuItem.Create(Translate("None"))
+					.WithDescription(Translate("Do not use an external sound format."))
+					.OnSelect((s, a) => SelectSoundPack(NoSoundPack)).SetActive(IsNoSoundPackSelected)
+			];
+
+			if (packs.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No sound packs found.")).Disable());
+				menuItems.Add(MenuItem.Create(Translate("Copy the original game data to convert one.")).Disable());
+			}
+			else
+			{
+				menuItems.AddRange(packs.Select(pack => MenuItem.Create(Translate(pack.DisplayName))
+					.OnSelect((s, a) => SelectSoundPack(pack.PackId))
+					.SetActive(() => IsSoundPackActive(pack))));
+			}
+
+			menuItems.Add(MenuItem.Create(Translate("Back")));
+			CreateMenu(Translate("Sound pack"), GotoMenu(SoundMenu), [.. menuItems]);
+		}
+
+		private void SelectSoundPack(string packId)
+		{
+			_soundPackSwitch.Switch(packId, CurrentSoundPackText);
+			SoundMenu();
+		}
+
+		private string SoundPackSelectionText(IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (IsNoSoundPackSelected()) return Translate("None");
+			if (IsWaveSoundPackSelected()) return Translate("Wave files");
+
+			string selected = SoundPlaybackStrategyProvider.SelectedPack;
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, selected, StringComparison.OrdinalIgnoreCase)) {
+					return Translate(pack.DisplayName);
+				}
+			}
+
+			// A pack that was selected and has since been removed; showing its id beats showing
+			// something that is not what will play.
+			return selected;
+		}
 
 		private int ActiveBehaviorPatchCount()
 			=> new[]
@@ -457,8 +932,10 @@ namespace CivOne.Screens
 				Settings.AutoSettlers,
 				Settings.RiverFastMovement,
 				Settings.CanalCity,
-				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
+				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None,
+				Settings.HistorianAiPalace != HistorianAiPalace.Generated
 			}.Count(static enabled => enabled);
+
 
 		private string LzwCodecModeText()
 			=> Settings.LzwCodecMode == Settings.LzwCodecType.Corrected ? Translate("Corrected") : Translate("Original");
@@ -542,7 +1019,36 @@ namespace CivOne.Screens
 					Translate("Choose where barbarians come from in new games."),
 					Translate("Running games keep their own value."))
 				.OnSelect(GotoMenu(BarbarianActivityMenu)),
+			MenuItem.Create(TranslateFormatted("AutoSave on quit: {0}", Settings.AutoSaveOnQuit.YesNo()))
+				.WithDescription(
+					Translate("Save the running game when the game is closed."),
+					Translate("Overwrites the existing autosave."))
+				.OnSelect(GotoMenu(AutoSaveOnQuitMenu)),
+			MenuItem.Create(TranslateFormatted("Confirm quit: {0}", Settings.ConfirmExit.YesNo()))
+				.WithDescription(
+					Translate("Ask before a running game is closed."))
+				.OnSelect(GotoMenu(ConfirmExitMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
+		);
+
+		private void AutoSaveOnQuitMenu() => CreateMenu(Translate("AutoSave on quit"), GotoMenu(PatchesMenu, 16),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(Translate("Do not save the game when it is closed."))
+				.OnSelect((s, a) => Settings.AutoSaveOnQuit = false).SetActive(() => !Settings.AutoSaveOnQuit),
+			MenuItem.Create(TranslateFormatted("{0} (default)", true.YesNo()))
+				.WithDescription(Translate("Save the running game when it is closed."))
+				.OnSelect((s, a) => Settings.AutoSaveOnQuit = true).SetActive(() => Settings.AutoSaveOnQuit),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void ConfirmExitMenu() => CreateMenu(Translate("Confirm quit"), GotoMenu(PatchesMenu, 17),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(Translate("Close a running game without asking."))
+				.OnSelect((s, a) => Settings.ConfirmExit = false).SetActive(() => !Settings.ConfirmExit),
+			MenuItem.Create(TranslateFormatted("{0} (default)", true.YesNo()))
+				.WithDescription(Translate("Ask before a running game is closed."))
+				.OnSelect((s, a) => Settings.ConfirmExit = true).SetActive(() => Settings.ConfirmExit),
+			MenuItem.Create(Translate("Back"))
 		);
 
 		private MenuItem<int> BarbarianActivityMenuItem(BarbarianActivity activity, params string[] description)
@@ -630,7 +1136,7 @@ namespace CivOne.Screens
 				.WithDescription(Translate("Use original cursor assets from game files."))
 				.OnSelect((s, a) => Settings.CursorType = Default).SetActive(() => Settings.CursorType == Default && FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)).SetEnabled(FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)),
 			MenuItem.Create(Builtin.ToText())
-				.WithDescription(Translate("Use built-in CivOne cursor graphics."))
+				.WithDescription(Translate("Use built-in CivOneX cursor graphics."))
 				.OnSelect((s, a) => Settings.CursorType = Builtin).SetActive(() => Settings.CursorType == Builtin || (Settings.CursorType == Default && !FileSystem.DataFilesExist(FileSystem.MouseCursorFiles))),
 			MenuItem.Create(Native.ToText())
 				.WithDescription(Translate("Use operating system native mouse cursor."))
@@ -737,14 +1243,33 @@ namespace CivOne.Screens
 			Description.Create(Translate("Return to the game behavior menu."))
 		);
 
+		private MenuItem<int> HistorianAiPalaceMenuItem(HistorianAiPalace mode, string label, params string[] description)
+			=> MenuItem.Create(label)
+				.WithDescription(description)
+				.OnSelect((s, a) => Settings.HistorianAiPalace = mode)
+				.SetActive(() => Settings.HistorianAiPalace == mode);
+
+		private void HistorianAiPalaceMenu() => CreateMenu(Translate("Historian AI palaces"), GotoMenu(BehaviorMenu, 7),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.Generated, TranslateFormatted("{0} (default)", HistorianAiPalace.Generated.ToText()),
+				Translate("Generate the palace from the size of the cities,"),
+				Translate("like the original game.")),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.BuiltOrGenerated, HistorianAiPalace.BuiltOrGenerated.ToText(),
+				Translate("Show the palace the computer player built."),
+				Translate("Generate one while nothing is built.")),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.BuiltOnly, HistorianAiPalace.BuiltOnly.ToText(),
+				Translate("Show only the palace the computer player built.")),
+			MenuItem.Create(Translate("Back")),
+			Description.Create(Translate("Return to the game behavior menu."))
+		);
+
 		private void SaveFormatMenu() => CreateMenu(Translate("AutoSave format"), GotoMenu(PatchesMenu, 8),
 			MenuItem.Create(Translate("SVE with COS fallback (default)"))
 				.WithDescription(
 					Translate("Prefer SVE save files."),
 					Translate("Fallback to COS when SVE cannot be used."))
 				.OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
-			MenuItem.Create(Translate("CivOne Save (COS)"))
-				.WithDescription(Translate("Always write CivOne COS save files."))
+			MenuItem.Create(Translate("CivOneX Save (COS)"))
+				.WithDescription(Translate("Always write CivOneX COS save files."))
 				.OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
 			MenuItem.Create(Translate("Back"))
 		);
@@ -850,6 +1375,10 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Enable extra global warming gameplay effects."))
 				.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
+			MenuItem.Create(TranslateFormatted("Historian AI palaces: {0}", Settings.HistorianAiPalace.ToText()))
+				.WithDescription(
+					Translate("Choose which palace the Historian shows for computer players."))
+				.OnSelect(GotoMenu(HistorianAiPalaceMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(PatchesMenu, 7))
 		);
 

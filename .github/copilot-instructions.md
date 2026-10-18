@@ -63,6 +63,19 @@ index++; // skip 1-byte bits header
 
 Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` (in subscripts), `ref `, `out `, `Read…(`, `Write…(`, `Dispose(`, `+=`, `-=`, treat it as suspicious and re-verify behaviour before accepting.
 
+## Branding: CivOneX vs. CivOne
+
+The product was renamed from CivOne to **CivOneX**. Both names are correct, each in its own place:
+
+* **CivOneX** is the product name. Use it in player-facing text, documentation, comments and log messages.
+  In code, take it from `ProductInfo.Name` instead of a string literal where possible.
+* **CivOne** stays correct for namespaces (`CivOne.*`), assembly, project and executable names (`CivOne.SDL`),
+  the CC0 license headers, `ProductInfo.LegacyName`, the profile folder of older versions, and references to
+  the original upstream projects.
+* The upper-case form `CIVONEX` is intended in DOS-style headers (for example the startup wizard).
+
+Do not report findings that only swap one name for the other in these places.
+
 ## Documentation
 
 * Always write documentation in English.
@@ -383,3 +396,20 @@ When searching for files or text, use these alternatives instead:
   - `find . -type d`
 
 Do not use `rg` in commands, scripts, or examples unless explicitly confirmed to be installed.
+
+## Graphify
+
+Code graphs live in `graphify-out/src/` (game and engine code) and `graphify-out/api/` (public API).
+
+Read only the top of the matching `GRAPH_REPORT.md` (summary, hubs, god nodes), not the whole file (about 67 KB).
+To find code for a topic, grep the report for a keyword, then query the graph:
+
+```sh
+GRAPHIFY="$(command -v graphify || printf '%s\n' .venv/bin/graphify)"
+"$GRAPHIFY" query "how does city production work" --graph graphify-out/src/graph.json
+```
+
+`graph.json` is not committed. Generate it locally first.
+Regenerate with `./graphify-fast.sh --ai src` and `./graphify-fast.sh --ai api`.
+Only `GRAPH_REPORT.md` is committed; see `.gitignore`.
+The graph is only a map. Read the source files before drawing conclusions.

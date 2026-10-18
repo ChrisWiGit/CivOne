@@ -35,13 +35,6 @@ namespace CivOne
 		private static string T(this string input) => TranslationServiceFactory.GetCurrent().Translate(input);
 		
 
-		public static string? GetSoundFile(this string input)
-		{
-			return Directory.GetFiles(Settings.SoundsDirectory).
-				FirstOrDefault(
-					x => Path.GetFileName(x).Equals($"{input}.wav", StringComparison.OrdinalIgnoreCase));
-		}
-
 		public static byte[] Clear(this byte[] byteArray, byte value = 0)
 		{
 			for (int i = byteArray.GetUpperBound(0); i >= 0; i--)
@@ -368,6 +361,18 @@ namespace CivOne
 				_ => T("(unknown)"),
 			};
 		}
+
+		/// <summary>
+		/// Gets the display text of a Historian AI palace mode.
+		/// </summary>
+		/// <param name="mode">The mode.</param>
+		/// <returns>The translated text.</returns>
+		public static string ToText(this HistorianAiPalace mode) => mode switch
+		{
+			HistorianAiPalace.BuiltOrGenerated => T("Built, else generated"),
+			HistorianAiPalace.BuiltOnly => T("Built only"),
+			_ => T("Generated"),
+		};
 
 		public static string ToText(this BarbarianActivity barbarianActivity)
 		{

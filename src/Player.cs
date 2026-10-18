@@ -23,6 +23,7 @@ using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
 using CivOne.Agents;
+using CivOne.Services;
 using CivOne.Services.SpaceShip;
 
 using Gov = CivOne.Governments;
@@ -66,7 +67,7 @@ namespace CivOne
 		private short _anarchy;
 		private ushort _epicRanking;
 		private ushort _militaryPower;
-		private ushort _civilizationScore;
+		private ICivilizationScoreService? _civilizationScoreService;
 		private short _gold;
 		private IAdvance? _currentResearch;
 
@@ -82,6 +83,7 @@ namespace CivOne
 		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 		internal ushort SpaceShipPopulation { get; set; }
 		internal short SpaceShipLaunchYear { get; set; }
+		internal short SpaceShipEtaYear { get; set; } = -1;
 		
 		public bool AnarchyDespotism => Game.Started && (Government is Anarchy || Government is Despotism);
 
@@ -196,7 +198,7 @@ namespace CivOne
 		{
 			get
 			{
-				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
+				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (GameCalendarServiceFactory.Current.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
 				if (cost < 12)
 					return 12;
 				return cost;
@@ -253,6 +255,12 @@ namespace CivOne
 		{
 			get => SpaceShipLaunchYear;
 			set => SpaceShipLaunchYear = value;
+		}
+
+		short IPlayerSpaceRace.SpaceShipEtaYear
+		{
+			get => SpaceShipEtaYear;
+			set => SpaceShipEtaYear = value;
 		}
 
 		bool IPlayerSpaceRace.HasSpaceFlightAdvance() => HasAdvance<SpaceFlight>();
@@ -754,7 +762,15 @@ namespace CivOne
 
 		ushort IPlayer.MilitaryPower => _militaryPower;
 
-		ushort IPlayer.CivilizationScore => _civilizationScore;
+		private ICivilizationScoreService CivilizationScoreService => _civilizationScoreService ??= CivilizationScoreServiceFactory.CreateDefault();
+
+		/// <summary>
+		/// Gets the live civilization score, clamped into <see cref="ushort"/>. It is derived, never stored.
+		/// Outside a running game it is 0, like <see cref="IPlayer.Cities"/> is empty then.
+		/// </summary>
+		ushort IPlayer.CivilizationScore => (Game != null && Game.Started)
+			? (ushort)Math.Clamp(CivilizationScoreService.TotalScore(this), 0, ushort.MaxValue)
+			: (ushort)0;
 
 		PalaceData IPlayer.Palace => _palace;
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +7,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Mcp.Tools;
+using CivOne.Services;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -16,6 +17,7 @@ namespace CivOne.Screens
 	{
 		private readonly int[] _slots;
 		private readonly Action<int> _onSelect;
+		private readonly Func<int, string> _slotFilePathResolver;
 		private readonly Picture? _capturedBackground;
 		private readonly Picture _menuBackground;
 		private readonly Menu<int> _menu;
@@ -28,10 +30,28 @@ namespace CivOne.Screens
 		private const int DialogBaseY = 6;
 		private const int MenuInnerWidth = 320;
 
-		public QuickLoadSlotsDialog(IReadOnlyList<int> slots, Action<int> onSelect) : base(MouseCursor.Pointer)
+		/// <summary>
+		/// Pseudo slot number of the autosave, which has no function key of its own.
+		/// </summary>
+		private const int AutoSaveSlot = QuickSaveLoadHotkeyService.AutoSaveSlot;
+
+		/// <summary>
+		/// Creates the quick load dialog.
+		/// </summary>
+		/// <param name="slots">
+		/// The slots to offer, including <see cref="AutoSaveSlot"/> for the autosave.
+		/// The autosave is always listed first because it has the lowest slot number.
+		/// </param>
+		/// <param name="onSelect">Invoked with the chosen slot number.</param>
+		/// <param name="slotFilePathResolver">
+		/// Resolves the savegame file of a slot.
+		/// Defaults to the fast save slot files, which cannot resolve the autosave.
+		/// </param>
+		public QuickLoadSlotsDialog(IReadOnlyList<int> slots, Action<int> onSelect, Func<int, string>? slotFilePathResolver = null) : base(MouseCursor.Pointer)
 		{
 			_slots = slots?.OrderBy(x => x).ToArray() ?? throw new ArgumentNullException(nameof(slots));
 			_onSelect = onSelect ?? throw new ArgumentNullException(nameof(onSelect));
+			_slotFilePathResolver = slotFilePathResolver ?? GetSlotFilePath;
 
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
@@ -56,7 +76,7 @@ namespace CivOne.Screens
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 5,
-				FontId = 0,
+				FontId = 5,
 				Indent = 8,
 				RowHeight = rowHeight
 			};
@@ -106,22 +126,30 @@ namespace CivOne.Screens
 		private static string GetSlotFilePath(int slot)
 			=> Path.Combine(Runtime.StorageDirectory, "saves", $"fastsave_f{slot}.cos");
 
-		private static (string Text, bool IsValid) BuildSlotEntry(int slot)
+		/// <summary>
+		/// Returns the prefix shown in front of a slot entry.
+		/// </summary>
+		/// <param name="slot">The slot number, or <see cref="AutoSaveSlot"/> for the autosave.</param>
+		/// <returns>The function key name, or the translated autosave label.</returns>
+		private string GetSlotPrefix(int slot) => slot == AutoSaveSlot ? Translate("Autosave") : $"F{slot}";
+
+		private (string Text, bool IsValid) BuildSlotEntry(int slot)
 		{
-			string filePath = GetSlotFilePath(slot);
+			string filePath = _slotFilePathResolver(slot);
 			string fileName = Path.GetFileName(filePath);
+			string prefix = GetSlotPrefix(slot);
 
 			if (!CosSaveFileInspector.TryInspect(filePath, out CosSaveFileInspection? inspection))
 			{
-				return ($"F{slot} - Invalid savegame", false);
+				return ($"{prefix} - {Translate("Invalid savegame")}", false);
 			}
 
 			if (!string.IsNullOrWhiteSpace(inspection?.Meta?.DisplayName))
 			{
-				return ($"F{slot} - {inspection.Meta.DisplayName}", true);
+				return ($"{prefix} - {inspection.Meta.DisplayName}", true);
 			}
 
-			return ($"F{slot} - {fileName}", true);
+			return ($"{prefix} - {fileName}", true);
 		}
 
 		private static bool TryGetSlot(Key key, out int slot)

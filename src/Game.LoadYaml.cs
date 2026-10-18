@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,6 +15,7 @@ using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Services.StartPositions;
 using CivOne.Services;
+using CivOne.Services.Calendar;
 using CivOne.Units;
 using CivOne.Tasks;
 using System.Diagnostics.CodeAnalysis;
@@ -66,6 +58,10 @@ namespace CivOne
 			// instead of defaulting it here, so constructing a Game doesn't force that initialization.
 			_mapEditor = mapEditor;
 			_startPositionService = startPositionService;
+
+			// Every game starts with its own calendar history; all calendar services without an own state read it.
+			_calendarState = new CalendarState();
+			GameCalendarServiceFactory.UseState(_calendarState);
 
 			// Initialize collections and other fields to default values. 
 			// This only remedies the warning about uninitialized non-nullable fields.
@@ -165,7 +161,10 @@ namespace CivOne
 		private void InitializeGameState(GameState state)
 		{
 			_anthologyTurn = state.AnthologyTurn;
-			_peaceTurns = state.PeaceTurns;
+			PeaceTurnService.Restore(state.PeaceTurns);
+			_calendarState.Restore(state.AcceleratedTurns ?? []);
+			ScoringCompleted = state.ScoringCompleted;
+			WarnAboutShipsWithoutArrivalYear();
 			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
 			DisableBuddyCivilizationRespawn = state.DisableBuddyCivilizationRespawn;
 			// Savegames written before this setting existed carry no value, so the global one applies.
@@ -320,6 +319,7 @@ namespace CivOne
 				.OfString(yaml)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.WithIgnoreUnmatchedProperties() // tolerate legacy fields (e.g. removed AiId) in older save files
 				.As<SaveGame1FileRootDto>();
 
 			if (saveFile?.GameState == null)

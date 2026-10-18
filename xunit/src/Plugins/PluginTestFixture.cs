@@ -161,6 +161,16 @@ namespace CivOne.UnitTests.Plugins
 			public string SoundsDirectory => throw new NotImplementedException();
 
 			public bool RevealWorld => throw new NotImplementedException();
+
+			public Enums.GameOption Sound => throw new NotImplementedException();
+
+			public bool DebugMenu => throw new NotImplementedException();
+
+			public bool AutoSaveOnQuit => throw new NotImplementedException();
+
+			public bool ConfirmExit => throw new NotImplementedException();
+
+			public Enums.HistorianAiPalace HistorianAiPalace => throw new NotImplementedException();
 		}
 	}
 }

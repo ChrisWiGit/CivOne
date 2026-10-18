@@ -32,6 +32,23 @@ The behaviour is controlled by the **Simulate International Font** setting (**Sh
 | `InternationalSimulatedFontSet` | `src/Graphics/InternationalSimulatedFontSet.cs` |
 | `FontSetFactory`                | `src/Graphics/FontSetFactory.cs`                |
 
+## Original Fallback Text Language Mix
+
+The original text fallback now reads classic DOS-style bytes in a way that preserves Western European letters (for example German umlauts) when the source files are not UTF-8.
+
+This removes the previous issue where those letters could become unreadable or blank during fallback rendering.
+
+If the imported original text files are not recognized as English, the startup wizard shows a warning.
+
+The warning does not mean fallback text is broken.
+
+It means language consistency can differ in `Original language` mode:
+
+* Text loaded from imported original `.TXT` files follows the language of those original files.
+* CivOne texts that do not come from those original files (for example project-owned UI strings) continue to follow CivOne language selection.
+
+So a mixed-language experience is expected when non-English originals are used together with `Original language` mode.
+
 ## Number of Civilizations
 
 The game supports up to `Game.MaxPlayers` (32) total players (player 0 is always the Barbarians), so up to 30 civilizations can be controlled by the AI in a single game. This limit is bounded by two things: the `ITile.Visited` bitmask, a `uint` (32 bits, one bit per player), and the player colour tables behind `Common.PlayerColourLight`/`PlayerColourDark` (32 entries).
@@ -238,7 +255,7 @@ The following table summarizes the SpaceShip-related classes and core types and 
 | ISpaceShipSpriteProvider | [src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs) | Contract for retrieving part sprites by component type. |
 | ResourcesSpaceShipSpriteProvider | [src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs) | Sprite provider backed by docker resource sprite atlas. |
 | SpaceShipSpriteProviderFactory | [src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs](./src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs) | Singleton-like provider factory for sprite access. |
-| SpaceShipPaletteAnimationDelegate | [src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs](./src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs) | Palette-cycle animation for spaceship lights/modules. |
+| PaletteCycleDelegate | [src/Screens/SpaceShip/PaletteCycleDelegate.cs](./src/Screens/SpaceShip/PaletteCycleDelegate.cs) | Palette-cycle animation of the spaceship view and the space station, at the original's rates. |
 | ISpaceShipService | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | High-level build/launch/screen-data service contract. |
 | IPlayerSpaceRace | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Minimal player projection required by spaceship services. |
 | ISpaceShipServiceFactory | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Factory for per-player spaceship services. |
@@ -279,12 +296,13 @@ Hall of Fame data is persisted in:
 
 For the SDL runtime on Windows, `Runtime.StorageDirectory` is:
 
-* `%LOCALAPPDATA%/CivOne`
+* `%LOCALAPPDATA%/CivOneX`
 
 So the effective file path is usually:
 
-On Windows this is `%LOCALAPPDATA%\CivOne\HallOfFame.yaml`.
-On Linux and macOS this is `~/.local/share/CivOne/HallOfFame.yaml`.
+On Windows this is `%LOCALAPPDATA%\CivOneX\HallOfFame.yaml`.
+On Linux this is `~/.local/share/CivOneX/HallOfFame.yaml`.
+On macOS this is `~/Library/Application Support/CivOneX/HallOfFame.yaml`.
 
 ### When is it read or written?
 
@@ -666,3 +684,14 @@ runtime therefore takes down every later test in the same run.
 | CA1307 | Specify StringComparison for clarity | Unit tests often intentionally use default string comparison behavior. Tests will fail if it changes. |
 | CA1002 | Do not expose generic lists | Unit tests often intentionally use generic lists for simplicity. |
 | CA1707 | Identifiers should not contain underscores | Unit tests often intentionally use underscores in method names for readability. |
+
+## Original Text Language Fingerprints
+
+The original text fallback validation is intentionally based on SHA-256 fingerprints of short, normalized segments.
+No longer text excerpts from original game data are stored in source code.
+
+The allowlist is version-bound.
+When a new English original release should be accepted, update the fingerprint definitions in [src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs](src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs) by recalculating hashes from the supported source files.
+
+Keep segment identifiers stable where possible.
+Stable identifiers make it easier to add additional known-good allowlist variants later without replacing historical entries.

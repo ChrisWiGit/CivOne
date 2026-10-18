@@ -1,18 +1,11 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Screens.PalaceAssets;
+using CivOne.Services.Historian;
 using PersistencePlayer = CivOne.Persistence.Game.IPlayer;
 
 namespace CivOne.Screens.Reports
@@ -34,7 +27,7 @@ namespace CivOne.Screens.Reports
 		Gibbon
 	}
 
-	public readonly record struct CivilizationRankingRow(int RankNumber, string CivilizationName, IPalaceData PalaceData, byte PlayerColorId);
+	public readonly record struct CivilizationRankingRow(int RankNumber, string CivilizationName, MiniPalaceLayout Palace, byte PlayerColorId);
 
 	public interface ICivilizationRankingService
 	{
@@ -61,6 +54,26 @@ namespace CivOne.Screens.Reports
 
 	public sealed class CivilizationRankingService : ICivilizationRankingService
 	{
+		private IHistorianPalaceService? _historianPalaceService;
+
+		/// <summary>
+		/// Creates the ranking service.
+		/// </summary>
+		public CivilizationRankingService()
+		{
+		}
+
+		/// <summary>
+		/// Creates the ranking service with an explicit palace source.
+		/// </summary>
+		/// <param name="historianPalaceService">Picks the palace shown per row.</param>
+		internal CivilizationRankingService(IHistorianPalaceService historianPalaceService)
+		{
+			_historianPalaceService = historianPalaceService;
+		}
+
+		private IHistorianPalaceService HistorianPalaceService => _historianPalaceService ??= HistorianServiceFactory.CreatePalaceService();
+
 		public IReadOnlyList<CivilizationRankingRow> GetRichest(bool includeAllCivilizations = false) => RankBy(player => player.Gold, includeAllCivilizations);
 
 		public IReadOnlyList<CivilizationRankingRow> GetStrongest(bool includeAllCivilizations = false) => RankBy(GetStrongScore, includeAllCivilizations);
@@ -75,7 +88,7 @@ namespace CivOne.Screens.Reports
 
 		public IReadOnlyList<CivilizationRankingRow> GetLargest(bool includeAllCivilizations = false) => RankBy(player => player.Population, includeAllCivilizations);
 
-		private static List<CivilizationRankingRow> RankBy(Func<Player, double> scoreSelector, bool includeAllCivilizations)
+		private List<CivilizationRankingRow> RankBy(Func<Player, double> scoreSelector, bool includeAllCivilizations)
 		{
 			Game game = Game.Instance;
 			Player[] allPlayers = [.. GetPlayers(includeAllCivilizations: true)];
@@ -100,7 +113,7 @@ namespace CivOne.Screens.Reports
 				rows.Add(new CivilizationRankingRow(
 					i + 1,
 					player.TribeNamePlural,
-					player.Palace,
+					HistorianPalaceService.PalaceFor(player),
 					playerId));
 			}
 

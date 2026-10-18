@@ -39,6 +39,10 @@ namespace CivOne.UnitTests
 
         public int EntertainerLuxuries => Entertainers * 3;
 
+        public int TradeTotalGross { get; set; }
+
+        public int LuxuryCorruption { get; set; }
+
 		public string Name => throw new NotImplementedException();
 
 		public ITile[] ResourceTiles => throw new NotImplementedException();

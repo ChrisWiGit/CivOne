@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Greek : BaseCivilization<Alexander>
 	{
-		public Greek() : base(Civilization.Greeks, TranslationServiceFactory.GetCurrent().Translate("Greek"), TranslationServiceFactory.GetCurrent().Translate("Greeks"), "alex")
+		public Greek() : base(Civilization.Greeks, TranslationServiceFactory.GetCurrent().Translate("Greek"), TranslationServiceFactory.GetCurrent().Translate("Greeks"), SoundNames.LeaderAlexander)
 		{
 			StartX = 39;
 			StartY = 18;

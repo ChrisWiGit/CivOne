@@ -27,6 +27,68 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
+		public void CivilizationScoreRoundtripsAtOffset1864()
+		{
+			// Arrange
+			using var _testee = new SaveDataAdapter();
+			ushort[] expected = [101, 202, 303, 404, 505, 606, 707, 808];
+
+			// Act
+			_testee.CivilizationScore = expected;
+			byte[] bytes = _testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			// Assert
+			Assert.Equal(expected, actualAdapter.CivilizationScore);
+			for (int slot = 0; slot < expected.Length; slot++)
+			{
+				Assert.Equal(expected[slot], BitConverter.ToUInt16(bytes, 1864 + (slot * 2)));
+			}
+		}
+
+		[Fact]
+		public void DiplomacyRoundtripsAtOffset1608()
+		{
+			using var testee = new SaveDataAdapter();
+			ushort[] expected = [.. Enumerable.Range(0, 64).Select(i => (ushort)(i * 3))];
+
+			testee.Diplomacy = expected;
+			byte[] bytes = testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			Assert.Equal(expected, actualAdapter.Diplomacy);
+			Assert.Equal(expected[9], BitConverter.ToUInt16(bytes, 1608 + (9 * 2)));
+		}
+
+		[Fact]
+		public void PalaceRoundtripsAtOffset37256AndBuildCountAt37816()
+		{
+			using var testee = new SaveDataAdapter();
+			short[] expected = [.. Enumerable.Range(0, 24).Select(i => (short)(i - 1))];
+
+			testee.Palace = expected;
+			testee.PalaceBuildCount = 41;
+			byte[] bytes = testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			Assert.Equal(expected, actualAdapter.Palace);
+			Assert.Equal(41, actualAdapter.PalaceBuildCount);
+			for (int i = 0; i < expected.Length; i++)
+			{
+				Assert.Equal(expected[i], BitConverter.ToInt16(bytes, 37256 + (i * 2)));
+			}
+			Assert.Equal(41, BitConverter.ToUInt16(bytes, 37816));
+		}
+
+		[Fact]
+		public void CivilizationScoreCollapseWritesHumanScoreToSlotZeroAndCitySumsToTheRest()
+		{
+			ushort[] actual = new CivOne.Services.Score.SveCivilizationScoreDelegate().Collapse(1234, [99, 10, -5, 40_000, 7]);
+
+			Assert.Equal([1234, 10, 0, 32_767, 7, 0, 0, 0], actual);
+		}
+
+		[Fact]
 		public void CitiesSetterPreservesVisibleSizeInBinarySaveData()
 		{
 			// Arrange

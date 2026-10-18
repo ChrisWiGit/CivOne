@@ -60,6 +60,12 @@ namespace CivOne.Persistence.Model
         [Doc("Global peace turn counter from the original save format. Reserved for future diplomacy logic.", 0, ushort.MaxValue)]
         public ushort PeaceTurns { get; set; }
 
+        [Doc("Turns in which the calendar advanced by 1 year instead of 2 between 1750 and 1850, because a spaceship was in flight. Empty in most games. The year of every turn follows from GameTurn and this list.")]
+        public List<ushort> AcceleratedTurns { get; set; } = [];
+
+        [Doc("True once the final score was entered into the Hall of Fame and the player chose to keep playing. No further score is recorded and the palace is no longer upgraded.")]
+        public bool ScoringCompleted { get; set; }
+
         [Doc("Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.", 0, ushort.MaxValue)]
         public ushort PlayerFutureTech { get; set; }
 

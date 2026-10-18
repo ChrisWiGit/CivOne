@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Zulu : BaseCivilization<Shaka>
 	{
-		public Zulu() : base(Civilization.Zulus, TranslationServiceFactory.GetCurrent().Translate("Zulu"), TranslationServiceFactory.GetCurrent().Translate("Zulus"), "shak")
+		public Zulu() : base(Civilization.Zulus, TranslationServiceFactory.GetCurrent().Translate("Zulu"), TranslationServiceFactory.GetCurrent().Translate("Zulus"), SoundNames.LeaderShaka)
 		{
 			StartX = 42;
 			StartY = 42;

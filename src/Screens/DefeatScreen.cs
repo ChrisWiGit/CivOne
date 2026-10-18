@@ -1,17 +1,9 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Sound;
 
 namespace CivOne.Screens
 {
@@ -89,7 +81,7 @@ namespace CivOne.Screens
 			Palette = _background.Palette;
 			this.AddLayer(_background);
 
-			PlaySound("lose2");
+			PlaySound(SoundNames.MusicLose);
 
 			// Load defeat text
 			_textLines = GetGameText("KING/ARCH");

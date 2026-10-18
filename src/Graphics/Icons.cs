@@ -230,16 +230,41 @@ namespace CivOne.Graphics
 		}
 
 		private static readonly Lock _citizenLock = new();
-		private static readonly IBitmap[] _citizen = new Picture[9];
+		private static readonly IBitmap[] _citizen = new Picture[11];
 		public static IBitmap Citizen(Citizen citizen)
 		{
-			int idx = (int)citizen;
-			if (_citizen[idx] != null) return _citizen[idx];
-			lock (_citizenLock)
+			// SP257 only has sprite data for the original 9 citizen types (row 128, columns 0-8).
+			// RedShirtMale/RedShirtFemale (civil disorder) have no dedicated sprite there - column 9 is
+			// unused padding and column 10 overlaps the unrelated sprite set read by MapTile at x=80,y=128.
+			// The original game draws the same Unhappy sprite and recolours it (palette index 5 -> 12, red)
+			// for the citizens counted as extra unhappy beyond city size; reproduce that here.
+			Enums.Citizen spriteSource = citizen switch
 			{
-				_citizen[idx] ??= Resources[Filename][(8 * idx), 128, 8, 16];
+				Enums.Citizen.RedShirtMale => Enums.Citizen.UnhappyMale,
+				Enums.Citizen.RedShirtFemale => Enums.Citizen.UnhappyFemale,
+				_ => citizen,
+			};
+
+			int idx = (int)spriteSource;
+			if (_citizen[idx] == null)
+			{
+				lock (_citizenLock)
+				{
+					_citizen[idx] ??= Resources[Filename][(8 * idx), 128, 8, 16];
+				}
 			}
-			return _citizen[idx];
+
+			if (spriteSource == citizen) return _citizen[idx];
+
+			int redShirtIdx = (int)citizen;
+			if (_citizen[redShirtIdx] == null)
+			{
+				lock (_citizenLock)
+				{
+					_citizen[redShirtIdx] ??= new Picture(_citizen[idx]).ColourReplace(5, 12);
+				}
+			}
+			return _citizen[redShirtIdx];
 		}
 
 		private static readonly Lock _lampLock = new();
@@ -339,8 +364,9 @@ namespace CivOne.Graphics
 			CitizenTypes citizenType = city.GetCitizenTypes();
 			if (citizenType.InDisorder)
 			{
+				Enums.Citizen disorderCitizen = citizenType.redShirt > 0 ? Enums.Citizen.RedShirtMale : Enums.Citizen.UnhappyMale;
 				output.AddLayer(resource, 0, 0)
-					.AddLayer(Icons.Citizen(Enums.Citizen.UnhappyMale), 5, 1);
+					.AddLayer(Icons.Citizen(disorderCitizen), 5, 1);
 			}
 			else
 			{

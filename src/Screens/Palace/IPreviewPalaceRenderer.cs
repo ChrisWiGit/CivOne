@@ -1,20 +1,26 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using CivOne.Graphics;
 
 namespace CivOne.Screens.PalaceAssets
 {
+	/// <summary>
+	/// Draws the mini palace of the side bar and the Historian.
+	/// </summary>
 	public interface IPreviewPalaceRenderer
 	{
-		IBitmap RenderPalace(IPalaceData palace);
+		/// <summary>
+		/// Draws the mini palace.
+		/// </summary>
+		/// <param name="palace">The 9 slot layout.</param>
+		/// <returns>
+		/// A bitmap of <see cref="MiniPalaceLayout.Width"/> pixels, or 1×1 when no slot is drawn.
+		/// </returns>
+		IBitmap RenderPalace(MiniPalaceLayout palace);
 
-		int GetMaxPalaceHeight(IPalaceData palace);
+		/// <summary>
+		/// Gets the visible height of the tallest drawn part.
+		/// </summary>
+		/// <param name="palace">The 9 slot layout.</param>
+		/// <returns>The height in pixels; 0 when no slot is drawn.</returns>
+		int GetMaxPalaceHeight(MiniPalaceLayout palace);
 	}
 }

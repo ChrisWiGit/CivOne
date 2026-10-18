@@ -1,13 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-using CivOne.Persistence.Game;
 using CivOne.Services.Screen;
 
 namespace CivOne.Services.EndGame
@@ -20,7 +10,6 @@ namespace CivOne.Services.EndGame
 	/// </remarks>
 	internal static class EndGameServiceFactory
 	{
-		public static IPlayer Human => Game.Instance.HumanPlayer;
 		/// <summary>
 		/// Creates the default <see cref="IEndGameService"/>.
 		/// </summary>
@@ -30,8 +19,19 @@ namespace CivOne.Services.EndGame
 			return new EndGameService(
 				screenCommand: ScreenServiceFactory.CreateCommandService(),
 				screenQuery: ScreenServiceFactory.CreateQueryService(),
-				gameService: GameServiceFactory.CreateDefault(),
-				winner: Human);
+				gameService: GameServiceFactory.CreateDefault());
 		}
+
+		/// <summary>
+		/// Creates the end-of-turn check.
+		/// </summary>
+		/// <returns>A new <see cref="IGameEndCheckService"/>.</returns>
+		public static IGameEndCheckService CreateCheckService() => new GameEndCheckService();
+
+		/// <summary>
+		/// Creates the factory for the screens of the end-game sequences.
+		/// </summary>
+		/// <returns>A new <see cref="IEndGameScreenFactory"/> creating the real game screens.</returns>
+		public static IEndGameScreenFactory CreateScreenFactory() => new EndGameScreenFactory();
 	}
 }

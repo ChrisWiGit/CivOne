@@ -1,129 +1,83 @@
-﻿// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-// Author: Kevin Routley : July, 2019
-
-using CivOne.src;
+using System.Collections.Generic;
 using System.Linq;
+using CivOne.Advances;
 using CivOne.Buildings;
+using CivOne.Governments;
+using CivOne.Screens.Services;
+using CivOne.Tiles;
+using CivOne.Units;
+using CivOne.src;
 using Xunit;
 
 namespace CivOne.UnitTests
 {
-
     /// <summary>
-    /// CW: This is an integration Test, and needs a lot of game setup.
-    /// For unit tests see CityCitizenServiceImplTests.cs
-    /// --------------------------------
-    /// Tests to exercise City citizen happiness. Citizen happiness
-    /// is displayed in the 'Happy' pane of the City manager view
-    /// as a five-step sequence:
-    /// 1. initial state - determined by game difficulty
-    /// 2. impact of luxuries - from entertainers or settings
-    /// 3. impact of buildings - temple, etc
-    /// 4. impact of units - presence or absence of units depending on government
-    /// 5. impact of wonders
-    /// The final results are displayed in the 'header' of the City manager
-    /// view and dictate if a city goes into disorder or celebration.
+    /// The integration cases against the corrected happiness model, re-derived by hand from the formula
+    /// rather than adjusted until they passed.
+    ///
+    /// The setup is a Babylonian despotism at king level with a single city, so the empire size penalty is
+    /// zero and the base unhappiness is the city size minus three. The tax and science sliders sit at five
+    /// tenths each, which leaves nothing for luxuries, so the only luxuries in these cases come from
+    /// entertainers, at two points each.
     /// </summary>
-    /// <seealso cref="CityCitizenServiceImplTests"/>
+    /// <seealso cref="CityCitizenServiceTests"/>
     public class CityHappy : TestsBase
     {
-        /// <summary>
-        /// With no buildings, luxuries, wonders or martial law,
-        /// the count/types of citizens will remain unchanged
-        /// </summary>
-        [Fact]
-        public void CityHappyBasic()
+        private City AddCity(int size = 1)
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            IUnit unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+            City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
 
-            Assert.NotNull(acity);
-            foreach (var citizenTypes in acity.Residents)
+            Assert.NotNull(city);
+
+            if (size > 1)
             {
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.elvis);
+                city.Size = (byte)size;
+                city.ResetResourceTiles();
             }
 
-            acity.Size = 2;
-
-            foreach (var citizenTypes in acity.Residents)
-            {
-                Assert.Equal(2, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
-            acity.Size = 3;
-
-            foreach (var citizenTypes in acity.Residents)
-            {
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
-            acity.Size = 4; // at King level, 3 content and 1 unhappy
-
-            foreach (var citizenTypes in acity.Residents)
-            {
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
-            acity.Size = 5; // at King level, 3 content and 2 unhappy
-
-            foreach (var citizenTypes in acity.Residents)
-            {
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
+            return city;
         }
 
         /// <summary>
-        /// City size 1: change to an entertainer
+        /// Adds a temple to the city, together with the advance that a real game would have required to build
+        /// it. Ceremonial Burial is the temple's prerequisite, so a city that owns one always has an owner who
+        /// knows it — except for captured cities, which the unit tests cover separately.
         /// </summary>
-        [Fact]
-        public void CityHappy1Entertainer()
+        /// <param name="city">The city to build the temple in.</param>
+        private static void AddTempleAndItsAdvance(City city)
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
+            city.CityOwnerPlayer.AddAdvance(new CeremonialBurial(), setOrigin: false);
+            city.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+        }
 
-			MakeOneEntertainer(acity);
+        private static List<CitizenTypes> Stages(City city)
+        {
+            city.UpdateSpecialists();
 
-            using var enumerator = acity.Residents.GetEnumerator();
+            CityCitizenService service = new(
+                city,
+                city,
+                (IGameCitizenDependency)Game.Instance,
+                [.. city.Specialists],
+                Map.Instance,
+                new EqualisingPendingUnhappinessDelegate().Refill);
 
-            enumerator.MoveNext();
-            var citizenTypes = enumerator.Current;
-
-            Assert.Equal(0, citizenTypes.content);
-            Assert.Equal(1, citizenTypes.elvis);
+            return [.. service.EnumerateCitizens()];
         }
 
         /// <summary>
-        /// Turn one citizen into an entertainer. This is done
-        /// by using SetResourceTile() to toggle the first resource
-        /// generating tile [like clicking on a resource tile in
-        /// the City Manager map].
+        /// Turns one citizen into an entertainer by releasing a resource tile, the same way the city
+        /// manager does when a tile is clicked.
         /// </summary>
-        /// <param name="acity"></param>
-        private static void MakeOneEntertainer(City acity)
+        /// <param name="city">The city to change.</param>
+        private static void MakeOneEntertainer(City city)
         {
-            var tiles = acity.ResourceTiles.ToArray();
-            foreach (var tile in tiles)
+            foreach (ITile tile in city.ResourceTiles.ToArray())
             {
-                if (tile.X != acity.X || tile.Y != acity.Y)
+                if (tile.X != city.X || tile.Y != city.Y)
                 {
-                    acity.SetResourceTile(tile);
+                    city.SetResourceTile(tile);
                     return;
                 }
             }
@@ -132,339 +86,241 @@ namespace CivOne.UnitTests
         }
 
         /// <summary>
-        /// City size 2, with 1 entertainer: results are 1 happy, 1 entertainer
+        /// Pins the assumptions every case below rests on.
+        /// If one of these changes, the expectations in this file have to be recomputed rather than adjusted.
         /// </summary>
         [Fact]
-        public void CityHappy2With1Entertainer()
+        public void TheSetupTheseCasesAssume()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 2;
-            acity.ResetResourceTiles();
+            City city = AddCity();
 
-			MakeOneEntertainer(acity);
+            Assert.Equal(3, Game.Instance.Difficulty);
+            Assert.IsType<Despotism>(playa.Government);
+            Assert.Single(playa.Cities);
+            Assert.True(((IGameCitizenDependency)Game.Instance).IsHumanPlayer(city.CityOwnerPlayerIndex));
 
-            using var foo = acity.Residents.GetEnumerator();
-            foo.MoveNext();
-            var citizenTypes = foo.Current;
-            Assert.Equal(1, citizenTypes.content);
-            Assert.Equal(1, citizenTypes.elvis);
+            // Five tenths tax and five tenths science leave nothing for luxuries.
+            Assert.Equal(0, playa.LuxuriesRate);
+        }
 
-            foo.MoveNext();
-            citizenTypes = foo.Current;
-            Assert.Equal(1, citizenTypes.happy);
-            Assert.Equal(1, citizenTypes.elvis);
+        [Theory]
+        [InlineData(1, 1, 0)]   // 1 - 3 is below zero, so nobody is unhappy
+        [InlineData(2, 2, 0)]
+        [InlineData(3, 3, 0)]
+        [InlineData(4, 3, 1)]
+        [InlineData(5, 3, 2)]
+        public void ACityWithoutAnythingFollowsTheSizeTerm(int size, int expectedContent, int expectedUnhappy)
+        {
+            City city = AddCity(size);
+
+            foreach (CitizenTypes stage in Stages(city))
+            {
+                Assert.Equal(expectedContent, stage.content);
+                Assert.Equal(expectedUnhappy, stage.unhappy);
+                Assert.Equal(0, stage.elvis);
+            }
+        }
+
+        [Fact]
+        public void ACityOfOneWithAnEntertainerHasNoWorkerLeft()
+        {
+            City city = AddCity();
+            MakeOneEntertainer(city);
+
+            CitizenTypes first = Stages(city)[0];
+
+            Assert.Equal(0, first.content);
+            Assert.Equal(1, first.elvis);
+        }
+
+        [Fact]
+        public void ACityOfTwoWithOneEntertainer()
+        {
+            City city = AddCity(2);
+            MakeOneEntertainer(city);
+
+            List<CitizenTypes> stages = Stages(city);
+
+            Assert.Equal(1, stages[0].content);
+            Assert.Equal(1, stages[0].elvis);
+
+            // Two luxuries make one citizen happy, and there is exactly one seat for them.
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(1, stages[1].elvis);
+        }
+
+        [Fact]
+        public void ACityOfTwoWithTwoEntertainers()
+        {
+            City city = AddCity(2);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
+
+            List<CitizenTypes> stages = Stages(city);
+
+            Assert.Equal(0, stages[0].content);
+            Assert.Equal(2, stages[0].elvis);
+
+            // Four luxuries would make two citizens happy, but no seat is left for them.
+            Assert.Equal(0, stages[1].happy);
+            Assert.Equal(2, stages[1].elvis);
+        }
+
+        [Fact]
+        public void ACityOfFourWithOneEntertainer()
+        {
+            City city = AddCity(4);
+            MakeOneEntertainer(city);
+
+            List<CitizenTypes> stages = Stages(city);
+
+            Assert.Equal(2, stages[0].content);
+            Assert.Equal(1, stages[0].unhappy);
+            Assert.Equal(1, stages[0].elvis);
+
+            // Two luxuries, one happy citizen, three seats: everything fits.
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(1, stages[1].content);
+            Assert.Equal(1, stages[1].unhappy);
+            Assert.Equal(1, stages[1].elvis);
         }
 
         /// <summary>
-        /// City size 2, with 2 entertainer: results are always 2 entertainer
+        /// Differs from the model CivOne shipped with, which ends at two happy citizens and no content one.
+        /// Four luxuries ask for two happy citizens, but with one unhappy citizen and two seats the city
+        /// cannot show both, so one happy and one unhappy citizen are trimmed away together.
         /// </summary>
         [Fact]
-        public void CityHappy2With2Entertainers()
+        public void ACityOfFourWithTwoEntertainers()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 2;
+            City city = AddCity(4);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
 
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
+            List<CitizenTypes> stages = Stages(city);
 
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.elvis);
+            Assert.Equal(1, stages[0].content);
+            Assert.Equal(1, stages[0].unhappy);
+            Assert.Equal(2, stages[0].elvis);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(2, citizenTypes.elvis);
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(1, stages[1].content);
+            Assert.Equal(0, stages[1].unhappy);
+            Assert.Equal(2, stages[1].elvis);
+        }
 
-            }
+        [Fact]
+        public void ACityOfFourWithThreeEntertainers()
+        {
+            City city = AddCity(4);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
+
+            List<CitizenTypes> stages = Stages(city);
+
+            Assert.Equal(0, stages[0].content);
+            Assert.Equal(1, stages[0].unhappy);
+            Assert.Equal(3, stages[0].elvis);
+
+            // Six luxuries, one seat: one happy citizen is all the city can show.
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(0, stages[1].content);
+            Assert.Equal(0, stages[1].unhappy);
+            Assert.Equal(3, stages[1].elvis);
+        }
+
+        [Fact]
+        public void ACityOfFourWithATemple()
+        {
+            City city = AddCity(4);
+            AddTempleAndItsAdvance(city);
+
+            List<CitizenTypes> stages = Stages(city);
+
+            Assert.Equal(3, stages[0].content);
+            Assert.Equal(1, stages[0].unhappy);
+
+            // No luxuries without entertainers.
+            Assert.Equal(0, stages[1].happy);
+            Assert.Equal(1, stages[1].unhappy);
+
+            // The temple makes the last unhappy citizen content.
+            Assert.Equal(4, stages[2].content);
+            Assert.Equal(0, stages[2].unhappy);
         }
 
         /// <summary>
-        /// King level: city size 4 starts w/ 3 content, 1 unhappy. Add an
-        /// entertainer, 1 content is made happy
+        /// Differs from the model CivOne shipped with, which ends at two happy and one content citizen.
+        /// Six luxuries ask for three happy citizens against three unhappy ones in three seats, so two
+        /// happy and two unhappy citizens are trimmed away together before the temple runs.
         /// </summary>
         [Fact]
-        public void CityHappy4With1Entertainers()
+        public void ACityOfSixWithThreeEntertainersAndATemple()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 4;
-            acity.ResetResourceTiles();
-			MakeOneEntertainer(acity);
+            City city = AddCity(6);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
+            MakeOneEntertainer(city);
+            AddTempleAndItsAdvance(city);
 
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(2, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(1, citizenTypes.elvis);
+            List<CitizenTypes> stages = Stages(city);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(1, citizenTypes.elvis);
-            }
+            Assert.Equal(0, stages[0].content);
+            Assert.Equal(3, stages[0].unhappy);
+            Assert.Equal(3, stages[0].elvis);
 
-        }
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(1, stages[1].content);
+            Assert.Equal(1, stages[1].unhappy);
 
-        /// <summary>
-        /// King level: city size 4 starts w/ 3 content, 1 unhappy. Add 2
-        /// entertainer, 1 content is made happy, 1 unhappy made content
-        /// </summary>
-        [Fact]
-        public void CityHappy4With2Entertainers()
-        {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 4;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
-
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(2, citizenTypes.elvis);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // CW: 2 Entertainer = 2 * 3 Luxury = 6
-                // 6 Luxury = upgrade 3 times 
-                // 1 content -> happy, 1 unhappy -> content -> happy
-                Assert.Equal(2, citizenTypes.happy);
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.unhappy);
-                Assert.Equal(2, citizenTypes.elvis);
-            }
-
-        }
-
-        /// <summary>
-        /// King level: city size 4 starts w/ 3 content, 1 unhappy. Add 3
-        /// entertainer, 1 person remaining is happy
-        /// </summary>
-        [Fact]
-        public void CityHappy4With3Entertainers()
-        {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 4;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
-
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(3, citizenTypes.elvis);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.unhappy);
-                Assert.Equal(3, citizenTypes.elvis);
-            }
-
-        }
-
-        /// <summary>
-        /// City size 4, King: temple and no other changes means 4 content
-        /// </summary>
-        [Fact]
-        public void City4Temple()
-        {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 4;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-            acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
-
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                // initial state
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // no luxury effect
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // temple effect
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(4, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
-        }
-
-        /// <summary>
-        /// First tricky one. City size 6 at King level: starts with 3 content, 3 unhappy.
-        /// Switch 3 people to entertainers: now 3 unhappy, 3 entertainers. Entertainers
-        /// make content people happy, then unhappy people content, but sequentially.
-        /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 unhappy
-        /// to 1 content. Final: 1 happy, 1 content, 1 unhappy, 3 entertainers.
-        ///
-        /// The "parallel" approach would be to make all 3 unhappy people content, but
-        /// that is not how Microprose did it.
-        /// </summary>
-        [Fact]
-        public void City6With3EntertainersAndTemple()
-        {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 6;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
-			MakeOneEntertainer(acity);
-            acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
-
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(3, citizenTypes.unhappy);
-                Assert.Equal(3, citizenTypes.elvis);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // CW: 3 Entertainer = 3 * 3 Luxury = 9
-                // 9 Luxury = upgrade 4 times
-                // unhappy-> 2 content -> 2 happy
-                Assert.Equal(2, citizenTypes.happy);
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(3, citizenTypes.elvis);
-
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // temple effect
-                Assert.Equal(2, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.unhappy);
-                Assert.Equal(3, citizenTypes.elvis);
-            }
-
+            Assert.Equal(1, stages[2].happy);
+            Assert.Equal(2, stages[2].content);
+            Assert.Equal(0, stages[2].unhappy);
+            Assert.Equal(3, stages[2].elvis);
         }
 
         [Fact]
-        public void City5With1EntAndTemple()
+        public void ACityOfFiveWithOneEntertainerAndATemple()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 5;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
+            City city = AddCity(5);
+            MakeOneEntertainer(city);
+            AddTempleAndItsAdvance(city);
 
-			MakeOneEntertainer(acity);
-            acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+            List<CitizenTypes> stages = Stages(city);
 
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                // initial state
-                // difficulty 3: 3 content, 2 unhappy
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(2, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.unhappy);
-                Assert.Equal(1, citizenTypes.elvis);
+            Assert.Equal(0, stages[0].happy);
+            Assert.Equal(2, stages[0].content);
+            Assert.Equal(2, stages[0].unhappy);
+            Assert.Equal(1, stages[0].elvis);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // luxury
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.unhappy);
-                Assert.Equal(1, citizenTypes.elvis);
+            Assert.Equal(1, stages[1].happy);
+            Assert.Equal(1, stages[1].content);
+            Assert.Equal(2, stages[1].unhappy);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // temple
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(2, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.unhappy);
-                Assert.Equal(1, citizenTypes.elvis);
-            }
-
+            Assert.Equal(1, stages[2].happy);
+            Assert.Equal(2, stages[2].content);
+            Assert.Equal(1, stages[2].unhappy);
+            Assert.Equal(1, stages[2].elvis);
         }
 
         [Fact]
-        public void City5Colosseum()
+        public void ACityOfFiveWithAColosseum()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-            Assert.NotNull(acity);
-            acity.Size = 5;
-            acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
+            City city = AddCity(5);
+            city.AddBuilding(Reflect.GetBuildings().First(b => b is Colosseum));
 
-            acity.AddBuilding(Reflect.GetBuildings().First(b => b is Colosseum));
+            List<CitizenTypes> stages = Stages(city);
 
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                // initial state
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
+            Assert.Equal(3, stages[0].content);
+            Assert.Equal(2, stages[0].unhappy);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // luxury
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(3, citizenTypes.content);
-                Assert.Equal(2, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
+            Assert.Equal(0, stages[1].happy);
+            Assert.Equal(2, stages[1].unhappy);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                // Colosseum
-                Assert.Equal(0, citizenTypes.happy);
-                Assert.Equal(5, citizenTypes.content);
-                Assert.Equal(0, citizenTypes.unhappy);
-                Assert.Equal(0, citizenTypes.elvis);
-            }
-
+            // Three points of colosseum against two unhappy citizens, the spare point is lost here.
+            Assert.Equal(5, stages[2].content);
+            Assert.Equal(0, stages[2].unhappy);
         }
     }
 }

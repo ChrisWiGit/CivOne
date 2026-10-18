@@ -45,18 +45,50 @@ namespace CivOne.UnitTests
             Assert.Equal(0, science);
         }
 
-        [Fact]
-        public void CalculateLuxuriesAppliesBuildingAndEntertainerBonuses()
+        [Theory]
+        // trade, entertainer luxuries, marketplace, bank, expected
+        [InlineData(4, 3, false, false, 7)]     // without buildings, entertainers add their raw points
+        [InlineData(4, 3, true, false, 10)]     // (4 + 3) -> 10
+        [InlineData(4, 3, true, true, 15)]      // 7 -> 10 -> 15
+        [InlineData(0, 2, true, true, 4)]       // 2 -> 3 -> 4, entertainers alone still get raised
+        public void CalculateLuxuriesAddsEntertainersBeforeTheMarketplaceAndTheBank(
+            short tradeLuxuries,
+            int entertainerLuxuries,
+            bool hasMarketPlace,
+            bool hasBank,
+            short expected)
         {
-            short luxuries = _service.CalculateLuxuries(4, hasMarketPlace: true, hasBank: true, entertainerLuxuries: 3);
-            Assert.Equal(12, luxuries);
+            Assert.Equal(
+                expected,
+                _service.CalculateLuxuries(tradeLuxuries, hasMarketPlace, hasBank, entertainerLuxuries));
+        }
+
+        [Theory]
+        // trade, taxmen, marketplace, bank, expected
+        [InlineData(4, 2, false, false, 8)]     // without buildings, taxmen add their raw points
+        [InlineData(4, 2, true, false, 12)]     // (4 + 4) -> 12
+        [InlineData(4, 2, true, true, 18)]      // 8 -> 12 -> 18
+        public void CalculateTaxesAddsTaxmenBeforeTheMarketplaceAndTheBank(
+            short tradeTaxes,
+            int taxmen,
+            bool hasMarketPlace,
+            bool hasBank,
+            short expected)
+        {
+            Assert.Equal(
+                expected,
+                _service.CalculateTaxes(tradeTaxes, hasMarketPlace, hasBank, taxmen));
         }
 
         [Fact]
-        public void CalculateTaxesAppliesBuildingAndTaxmanBonuses()
+        public void EntertainerPointsAreUnraisedSoTheMarketplaceIsNotCountedTwice()
         {
-            short taxes = _service.CalculateTaxes(4, hasMarketPlace: true, hasBank: true, taxmen: 2);
-            Assert.Equal(13, taxes);
+            // CivOne's City.EntertainerLuxuries is Entertainers * 3, the marketplace bonus already folded in.
+            // This service counts two points per entertainer and raises them with the buildings itself, so it
+            // must start from two. Three would give 4.5 points per entertainer with a marketplace.
+            Assert.Equal(
+                6,
+                _service.CalculateLuxuries(0, hasMarketPlace: true, hasBank: false, entertainerLuxuries: 4));
         }
 
         [Fact]
@@ -202,7 +234,10 @@ namespace CivOne.UnitTests
             short expectedTradeTaxes = service.CalculateTradeTaxes(expectedTotalTrade, player.TaxesRate);
             short expectedTradeLuxuries = service.CalculateTradeLuxuries(expectedTotalTrade, expectedTradeTaxes, player.TaxesRate, player.LuxuriesRate);
             short expectedTradeScience = service.CalculateTradeScience(expectedTotalTrade, expectedTradeLuxuries, expectedTradeTaxes);
-            short expectedLuxuries = service.CalculateLuxuries(expectedTradeLuxuries, hasMarketPlace: true, hasBank: true, city.EntertainerLuxuries);
+            // The service raises the entertainers with the buildings itself, so it starts from the unraised
+            // two points per entertainer rather than city.EntertainerLuxuries, which already has the
+            // marketplace bonus folded in.
+            short expectedLuxuries = service.CalculateLuxuries(expectedTradeLuxuries, hasMarketPlace: true, hasBank: true, city.Entertainers * 2);
             short expectedTaxes = service.CalculateTaxes(expectedTradeTaxes, hasMarketPlace: true, hasBank: true, city.Taxmen);
 
             bool hasSeti = city.CityOwnerPlayer.HasWonder<SETIProgram>();

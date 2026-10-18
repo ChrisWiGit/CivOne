@@ -80,6 +80,12 @@ namespace CivOne.Persistence
 		/// <summary>Global peace turn counter from the original save format.</summary>
 		public ushort PeaceTurns { get; set; }
 
+		/// <summary>Turns with a 1-year calendar step during a spaceship flight.</summary>
+		public List<ushort> AcceleratedTurns { get; set; } = [];
+
+		/// <summary>True once the final score was recorded and the player kept playing.</summary>
+		public bool ScoringCompleted { get; set; }
+
 		/// <summary>Future-tech counter from the original save format.</summary>
 		public ushort PlayerFutureTech { get; set; }
 		public bool DisableBuddyCivilizationRespawn { get; set; }

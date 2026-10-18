@@ -11,6 +11,8 @@ using System;
 using CivOne.Advances;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Sound;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens
 {
@@ -65,6 +67,12 @@ namespace CivOne.Screens
 				Destroy();
 			return true;
 		}
+
+		protected override void Destroy()
+		{
+			SoundPlaybackStrategyProvider.Abort();
+			base.Destroy();
+		}
 		
 		public Discovery(IAdvance advance)
 		{
@@ -98,7 +106,8 @@ namespace CivOne.Screens
 				this.AddLayer(advance.Icon, 119, modern ? 53 : 61);
 			}
 
-			PlaySound(Human.Civilization.Tune);
+			string? tune = Human.Civilization.Tune;
+			PlaySound(tune == null ? null : $"{tune}{SoundNames.ShortSuffix}");
 		}
 	}
 }

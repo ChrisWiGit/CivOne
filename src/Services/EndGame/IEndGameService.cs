@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System.Threading.Tasks;
 
 namespace CivOne.Services.EndGame
@@ -18,25 +9,29 @@ namespace CivOne.Services.EndGame
 	{
 		/// <summary>
 		/// Handles the end-game sequence for a conquest victory.
-		/// Shows VictoryScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Shows VictoryScreen, PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleConquestAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for a defeat.
-		/// Shows DefeatScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Shows DefeatScreen, then returns to credits; a defeat has no score, as in the original.
 		/// </summary>
 		Task HandleDefeatAsync();
 
 		/// <summary>
-		/// Handles the end-game sequence for an Alpha Centauri victory.
-		/// Shows SpaceVictory, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Handles the end of the game found by the end-of-turn check: conquest, a spaceship arrival or the final year.
+		/// Shows the news and victory screens of each reason, the end-game flow if no score was recorded yet, and then
+		/// asks "keep playing?" (not after a conquest).
 		/// </summary>
-		Task HandleAlphaCentauriAsync();
+		/// <param name="sequence">What to show this turn.</param>
+		/// <returns><c>true</c> if the player keeps playing; <c>false</c> if the game ended and the credits are shown.</returns>
+		Task<bool> HandleGameEndAsync(GameEndSequence sequence);
 
 		/// <summary>
 		/// Handles the end-game sequence for a player retirement.
-		/// Shows CivilizationScore, then HallOfFame, then returns to credits (no TopLeaderScreen).
+		/// Shows PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// After "keep playing" only the power graph is shown.
 		/// </summary>
 		Task HandleRetireAsync();
 	}
